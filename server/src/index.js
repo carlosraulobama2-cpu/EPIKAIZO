@@ -1,0 +1,116 @@
+const { initDb } = require('./config/database');
+const express = require('express');
+const cors = require('cors');
+const path = require('path');
+require('dotenv').config();
+
+async function start() {
+  await initDb();
+
+  const app = express();
+
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || 'http://localhost:3001,https://epikaizo.com')
+    .split(',').map(o => o.trim());
+  app.use(cors({
+    origin: (origin, cb) => {
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error('Origen no permitido por CORS'));
+    },
+    credentials: true
+  }));
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
+
+  const rootDir = path.join(__dirname, '../..');
+  app.use(express.static(rootDir));
+
+  app.get(['/dashboard.html', '/index.html'], (req, res) => {
+    res.sendFile(path.join(rootDir, req.url === '/' ? 'index.html' : req.url));
+  });
+
+  app.use((req, res, next) => {
+    const fs = require('fs');
+    const possible = path.join(rootDir, req.url === '/' ? 'index.html' : req.url);
+    if (req.url && fs.existsSync(possible)) {
+      return next();
+    }
+    next();
+  });
+
+  app.get('/404.html', (req, res) => {
+    res.sendFile(path.join(rootDir, '404.html'));
+  });
+
+  app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store');
+    next();
+  });
+
+  app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  });
+
+  app.use('/api/tenants', require('./routes/tenants'));
+  app.use('/api/users', require('./routes/users'));
+  app.use('/api/plans', require('./routes/plans'));
+  app.use('/api/packages', require('./routes/packages'));
+  app.use('/api/cars', require('./routes/cars'));
+  app.use('/api/leads', require('./routes/entities'));
+  app.use('/api/tasks', require('./routes/entities'));
+  app.use('/api/orders', require('./routes/entities'));
+  app.use('/api/expenses', require('./routes/entities'));
+  app.use('/api/employees', require('./routes/entities'));
+  app.use('/api/providers', require('./routes/entities'));
+  app.use('/api/notifications', require('./routes/entities'));
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/gmail', require('./routes/gmail'));
+app.use('/api/invoices', require('./routes/invoices'));
+app.use('/api/backup', require('./routes/backup'));
+app.use('/api/audit', require('./routes/audit'));
+app.use('/api/settings', require('./routes/settings'));
+app.use('/api/dashboard', require('./routes/dashboard'));
+  app.use('/api/whatsapp', require('./routes/whatsapp'));
+  app.use('/api/chatbot', require('./routes/chatbot'));
+
+  app.post('/api/analytics', (req, res) => {
+    try {
+      const payload = req.body || {};
+      const fs = require('fs');
+      const path = require('path');
+      const logDir = path.join(__dirname, '../../data');
+      const logFile = path.join(logDir, 'analytics.json');
+      if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+      let logs = [];
+      try { logs = JSON.parse(fs.readFileSync(logFile, 'utf8')); } catch {}
+      logs.push(Object.assign({}, payload, { receivedAt: new Date().toISOString() }));
+      if (logs.length > 500) logs = logs.slice(-500);
+      fs.writeFileSync(logFile, JSON.stringify(logs, null, 2));
+      res.status(204).end();
+    } catch (err) {
+      res.status(200).end();
+    }
+  });
+
+  app.use((err, req, res, next) => {
+    console.error(err);
+    res.status(err.status || 500).json({ error: err.message || 'Error interno del servidor' });
+  });
+
+  app.use((req, res) => {
+    if (req.accepts('html')) {
+      return res.status(404).sendFile(path.join(rootDir, '404.html'));
+    }
+    res.status(404).json({ error: 'Ruta no encontrada' });
+  });
+
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log('Server running on http://localhost:' + PORT);
+  });
+}
+
+start().catch(err => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});

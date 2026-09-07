@@ -1,0 +1,1823 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Epikaizo Admin</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar__brand">
+      <span class="brand__mark">
+        <img src="images/logo.png" alt="Epikaizo" />
+      </span>
+      <span class="brand__word">Epikaizo</span>
+      <span class="badge-admin">ADMIN</span>
+    </div>
+
+    <div class="sidebar__search">
+      <input type="text" id="globalSearch" placeholder="Buscar... (Ctrl+K)" />
+      <div class="global-search__results" id="globalSearchResults"></div>
+    </div>
+
+    <nav class="sidebar__nav" id="sidebarNav">
+      <span class="nav-section-label">PRINCIPAL</span>
+      <a href="#" data-tab="tab-overview" class="is-active" id="nav-overview">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Visión General
+      </a>
+      <a href="#" data-tab="tab-packages" id="nav-packages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+        Paquetes
+      </a>
+      <a href="#" data-tab="tab-services" id="nav-services">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="6" r="1.6" fill="currentColor"/><circle cx="16" cy="12" r="1.6" fill="currentColor"/><circle cx="10" cy="18" r="1.6" fill="currentColor"/></svg>
+        Servicios
+      </a>
+      <a href="#" data-tab="tab-money" id="nav-money">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Envíos de Dinero
+      </a>
+
+      <span class="nav-section-label">GESTIÓN</span>
+      <a href="#" data-tab="tab-clients" id="nav-clients">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clientes
+      </a>
+      <a href="#" data-tab="tab-deliveries" id="nav-deliveries">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg>
+        Entregas
+      </a>
+      <a href="#" data-tab="tab-finance" id="nav-finance">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        Finanzas
+      </a>
+      <a href="#" data-tab="tab-invoices" id="nav-invoices">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+        Facturas
+      </a>
+      <a href="#" data-tab="tab-messages" id="nav-messages">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Mensajes
+      </a>
+      <a href="#" data-tab="tab-stats" id="nav-stats">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
+        Estadísticas
+      </a>
+      <a href="#" data-tab="tab-history" id="nav-history">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historial
+      </a>
+      <a href="#" data-tab="tab-employees" id="nav-employees">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Empleados
+      </a>
+      <a href="#" data-tab="tab-expenses" id="nav-expenses">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Gastos
+      </a>
+      <a href="#" data-tab="tab-orders" id="nav-orders">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2M5 17a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg>
+        Pedidos
+      </a>
+      <a href="#" data-tab="tab-providers" id="nav-providers">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        Proveedores
+      </a>
+
+      <span class="nav-section-label">SISTEMA</span>
+      <a href="#" data-tab="tab-notifications" id="nav-notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        Notificaciones
+      </a>
+      <a href="#" data-tab="tab-audit" id="nav-audit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        Auditoría
+      </a>
+      <a href="#" data-tab="tab-backup" id="nav-backup">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Backup
+      </a>
+      <a href="#" data-tab="tab-reports" id="nav-reports">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Reportes
+      </a>
+      <a href="#" data-tab="tab-settings" id="nav-settings">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Configuración
+      </a>
+
+      <a href="index.html" class="nav-out" id="nav-web">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Ir a la web
+      </a>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN CONTENT ============ -->
+  <main class="main-content">
+    
+    <header class="topbar">
+      <div>
+        <h1 class="page-title" id="pageTitle">Panel de Control</h1>
+        <p class="page-sub" id="pageSub">Resumen de operaciones y envíos</p>
+      </div>
+      <div class="topbar__actions">
+        <!-- CITY SELECTOR (Only for superadmin) -->
+        <div id="cityFilterContainer" style="display:none; align-items:center; gap:8px; margin-right: 12px;">
+          <label style="font-size:12px; font-weight:600; color:var(--texto-suave);">CIUDAD:</label>
+          <select id="globalCityFilter" class="filter-select" style="padding: 6px 12px; height: auto;">
+            <option value="Todas">Todas</option>
+            <option value="Bata">Bata</option>
+            <option value="Malabo">Malabo</option>
+            <option value="Mongomo">Mongomo</option>
+          </select>
+        </div>
+
+        <!-- USER PROFILE BADGE -->
+        <div id="userProfileBadge" style="display:flex; align-items:center; gap:10px; margin-right: 16px; padding-right: 16px; border-right: 1px solid var(--linea);">
+          <div style="text-align:right;">
+            <div id="upName" style="font-size:13px; font-weight:700; color:var(--azul-abismo);">ADMIN</div>
+            <div id="upRole" style="font-size:11px; color:var(--texto-suave);">Superadmin - Todas</div>
+          </div>
+          <div style="width:36px; height:36px; border-radius:50%; background:var(--azul-turquesa); color:white; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:14px;">
+            <span id="upInitials">A</span>
+          </div>
+          <button class="btn btn--sm btn--danger" id="btnLogout" style="padding: 4px 8px; margin-left: 8px;">Salir</button>
+        </div>
+
+        <div style="position:relative;">
+          <button class="btn btn--secondary" id="btnExportar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;margin-left:2px;"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="dropdown-menu" id="exportMenu">
+            <button class="dropdown-item" id="btnExportCSV">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar CSV
+            </button>
+            <button class="dropdown-item" id="btnPrint">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir
+            </button>
+          </div>
+        </div>
+        <button class="btn btn--primary" id="btnNuevoPaquete">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Registrar Servicio
+        </button>
+      </div>
+    </header>
+
+    <!-- ============ TAB: VISTA GENERAL ============ -->
+    <div id="tab-overview" class="tab-pane is-active">
+      <!-- KPIs -->
+      <section class="kpis">
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div>
+            <p>Entregados Hoy</p>
+            <strong id="kpi-today">0</strong>
+            <span class="kpi-trend" id="kpi-today-trend"></span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div>
+            <p>Esta Semana</p>
+            <strong id="kpi-week">0</strong>
+            <span class="kpi-trend" id="kpi-week-trend"></span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg></div>
+          <div>
+            <p>Total Mes</p>
+            <strong id="kpi-month">0</strong>
+            <span class="kpi-trend" id="kpi-month-trend"></span>
+          </div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div>
+            <p>Comisiones (Mes)</p>
+            <strong id="kpi-revenue">0 XAF</strong>
+            <span class="kpi-trend" id="kpi-revenue-trend"></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- DATA TABLE -->
+      <section class="table-section">
+      <div class="table-header">
+        <h2>Registro de Paquetes Recientes</h2>
+        <div class="table-filters">
+          <input type="date" id="dateFrom" />
+          <input type="date" id="dateTo" />
+          <button class="btn btn--secondary btn--sm" id="btnClearDates">Limpiar</button>
+          <input type="text" id="searchInput" placeholder="Buscar por código, cliente o ciudad..." />
+        </div>
+      </div>
+        
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código / Estado</th>
+                <th>Remitente (Cliente)</th>
+                <th>Destinatario</th>
+                <th>Destino</th>
+                <th>Financiero</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Cargado vía JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: PAQUETES ============ -->
+    <div id="tab-packages" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg></div>
+          <div><p>Total Paquetes</p><strong id="kpi-total-pkgs">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div><p>En Tránsito</p><strong id="kpi-transit">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div><p>Recibidos Pendientes</p><strong id="kpi-received">0</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+      <div class="table-header">
+        <h2>Historial Completo de Paquetes</h2>
+        <div class="table-filters">
+          <input type="date" id="pkgDateFrom" />
+          <input type="date" id="pkgDateTo" />
+          <button class="btn btn--secondary btn--sm" id="btnClearPkgDates">Limpiar</button>
+          <select id="filterStatus" class="filter-select">
+            <option value="all">Todos los estados</option>
+            <option value="recibido">Recibido</option>
+            <option value="transito">En Tránsito</option>
+            <option value="entregado">Entregado</option>
+          </select>
+          <input type="text" id="searchPackages" placeholder="Buscar paquete..." />
+        </div>
+      </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Estado</th>
+                <th>Remitente</th>
+                <th>Destinatario</th>
+                <th>Ciudad Destino</th>
+                <th>Tipo</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="packagesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: SERVICIOS ============ -->
+    <div id="tab-services" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div><p>Total Servicios</p><strong id="kpi-services-total">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div><p>Pendientes</p><strong id="kpi-services-pending">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></div>
+          <div><p>En Proceso</p><strong id="kpi-services-active">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><p>Comisiones (Mes)</p><strong id="kpi-services-revenue">0 XAF</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Registro Unificado de Servicios</h2>
+          <div class="table-filters">
+            <select id="filterServiceType" class="filter-select">
+              <option value="all">Todos los tipos</option>
+              <option value="paquete">Envío de Paquetes</option>
+              <option value="gestion_comercial">Gestión Comercial</option>
+              <option value="construccion">Construcción y Mantenimiento</option>
+              <option value="otro">Otro</option>
+            </select>
+            <select id="filterServiceStatus" class="filter-select">
+              <option value="all">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="completado">Completado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+            <input type="text" id="searchServices" placeholder="Buscar por ID, cliente o detalle..." />
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID / Tipo</th>
+                <th>Cliente</th>
+                <th>Detalle</th>
+                <th>Estado</th>
+                <th>Financiero</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="servicesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: ENVÍOS DE DINERO ============ -->
+    <div id="tab-money" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><p>Total Enviado</p><strong id="kpi-money-sent">0 XAF</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div><p>Comisiones Cobradas</p><strong id="kpi-money-fees">0 XAF</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div><p>Envíos Pendientes</p><strong id="kpi-money-pending">0</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Registro de Envíos de Dinero</h2>
+          <div class="table-filters">
+            <input type="date" id="moneyDateFrom" />
+            <input type="date" id="moneyDateTo" />
+            <button class="btn btn--secondary btn--sm" id="btnClearMoneyDates">Limpiar</button>
+            <button class="btn btn--primary btn--sm" id="btnNuevoEnvioDinero">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Registrar Envío
+            </button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Remitente</th>
+                <th>Destinatario</th>
+                <th>Monto</th>
+                <th>Comisión</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="moneyTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: CLIENTES ============ -->
+    <div id="tab-clients" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div><p>Total Clientes</p><strong id="kpi-total-clients">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg></div>
+          <div><p>Nuevos Este Mes</p><strong id="kpi-new-clients">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+          <div><p>Clientes Frecuentes</p><strong id="kpi-frequent-clients">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div><p>Activos</p><strong id="kpi-active-clients">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div><p>VIP</p><strong id="kpi-vip-clients">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div><p>Envíos Pendientes</p><strong id="kpi-pending-clients">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><p>Con Deuda</p><strong id="kpi-debt-clients">0</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Directorio de Clientes</h2>
+          <div class="table-filters">
+            <input type="text" id="searchClients" placeholder="Buscar cliente..." />
+            <select id="filterClientCity" class="filter-select">
+              <option value="">Todas las ciudades</option>
+            </select>
+            <select id="filterClientType" class="filter-select">
+              <option value="">Todos los tipos</option>
+              <option value="vip">VIP</option>
+              <option value="frecuente">Frecuente</option>
+              <option value="nuevo">Nuevo</option>
+              <option value="moroso">Moroso</option>
+            </select>
+            <input type="date" id="filterClientDateFrom" class="filter-select" />
+            <input type="date" id="filterClientDateTo" class="filter-select" />
+            <button class="btn btn--secondary btn--sm" id="btnClearClientFilters">Limpiar</button>
+            <button class="btn btn--primary btn--sm" id="btnExportClients">Exportar CSV</button>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Ciudad</th>
+                <th>Dirección</th>
+                <th>Método de Pago</th>
+                <th>Identificación</th>
+                <th>Total Envíos</th>
+                <th>Último Envío</th>
+                <th>Notas</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="clientsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: ENTREGAS ============ -->
+    <div id="tab-deliveries" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div><p>Entregados Hoy</p><strong id="kpi-del-today">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div><p>Entregados Semana</p><strong id="kpi-del-week">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/><path d="M15 18H9"/><path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14"/><circle cx="17" cy="18" r="2"/><circle cx="7" cy="18" r="2"/></svg></div>
+          <div><p>Pendientes de Entrega</p><strong id="kpi-del-pending">0</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Registro de Entregas</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Destinatario</th>
+                <th>Ciudad</th>
+                <th>Teléfono</th>
+                <th>Estado</th>
+                <th>Fecha Entrega</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="deliveriesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: FINANZAS ============ -->
+    <div id="tab-finance" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="kpi-card" style="border-left: 4px solid #22c55e;">
+          <div class="kpi-card__icon" style="background: rgba(34,197,94,0.12); color: #22c55e;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><p>Ingresos</p><strong id="kpi-fin-income" style="color:#22c55e;">0 XAF</strong></div>
+        </div>
+        <div class="kpi-card" style="border-left: 4px solid #ef4444;">
+          <div class="kpi-card__icon" style="background: rgba(239,68,68,0.12); color: #ef4444;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 19h-7.5a3.5 3.5 0 0 1 0-7h5a3.5 3.5 0 0 0 0-7H6"/></svg></div>
+          <div><p>Gastos</p><strong id="kpi-fin-expenses" style="color:#ef4444;">0 XAF</strong></div>
+        </div>
+        <div class="kpi-card" style="border-left: 4px solid #3b82f6;">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 10h20"/><path d="M6 16h4"/></svg></div>
+          <div><p>Caja</p><strong id="kpi-fin-cash" style="color:#3b82f6;">0 XAF</strong></div>
+        </div>
+      </section>
+
+      <!-- Action buttons -->
+      <div style="display:flex; gap:12px; margin-bottom:24px; flex-wrap:wrap;">
+        <button class="btn btn--primary btn--sm" id="btnAddFinIncome" style="background:#22c55e; box-shadow:0 8px 20px -8px rgba(34,197,94,0.4);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Registrar Ingreso
+        </button>
+        <button class="btn btn--primary btn--sm" id="btnAddFinExpense" style="background:#ef4444; box-shadow:0 8px 20px -8px rgba(239,68,68,0.4);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Registrar Gasto
+        </button>
+      </div>
+
+      <!-- Combined movements table -->
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Movimientos Financieros</h2>
+          <div class="table-filters">
+            <select id="filterFinMovType" class="filter-select">
+              <option value="all">Todos</option>
+              <option value="ingreso">Solo Ingresos</option>
+              <option value="gasto">Solo Gastos</option>
+            </select>
+            <select id="filterFinMovPeriod" class="filter-select">
+              <option value="all">Todo el periodo</option>
+              <option value="today">Hoy</option>
+              <option value="week">Esta Semana</option>
+              <option value="month">Este Mes</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Concepto</th>
+                <th>Referencia</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody id="financeMovTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Resumen por periodo -->
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Resumen por Periodo</h2>
+          <div class="table-filters">
+            <select id="filterFinSummaryPeriod" class="filter-select">
+              <option value="week">Por Semana</option>
+              <option value="month">Por Mes</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Periodo</th>
+                <th style="color:#22c55e;">Ingresos</th>
+                <th style="color:#ef4444;">Gastos</th>
+                <th style="color:#3b82f6;">Balance</th>
+                <th>Operaciones</th>
+              </tr>
+            </thead>
+            <tbody id="financeSummaryTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: FACTURAS ============ -->
+    <div id="tab-invoices" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Facturas y Codigos QR</h2>
+          <button class="btn btn--primary btn--sm" id="btnNuevaFactura">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nueva Factura
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Numero</th>
+                <th>Cliente</th>
+                <th>Telefono</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="invoicesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+    <!-- ============ TAB: MENSAJES ============ -->
+    <div id="tab-messages" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Mensajes Recibidos (Web)</h2>
+          <div class="table-filters">
+            <select id="filterMessageStatus" class="filter-select">
+              <option value="all">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="leido">Leído</option>
+              <option value="respondido">Respondido</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Mensaje</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="messagesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: PEDIDOS ============ -->
+    <div id="tab-orders" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Pedidos de Vehículos</h2>
+          <button class="btn btn--primary btn--sm" id="btnNuevoPedido2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Pedido
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Cliente</th>
+                <th>Teléfono</th>
+                <th>Tipo Vehículo</th>
+                <th>Presupuesto</th>
+                <th>Notas</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: HISTORIAL ============ -->
+    <div id="tab-history" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Historial Global</h2>
+          <div class="table-filters">
+            <select id="filterHistoryType" class="filter-select">
+              <option value="all">Todos</option>
+              <option value="paquete">Paquetes</option>
+              <option value="dinero">Dinero</option>
+              <option value="entrega">Entregas</option>
+              <option value="vehiculo">Vehículos</option>
+              <option value="pedido">Pedidos</option>
+              <option value="mensaje">Mensajes</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Detalle</th>
+                <th>Referencia</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: REPORTES ============ -->
+    <div id="tab-reports" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(2, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+          <div><p>Total Operaciones</p><strong id="kpi-rep-total">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
+          <div><p>Ciudades Atendidas</p><strong id="kpi-rep-cities">0</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Resumen por Ciudad</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Ciudad / Ubicación</th>
+                <th>Total Servicios</th>
+                <th>Paquetes</th>
+                <th>Comercial</th>
+                <th>Otros</th>
+                <th>Ingresos Totales</th>
+              </tr>
+            </thead>
+            <tbody id="reportsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: ESTADÍSTICAS ============ -->
+    <div id="tab-stats" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Filtros</h2>
+          <div class="table-filters">
+            <select id="statsRange" class="filter-select">
+              <option value="7">Últimos 7 días</option>
+              <option value="30" selected>Últimos 30 días</option>
+              <option value="90">Últimos 90 días</option>
+              <option value="365">Último año</option>
+            </select>
+            <input type="date" id="statsFrom" />
+            <input type="date" id="statsTo" />
+          </div>
+        </div>
+      </section>
+
+      <section class="kpis" style="grid-template-columns: repeat(4, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="kpi-card__content"><p>Ingresos Totales</p><strong id="stat-income">0 XAF</strong><canvas class="sparkline" id="spark-income" height="32"></canvas></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5Z"/><path d="M3 8v8l9 5 9-5V8"/></svg></div>
+          <div class="kpi-card__content"><p>Total Operaciones</p><strong id="stat-ops">0</strong><canvas class="sparkline" id="spark-ops" height="32"></canvas></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 17h14M5 17a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-3h8l2 3h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2M5 17a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2"/><circle cx="7.5" cy="14.5" r="1.5"/><circle cx="16.5" cy="14.5" r="1.5"/></svg></div>
+          <div class="kpi-card__content"><p>Vehículos Vendidos</p><strong id="stat-cars">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div class="kpi-card__content"><p>Pedidos Activos</p><strong id="stat-orders">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div class="kpi-card__content"><p>Servicios Activos</p><strong id="stat-active-services">0</strong><canvas class="sparkline" id="spark-active" height="32"></canvas></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--teal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div class="kpi-card__content"><p>Servicios Finalizados</p><strong id="stat-finished-services">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+          <div class="kpi-card__content"><p>Tasa de Éxito</p><strong id="stat-success-rate">0%</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div class="kpi-card__content"><p>Ticket Medio</p><strong id="stat-avg-ticket">0 XAF</strong><canvas class="sparkline" id="spark-ticket" height="32"></canvas></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
+          <div class="kpi-card__content"><p>Cuentas por Cobrar</p><strong id="stat-pending-payments">0 XAF</strong></div>
+        </div>
+      </section>
+
+      <section class="analytics-section">
+        <div class="analytics-grid" style="grid-template-columns: repeat(2, 1fr);">
+          <div class="analytics-card">
+            <h3>Evolución de Ingresos por Servicio</h3>
+            <canvas id="chartRevenueTrend" height="240"></canvas>
+          </div>
+          <div class="analytics-card">
+            <h3>Facturación Mensual por Servicio</h3>
+            <canvas id="chartStackedRevenue" height="240"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Top Clientes por Ingresos</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Cliente</th>
+                <th>Teléfono</th>
+                <th>Total Envíos</th>
+                <th>Ingresos Generados</th>
+              </tr>
+            </thead>
+            <tbody id="statsTopClientsBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Cuentas por Cobrar / Pagos Pendientes</h2>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Cliente</th>
+                <th>Tipo</th>
+                <th>Monto Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="statsPendingPaymentsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: EMPLEADOS ============ -->
+    <div id="tab-employees" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Empleados</h2>
+          <button class="btn btn--primary btn--sm" id="btnAddEmployee">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Empleado
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Rol</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Fecha Alta</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="employeesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: GASTOS ============ -->
+    <div id="tab-expenses" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><p>Gastos del Mes</p><strong id="kpi-exp-month">0 XAF</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><p>Gastos Fijos</p><strong id="kpi-exp-fixed">0 XAF</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+          <div><p>Balance Neto</p><strong id="kpi-exp-net">0 XAF</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Registro de Gastos</h2>
+          <button class="btn btn--primary btn--sm" id="btnAddExpense">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Gasto
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Categoría</th>
+                <th>Concepto</th>
+                <th>Monto</th>
+                <th>Tipo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="expensesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: PROVEEDORES ============ -->
+    <div id="tab-providers" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Proveedores</h2>
+          <button class="btn btn--primary btn--sm" id="btnAddProvider">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Nuevo Proveedor
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Servicio</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Notas</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="providersTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: NOTIFICACIONES ============ -->
+    <div id="tab-notifications" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Notificaciones del Sistema</h2>
+          <button class="btn btn--secondary btn--sm" id="btnClearNotifications">Limpiar Todo</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Tipo</th>
+                <th>Mensaje</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="notificationsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: AUDITORÍA ============ -->
+    <div id="tab-audit" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Historial de Auditoría</h2>
+          <button class="btn btn--danger btn--sm" id="btnClearAudit">Limpiar Log</button>
+        </div>
+        <div class="table-responsive">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fecha/Hora</th>
+                <th>Acción</th>
+                <th>Detalles</th>
+              </tr>
+            </thead>
+            <tbody id="auditTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: BACKUP ============ -->
+    <div id="tab-backup" class="tab-pane">
+      <section class="kpis" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+          <div><p>Último Backup</p><strong id="kpi-backup-last">Nunca</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+          <div><p>Registros Totales</p><strong id="kpi-backup-records">0</strong></div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__icon kpi-card__icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></div>
+          <div><p>Tamaño Aprox.</p><strong id="kpi-backup-size">0 KB</strong></div>
+        </div>
+      </section>
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Gestión de Datos</h2>
+        </div>
+        <div style="padding: 24px; display: flex; gap: 12px; flex-wrap: wrap;">
+          <button class="btn btn--primary" id="btnBackupExport">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Exportar Backup Completo
+          </button>
+          <button class="btn btn--secondary" id="btnBackupImport">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Importar Backup
+          </button>
+          <input type="file" id="backupFileInput" accept=".json" style="display:none;" />
+          <button class="btn btn--danger" id="btnClearAllData">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+            Borrar Todos los Datos
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ TAB: CONFIGURACIÓN ============ -->
+    <div id="tab-settings" class="tab-pane">
+      <section class="table-section">
+        <div class="table-header">
+          <h2>Configuración del Sistema</h2>
+        </div>
+        <div class="settings-content">
+          <div class="settings-group">
+            <h3>Información de la Empresa</h3>
+            <div class="form-grid">
+              <div>
+                <label>Nombre Empresa</label>
+                <input type="text" id="s_companyName" value="Epikaizo" />
+              </div>
+              <div>
+                <label>Teléfono Principal</label>
+                <input type="text" id="s_companyPhone" value="+240 222 000 000" />
+              </div>
+              <div>
+                <label>Correo Electrónico</label>
+                <input type="email" id="s_companyEmail" value="admin@epikaizo.com" />
+              </div>
+              <div>
+                <label>Ciudad Principal</label>
+                <input type="text" id="s_companyCity" value="Malabo" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Comisiones por Defecto</h3>
+            <div class="form-grid">
+              <div>
+                <label>Comisión Paquetes (%)</label>
+                <input type="number" id="s_feePkg" value="10" />
+              </div>
+              <div>
+                <label>Comisión Envío Dinero (%)</label>
+                <input type="number" id="s_feeMoney" value="5" />
+              </div>
+              <div>
+                <label>Comisión Documentos (%)</label>
+                <input type="number" id="s_feeDocs" value="8" />
+              </div>
+              <div>
+                <label>Moneda</label>
+                <input type="text" id="s_currency" value="XAF" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Datos de la Empresa Ampliados</h3>
+            <div class="form-grid">
+              <div>
+                <label>Dirección</label>
+                <input type="text" id="s_companyAddress" placeholder="Dirección física" />
+              </div>
+              <div>
+                <label>CIF / NIF</label>
+                <input type="text" id="s_companyTaxId" placeholder="Ej. B12345678" />
+              </div>
+              <div>
+                <label>Persona de Contacto</label>
+                <input type="text" id="s_contactPerson" placeholder="Nombre completo" />
+              </div>
+              <div>
+                <label>Teléfono Secundario</label>
+                <input type="text" id="s_companyPhone2" placeholder="+240 ..." />
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Notificaciones</h3>
+            <div class="settings-group__options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_notifEmail" checked />
+                <span>Recibir notificaciones por email</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_notifSound" checked />
+                <span>Sonido de notificación</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_notifDesktop" />
+                <span>Notificaciones de escritorio</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_notifAlerts" checked />
+                <span>Alertas de inmovilización</span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Preferencias</h3>
+            <div class="form-grid">
+              <div>
+                <label>Idioma</label>
+                <select id="s_language">
+                  <option value="es" selected>Español</option>
+                  <option value="en">English</option>
+                  <option value="fr">Français</option>
+                </select>
+              </div>
+              <div>
+                <label>Tema</label>
+                <select id="s_theme">
+                  <option value="light" selected>Claro</option>
+                  <option value="dark">Oscuro</option>
+                  <option value="auto">Automático</option>
+                </select>
+              </div>
+              <div>
+                <label>Elementos por página</label>
+                <select id="s_pageSize">
+                  <option value="10">10</option>
+                  <option value="25" selected>25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
+              <div>
+                <label>Zona Horaria</label>
+                <select id="s_timezone">
+                  <option value="Africa/Malabo" selected>África/Malabo (WAT)</option>
+                  <option value="Europe/Madrid">Europa/Madrid (CET)</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Apariencia y Experiencia</h3>
+            <div class="settings-group__options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_darkMode" />
+                <span>Modo oscuro</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_compactMode" />
+                <span>Modo compacto</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_animations" checked />
+                <span>Animaciones y transiciones</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_sidebarIcons" checked />
+                <span>Solo iconos en sidebar</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_showKpis" checked />
+                <span>Mostrar KPIs en todas las pestañas</span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Privacidad y Datos</h3>
+            <div class="settings-group__options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_maskPhones" />
+                <span>Enmascarar teléfonos en tablas</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_maskDocs" />
+                <span>Enmascarar documentos de identidad</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_showFinancials" checked />
+                <span>Mostrar datos financieros completos</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_auditLog" checked />
+                <span>Registrar historial de cambios</span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Rendimiento</h3>
+            <div class="settings-group__options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_autoRefresh" checked />
+                <span>Auto-refresh de datos</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_lazyLoad" checked />
+                <span>Carga diferida de gráficos</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_cacheEnabled" checked />
+                <span>Caché local activada</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_reduceMotion" />
+                <span>Reducir movimiento</span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Integraciones</h3>
+            <div class="form-grid">
+              <div>
+                <label>Webhook URL</label>
+                <input type="url" id="s_webhookUrl" placeholder="https://tu-webhook.com/endpoint" />
+              </div>
+              <div>
+                <label>API Key</label>
+                <input type="text" id="s_apiKey" placeholder="sk-..." />
+              </div>
+              <div>
+                <label>Email de notificaciones</label>
+                <input type="email" id="s_notifEmailAddr" placeholder="admin@empresa.com" />
+              </div>
+              <div>
+                <label>Teléfono de alertas (WhatsApp)</label>
+                <input type="text" id="s_alertPhone" placeholder="+240 222 580 828" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Catálogo de Servicios</h3>
+            <p style="color:var(--texto-suave);font-size:14px;margin:0 0 12px;">Alta y gestión de los servicios que ofrece la empresa. Estos se cargarán automáticamente en el formulario de registro.</p>
+            <div class="form-grid">
+              <div>
+                <label>Nombre del Servicio</label>
+                <input type="text" id="s_serviceName" placeholder="Ej. Consultoría TI, Limpieza..." />
+              </div>
+              <div>
+                <label>Precio Base (XAF)</label>
+                <input type="number" id="s_servicePrice" value="0" />
+              </div>
+            </div>
+            <div style="margin-top:10px;">
+              <label>Descripción</label>
+              <textarea id="s_serviceDesc" rows="2" placeholder="Descripción breve del servicio..."></textarea>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:12px; flex-wrap:wrap;">
+              <button class="btn btn--primary btn--sm" id="btnAddCatalogService">Añadir al Catálogo</button>
+            </div>
+            <div style="margin-top:18px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Precio Base</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="catalogTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Accesibilidad</h3>
+            <div class="settings-group__options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_largeText" />
+                <span>Texto grande</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_highContrast" />
+                <span>Alto contraste</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_screenReader" />
+                <span>Modo lector de pantalla</span>
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="s_keyboardNav" checked />
+                <span>Navegación por teclado</span>
+              </label>
+            </div>
+          </div>
+          <div class="settings-group">
+            <h3>Backup Automático</h3>
+            <div class="form-grid">
+              <div>
+                <label>Frecuencia</label>
+                <select id="s_backupFreq">
+                  <option value="none">Desactivado</option>
+                  <option value="daily">Diario</option>
+                  <option value="weekly" selected>Semanal</option>
+                  <option value="monthly">Mensual</option>
+                </select>
+              </div>
+              <div>
+                <label>Hora de Backup</label>
+                <input type="time" id="s_backupTime" value="02:00" />
+              </div>
+              <div>
+                <label>Retención (días)</label>
+                <input type="number" id="s_backupRetention" value="30" />
+              </div>
+            </div>
+          </div>
+          <div class="settings-actions">
+            <button class="btn btn--primary" id="btnSaveSettings">Guardar Configuración</button>
+            <button class="btn btn--secondary" id="btnResetSettings">Restaurar Valores</button>
+            <button class="btn btn--danger" id="btnClearData">Borrar Todos los Datos</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </main>
+
+  <!-- ============ MODAL REGISTRAR SERVICIO ============ -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal__header">
+        <h2>Registrar Nuevo Servicio</h2>
+        <button class="modal__close" id="btnCloseModal">&times;</button>
+      </div>
+      <form id="formNewService" class="modal__body">
+        <div class="form-grid">
+          <div>
+            <label>Tipo de Servicio</label>
+            <select id="f_serviceType" required>
+              <option value="">Seleccionar...</option>
+            </select>
+          </div>
+          <div>
+            <label>Cliente / Solicitante</label>
+            <input type="text" id="f_clientName" required />
+          </div>
+          <div>
+            <label>Teléfono / Contacto</label>
+            <input type="text" id="f_clientPhone" />
+          </div>
+
+          <!-- CAMPOS DINÁMICOS: ENVÍO DE PAQUETES -->
+          <div class="service-fields" id="fields-paquete" style="display:none;">
+            <div style="grid-column: 1 / -1; font-weight: 600; color: var(--azul-oceano); margin-top: 4px;">Datos del envío</div>
+            <div>
+              <label>Nombre Remitente</label>
+              <input type="text" id="f_senderName" />
+            </div>
+            <div>
+              <label>Identificación (DNI/NIF)</label>
+              <input type="text" id="f_senderDoc" />
+            </div>
+            <div>
+              <label>Ciudad Destino</label>
+              <input type="text" id="f_city" />
+            </div>
+            <div>
+              <label>Nombre Destinatario</label>
+              <input type="text" id="f_recName" />
+            </div>
+            <div>
+              <label>Teléfono Destinatario</label>
+              <input type="text" id="f_recPhone" />
+            </div>
+            <div>
+              <label>Peso / Detalle adicional</label>
+              <input type="text" id="f_pkgDetail" placeholder="Ej. 2 kg, documento urgente..." />
+            </div>
+          </div>
+
+          <!-- CAMPOS DINÁMICOS: GESTIÓN COMERCIAL -->
+          <div class="service-fields" id="fields-gestion_comercial" style="display:none;">
+            <div style="grid-column: 1 / -1; font-weight: 600; color: var(--azul-oceano); margin-top: 4px;">Datos de la gestión</div>
+            <div>
+              <label>Tipo de Gestión</label>
+              <select id="f_gestionTipo">
+                <option value="Busqueda proveedores">Búsqueda de proveedores</option>
+                <option value="Negociacion contratos">Negociación de contratos</option>
+                <option value="Representacion">Representación</option>
+                <option value="Estudio mercado">Estudio de mercado</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+            <div style="grid-column: 1 / -1;">
+              <label>Descripción del encargo</label>
+              <textarea id="f_gestionDesc" rows="3" placeholder="Detalles de lo que se debe hacer..."></textarea>
+            </div>
+            <div>
+              <label>Estado del proceso</label>
+              <select id="f_gestionEstado">
+                <option value="pendiente">Pendiente</option>
+                <option value="en_negociacion">En negociación</option>
+                <option value="cerrado">Cerrado / Éxito</option>
+                <option value="cancelado">Cancelado</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- CAMPOS DINÁMICOS: CONSTRUCCIÓN Y MANTENIMIENTO -->
+          <div class="service-fields" id="fields-construccion" style="display:none;">
+            <div style="grid-column: 1 / -1; font-weight: 600; color: var(--azul-oceano); margin-top: 4px;">Datos de la obra / inmueble</div>
+            <div style="grid-column: 1 / -1;">
+              <label>Ubicación de la Obra / Inmueble</label>
+              <input type="text" id="f_obraUbicacion" placeholder="Dirección exacta" />
+            </div>
+            <div>
+              <label>Categoría</label>
+              <select id="f_obraCategoria">
+                <option value="Obra nueva">Obra nueva</option>
+                <option value="Reforma parcial">Reforma parcial</option>
+                <option value="Mantenimiento preventivo">Mantenimiento preventivo</option>
+                <option value="Reparaciones">Reparaciones</option>
+                <option value="Otro">Otro</option>
+              </select>
+            </div>
+            <div>
+              <label>Presupuesto Estimado / Acordado (XAF)</label>
+              <input type="number" id="f_obraPresupuesto" />
+            </div>
+            <div>
+              <label>Fecha Inicio</label>
+              <input type="date" id="f_obraFechaInicio" />
+            </div>
+            <div>
+              <label>Fecha Estimada de Entrega</label>
+              <input type="date" id="f_obraFechaFin" />
+            </div>
+            <div>
+              <label>Estado de la obra</label>
+              <select id="f_obraEstado">
+                <option value="planificacion">Planificación</option>
+                <option value="en_ejecucion">En ejecución</option>
+                <option value="pausado">Pausado</option>
+                <option value="finalizado">Finalizado</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- CAMPOS DINÁMICOS: OTRO / PERSONALIZADO -->
+          <div class="service-fields" id="fields-otro" style="display:none;">
+            <div style="grid-column: 1 / -1; font-weight: 600; color: var(--azul-oceano); margin-top: 4px;">Detalles del servicio</div>
+            <div style="grid-column: 1 / -1;">
+              <label>Descripción del servicio</label>
+              <textarea id="f_otroDesc" rows="3" placeholder="Describe el servicio requerido..."></textarea>
+            </div>
+            <div>
+              <label>Categoría</label>
+              <input type="text" id="f_otroCategoria" placeholder="Ej. Trámites, Asesoría, Logística..." />
+            </div>
+            <div>
+              <label>Prioridad</label>
+              <select id="f_otroPrioridad">
+                <option value="normal">Normal</option>
+                <option value="alta">Alta</option>
+                <option value="urgente">Urgente</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- CAMPOS COMUNES FINANCIEROS -->
+          <div>
+            <label>Comisión / Coste (XAF)</label>
+            <input type="number" id="f_fee" />
+          </div>
+          <div>
+            <label>Valor Total (XAF)</label>
+            <input type="number" id="f_total" />
+          </div>
+          <div>
+            <label>Estado Inicial</label>
+            <select id="f_status">
+              <option value="pendiente">Pendiente</option>
+              <option value="en_proceso">En proceso</option>
+              <option value="completado">Completado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="submit" class="btn btn--primary" style="width:100%;">Crear Servicio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL REGISTRAR INGRESO/GASTO FINANCIERO ============ -->
+  <div class="modal-overlay" id="modalFinanceOverlay">
+    <div class="modal" style="max-width:480px;">
+      <div class="modal__header">
+        <h2 id="financeModalTitle">Registrar Movimiento</h2>
+        <button class="modal__close" id="btnCloseFinanceModal">&times;</button>
+      </div>
+      <form id="formNewFinance" class="modal__body">
+        <div class="form-grid">
+          <div>
+            <label>Tipo</label>
+            <select id="f_finType" required>
+              <option value="ingreso">Ingreso</option>
+              <option value="gasto">Gasto</option>
+            </select>
+          </div>
+          <div>
+            <label>Concepto</label>
+            <input type="text" id="f_finConcept" placeholder="Ej. Cobro de servicio, Alquiler..." required />
+          </div>
+          <div>
+            <label>Categoría</label>
+            <select id="f_finCategory">
+              <option value="operativo">Operativo</option>
+              <option value="logistica">Logística</option>
+              <option value="nominas">Nóminas</option>
+              <option value="alquiler">Alquiler</option>
+              <option value="suministros">Suministros</option>
+              <option value="marketing">Marketing</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label>Monto (XAF)</label>
+            <input type="number" id="f_finAmount" min="0" step="1" required />
+          </div>
+          <div>
+            <label>Referencia (opcional)</label>
+            <input type="text" id="f_finRef" placeholder="Ej. guía EPZ-000001, factura..." />
+          </div>
+          <div>
+            <label>Fecha</label>
+            <input type="date" id="f_finDate" required />
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="submit" class="btn btn--primary" style="width:100%;">Guardar Movimiento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL REGISTRAR ENVÍO DE DINERO ============ -->
+  <div class="modal-overlay" id="modalMoneyOverlay">
+    <div class="modal" style="max-width:520px;">
+      <div class="modal__header">
+        <h2>Registrar Envío de Dinero</h2>
+        <button class="modal__close" id="btnCloseMoneyModal">&times;</button>
+      </div>
+      <form id="formNewMoney" class="modal__body">
+        <div class="form-grid">
+          <div>
+            <label>Nombre Remitente</label>
+            <input type="text" id="f_monSenderName" required />
+          </div>
+          <div>
+            <label>Teléfono Remitente</label>
+            <input type="text" id="f_monSenderPhone" required />
+          </div>
+          <div>
+            <label>Nombre Destinatario</label>
+            <input type="text" id="f_monRecName" required />
+          </div>
+          <div>
+            <label>Teléfono Destinatario</label>
+            <input type="text" id="f_monRecPhone" required />
+          </div>
+          <div>
+            <label>Ciudad Destino</label>
+            <input type="text" id="f_monCity" placeholder="Ej. Bata, Malabo..." required />
+          </div>
+          <div>
+            <label>Destino</label>
+            <select id="f_monDest" required>
+              <option value="local">Local</option>
+              <option value="nacional">Nacional</option>
+              <option value="internacional">Internacional</option>
+            </select>
+          </div>
+          <div>
+            <label>Monto a Enviar (XAF)</label>
+            <input type="number" id="f_monAmount" min="0" step="1" required />
+          </div>
+          <div>
+            <label>Comisión (XAF)</label>
+            <input type="number" id="f_monFee" min="0" step="1" />
+          </div>
+          <div>
+            <label>Estado</label>
+            <select id="f_monStatus">
+              <option value="pendiente">Pendiente</option>
+              <option value="entregado">Entregado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="submit" class="btn btn--primary" style="width:100%;">Registrar Envío</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL REGISTRAR PEDIDO VEHÍCULO ============ -->
+  <div class="modal-overlay" id="modalOrderOverlay">
+    <div class="modal">
+      <div class="modal__header">
+        <h2>Registrar Pedido de Vehículo</h2>
+        <button class="modal__close" id="btnCloseOrderModal">&times;</button>
+      </div>
+      <form id="formNewOrder" class="modal__body">
+        <div class="form-grid">
+          <div>
+            <label>Nombre Cliente</label>
+            <input type="text" id="f_orderClient" required />
+          </div>
+          <div>
+            <label>Teléfono</label>
+            <input type="text" id="f_orderPhone" required />
+          </div>
+          <div>
+            <label>Tipo de Vehículo</label>
+            <input type="text" id="f_orderVehicleType" placeholder="Ej. SUV, Berlina, Utilitario..." />
+          </div>
+          <div>
+            <label>Presupuesto Aproximado (€)</label>
+            <input type="number" id="f_orderBudget" />
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <label>Detalles / Notas</label>
+            <textarea id="f_orderNotes" rows="3" placeholder="Color preferido, características deseadas..."></textarea>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="submit" class="btn btn--primary" style="width:100%;">Crear Pedido</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL NUEVA FACTURA ============ -->
+  <div class="modal-overlay" id="modalInvoiceOverlay">
+    <div class="modal">
+      <div class="modal__header">
+        <h2>Nueva Factura</h2>
+        <button class="modal__close" id="btnCloseInvoiceModal">&times;</button>
+      </div>
+      <form id="formNewInvoice" class="modal__body">
+        <div class="form-grid">
+          <div>
+            <label>Nombre Cliente</label>
+            <input type="text" id="f_invClientName" required />
+          </div>
+          <div>
+            <label>Telefono Cliente</label>
+            <input type="tel" id="f_invClientPhone" required />
+          </div>
+          <div>
+            <label>Correo (opcional)</label>
+            <input type="email" id="f_invClientEmail" />
+          </div>
+          <div>
+            <label>Monto</label>
+            <input type="number" id="f_invAmount" step="0.01" required />
+          </div>
+          <div>
+            <label>Moneda</label>
+            <select id="f_invCurrency">
+              <option value="XAF">XAF</option>
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal__footer">
+          <button type="submit" class="btn btn--primary" style="width:100%;">Generar Factura y QR</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL VER QR ============ -->
+  <div class="modal-overlay" id="modalQrOverlay">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal__header">
+        <h2>Codigo QR de Factura</h2>
+        <button class="modal__close" id="btnCloseQrModal">&times;</button>
+      </div>
+      <div class="modal__body" style="text-align:center;">
+        <img id="qrPreviewImg" src="" alt="QR Factura" style="width:100%;max-width:280px;border-radius:8px;border:1px solid var(--border);" />
+        <p id="qrPreviewInfo" style="margin-top:12px;color:var(--texto-suave);font-size:14px;"></p>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+          <a id="qrDownloadLink" href="#" download class="btn btn--dark btn--sm">Descargar QR</a>
+          <button id="btnSendWhatsApp" class="btn btn--sand btn--sm">Enviar por WhatsApp</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TOAST NOTIFICATION ============ -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ============ WHATSAPP PANEL ============ -->
+  <div class="whatsapp-panel" id="whatsappPanel">
+    <button class="whatsapp-panel__toggle" id="whatsappPanelToggle" aria-label="Ver mensajes de WhatsApp">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 1 1-4.6-7.56"/><path d="M21 4v5h-5"/></svg>
+      <span class="whatsapp-panel__badge" id="whatsappBadge" hidden>0</span>
+    </button>
+    <div class="whatsapp-panel__window" id="whatsappPanelWindow">
+      <div class="whatsapp-panel__header">
+        <div>
+          <strong>WhatsApp Business</strong>
+          <p>+240 222 580 828</p>
+        </div>
+        <div class="whatsapp-panel__actions">
+          <a class="btn btn--primary btn--sm" href="https://wa.me/240222580828" target="_blank" rel="noopener">Abrir WhatsApp</a>
+          <button class="whatsapp-panel__close" id="whatsappPanelClose" aria-label="Cerrar panel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="whatsapp-panel__messages" id="whatsappMessages">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.5 8.5 0 1 1-4.6-7.56"/><path d="M21 4v5h-5"/></svg>
+          <p>No hay mensajes aún. Configura el webhook de WhatsApp Business para recibirlos aquí.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ EMAIL PANEL ============ -->
+  <div class="email-panel" id="emailPanel">
+    <button class="email-panel__toggle" id="emailPanelToggle" aria-label="Ver correos recibidos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+      <span class="email-panel__badge" id="emailBadge" hidden>0</span>
+    </button>
+    <div class="email-panel__window" id="emailPanelWindow">
+      <div class="email-panel__header">
+        <div>
+          <strong>Correos Recibidos</strong>
+          <p>Mensajes del formulario web</p>
+        </div>
+        <div class="email-panel__actions">
+          <button class="email-panel__close" id="emailPanelClose" aria-label="Cerrar panel">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="email-panel__messages" id="emailMessages">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.5 8.5 0 1 1-4.6-7.56"/><path d="M21 4v5h-5"/></svg>
+          <p>No hay correos aún. Los mensajes del formulario web aparecerán aquí.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL DETALLE CLIENTE ============ -->
+  <div class="modal-overlay" id="clientDetailModal">
+    <div class="modal" style="max-width:640px;">
+      <div class="modal__header">
+        <h2>Detalle del Cliente</h2>
+        <button class="modal__close" id="btnCloseClientDetail">&times;</button>
+      </div>
+      <div class="modal__body" id="clientDetailBody"></div>
+    </div>
+  </div>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
+

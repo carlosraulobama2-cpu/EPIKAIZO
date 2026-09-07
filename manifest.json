@@ -1,0 +1,18 @@
+{
+  "name": "Epikaizo — Envíos de paquetes y dinero",
+  "short_name": "Epikaizo",
+  "description": "Cotiza, rastrea y envía paquetes o dinero con tarifas claras y seguimiento en tiempo real.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

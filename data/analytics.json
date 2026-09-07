@@ -1,0 +1,42 @@
+[
+  {
+    "event": "test",
+    "data": {
+      "foo": "bar"
+    },
+    "receivedAt": "2026-08-10T19:16:52.927Z"
+  },
+  {
+    "event": "test",
+    "data": {
+      "foo": "bar"
+    },
+    "receivedAt": "2026-08-10T19:18:22.168Z"
+  },
+  {
+    "event": "test",
+    "data": {
+      "foo": "bar"
+    },
+    "receivedAt": "2026-08-10T19:27:40.116Z"
+  },
+  {
+    "event": "test",
+    "receivedAt": "2026-08-10T19:29:28.941Z"
+  },
+  {
+    "event": "prueba",
+    "data": {
+      "foo": "bar"
+    },
+    "receivedAt": "2026-08-10T19:54:32.461Z"
+  },
+  {
+    "event": "test",
+    "receivedAt": "2026-08-10T19:55:32.395Z"
+  },
+  {
+    "event": "prueba",
+    "receivedAt": "2026-08-10T19:56:10.867Z"
+  }
+]

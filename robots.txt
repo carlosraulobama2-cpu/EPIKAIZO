@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /server/
+Disallow: /dashboard.html
+Disallow: /login.html
+
+Sitemap: https://epikaizo.com/sitemap.xml

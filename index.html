@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Epikaizo — Agencia de envíos de paquetes y dinero</title>
+<meta name="description" content="Epikaizo: envía paquetes y dinero con tarifas claras, rastreo en línea, cobertura nacional, soluciones B2B y soporte humano por WhatsApp." />
+<meta name="theme-color" content="#0F172A" />
+<link rel="icon" href="favicon.svg" type="image/svg+xml" />
+<link rel="manifest" href="manifest.json" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Epikaizo" />
+
+<!-- Open Graph / redes sociales -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Epikaizo" />
+<meta property="og:title" content="Epikaizo — Envíos de paquetes y dinero" />
+<meta property="og:description" content="Cotiza, rastrea y envía paquetes o dinero con tarifas claras y seguimiento en tiempo real. Cobertura en 18 ciudades." />
+<meta property="og:image" content="https://epikaizo.com/images/new_hero_packages_text.png" />
+<meta property="og:url" content="https://epikaizo.com/" />
+<meta name="twitter:card" content="summary" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Epikaizo",
+  "url": "https://epikaizo.com",
+  "logo": "https://epikaizo.com/favicon.svg",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "telephone": "+240-222-580-828",
+    "contactType": "customer service",
+    "availableLanguage": ["Spanish"]
+  },
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Malabo",
+    "addressCountry": "GQ"
+  }
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Work+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<a class="skip-link" href="#main">Saltar al contenido principal</a>
+
+<!-- ============ PRELOADER ============ -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="preloader__inner">
+    <span class="preloader__logo" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="3.6" fill="currentColor"/></svg>
+    </span>
+    <span class="preloader__word">Epikaizo</span>
+  </div>
+</div>
+
+<!-- ============ HEADER ============ -->
+<header class="header" id="header">
+  <div class="container header__row">
+    <a href="#inicio" class="brand">
+      <span class="brand__mark" aria-hidden="true">
+        <img src="images/logo.png" alt="Epikaizo" />
+      </span>
+      <span class="brand__word">Epikaizo</span>
+    </a>
+
+    <nav class="nav" id="nav" aria-label="Navegación principal">
+      <a href="#servicios">Servicios</a>
+      <a href="#empresas">Empresas</a>
+      <a href="#cotizador">Cotizar</a>
+      <a href="#rastreo">Rastrear</a>
+      <a href="#oficinas">Oficinas</a>
+      <a href="#proceso">Cómo funciona</a>
+      <a href="#testimonios">Testimonios</a>
+      <a href="#equipo">Equipo</a>
+      <a href="#noticias">Noticias</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+
+    <div class="header__actions">
+      <a href="dashboard.html" class="btn btn--ghost btn--ghost--flat btn--sm">Portal Admin</a>
+      <a href="#cotizador" class="btn btn--sand btn--sm">Enviar ahora</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+
+<main id="main">
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="inicio">
+  <div class="hero__bg" aria-hidden="true"></div>
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow">Multiservicios Integrales</p>
+      <h1 class="hero__title">Construcción, Gestión<br>y Logística Express.</h1>
+    <p class="hero__sub">Nuestra actividad principal es la construcción y mantenimiento de inmuebles, gestión administrativa comercial y logística express, que incluye envíos de paquetes.</p>
+    <div class="hero__cta">
+      <a href="#cotizador" class="btn btn--primary">Cotizar envío</a>
+      <a href="#rastreo" class="btn btn--ghost">Rastrear paquete</a>
+    </div>
+    <div class="hero__metrics">
+      <div>
+        <strong>+32K</strong>
+        <span>Envíos entregados</span>
+      </div>
+      <div>
+        <strong>18</strong>
+        <span>Cidades de cobertura</span>
+      </div>
+      <div>
+        <strong>96%</strong>
+        <span>Entregas a tiempo</span>
+      </div>
+      <div>
+        <strong>+8</strong>
+        <span>Años de experiencia</span>
+      </div>
+    </div>
+    </div>
+
+    <div class="hero__route" aria-hidden="true">
+      <svg viewBox="0 0 420 380" class="route-svg">
+        <path id="routePath" class="route-line" d="M40 320 C 120 260, 90 140, 210 120 C 320 100, 300 40, 380 40" />
+        <circle cx="40" cy="320" r="7" class="route-point route-point--origin" />
+        <circle cx="380" cy="40" r="7" class="route-point route-point--dest" />
+        <g id="routeMarker" class="route-marker">
+          <circle r="12" class="route-marker__halo" />
+          <rect x="-7" y="-6" width="14" height="12" rx="2" class="route-marker__box" />
+        </g>
+      </svg>
+      <span class="route-tag route-tag--origin">ORIGEN</span>
+      <span class="route-tag route-tag--dest">DESTINO</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ POR QUÉ ELEGIRNOS ============ -->
+<section class="razones" aria-label="Por qué elegir Epikaizo">
+  <div class="container razones__grid">
+    <div class="razon reveal">
+      <span class="razon__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+      </span>
+      <h3>Rapidez real</h3>
+      <p>Guía generada al instante y salida el mismo día en envíos locales.</p>
+    </div>
+    <div class="razon reveal">
+      <span class="razon__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 4 6v6c0 5 3.4 8.7 8 9 4.6-.3 8-4 8-9V6l-8-3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <h3>Tarifa clara</h3>
+      <p>Ves el precio o la comisión antes de confirmar, sin cargos ocultos.</p>
+    </div>
+    <div class="razon reveal">
+      <span class="razon__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M12 22s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.6"/></svg>
+      </span>
+      <h3>Cobertura amplia</h3>
+      <p>Puntos de atención en 18 ciudades, con envíos nacionales e internacionales.</p>
+    </div>
+    <div class="razon reveal">
+      <span class="razon__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.5 8.5 0 1 1-4.6-7.56" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M21 4v5h-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <h3>Soporte humano</h3>
+      <p>Respondemos por teléfono y WhatsApp, no solo por formulario.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICIOS ============ -->
+<section class="servicios" id="servicios">
+  <img class="servicios__bg-logo" src="images/logo.png" alt="" aria-hidden="true" />
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Lo que hacemos</p>
+    <h2 class="section-title">Soluciones integrales para tu empresa y hogar</h2>
+    
+    <div class="featured-image-wrapper">
+      <img src="images/epikaizo_construction.jpg" alt="Construcción Epikaizo" class="featured-image featured-image--large reveal" loading="lazy" />
+    </div>
+
+    <div class="tickets">
+      <article class="ticket reveal">
+        <div class="ticket__top">
+          <span class="ticket__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h3>Construcción y Mantenimiento</h3>
+            <p>Especialistas en desarrollo y cuidado de inmuebles.</p>
+          </div>
+        </div>
+        <ul class="ticket__list">
+          <li>Proyectos de construcción</li>
+          <li>Mantenimiento preventivo</li>
+          <li>Reformas integrales</li>
+        </ul>
+        <div class="ticket__stub">
+          <span class="ticket__code">EPZ · CONS</span>
+          <a href="#contacto" class="btn btn--dark btn--sm">Solicitar info</a>
+        </div>
+      </article>
+
+      <article class="ticket ticket--sand reveal">
+        <div class="ticket__top">
+          <span class="ticket__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M9 3v18" stroke="currentColor" stroke-width="1.6"/></svg>
+          </span>
+          <div>
+            <h3>Gestión Administrativa Comercial</h3>
+            <p>Trámites y gestión para potenciar tu negocio.</p>
+          </div>
+        </div>
+        <ul class="ticket__list">
+          <li>Asesoría corporativa</li>
+          <li>Trámites administrativos</li>
+          <li>Gestión de personal</li>
+        </ul>
+        <div class="ticket__stub">
+          <span class="ticket__code">EPZ · ADMIN</span>
+          <a href="#contacto" class="btn btn--dark btn--sm">Solicitar info</a>
+        </div>
+      </article>
+      
+      <article class="ticket reveal">
+        <div class="ticket__top">
+          <span class="ticket__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M21 8l-9-5-9 5 9 5 9-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 8v8l9 5 9-5V8" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 13v8" stroke="currentColor" stroke-width="1.6"/></svg>
+          </span>
+          <div>
+            <h3>Logística Express</h3>
+            <p>Envíos de paquetes rápidos y seguros.</p>
+          </div>
+        </div>
+        <ul class="ticket__list">
+          <li>Paquetería express</li>
+          <li>Transporte de carga</li>
+          <li>Logística de última milla</li>
+        </ul>
+        <div class="ticket__stub">
+          <span class="ticket__code">EPZ · LOG</span>
+          <a href="#cotizador" data-tab-target="paquete" class="btn btn--dark btn--sm">Cotizar paquete</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SERVICIOS ADICIONALES ============ -->
+<section class="servicios-adicionales" id="servicios-adicionales">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Servicios del hogar y oficina</p>
+    <h2 class="section-title">Soluciones prácticas para tu día a día</h2>
+    <p class="section-sub">Instalación, mantenimiento y reparaciones con profesionales de confianza. Solo contactanos y coordinamos.</p>
+
+    <div class="extra-services-grid">
+      <article class="service-card reveal">
+        <span class="service-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M12 4v12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M8 8l4-4 4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Fontanería</h3>
+        <p>Reparaciones, instalaciones y mantenimiento de tuberías, grifos y sanitarios.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Contactar</a>
+      </article>
+
+      <article class="service-card reveal">
+        <span class="service-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Electricidad</h3>
+        <p>Instalaciones eléctricas, revisión de cuadros, enchufes, iluminación y averías.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Contactar</a>
+      </article>
+
+      <article class="service-card reveal">
+        <span class="service-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M9 3v18" stroke="currentColor" stroke-width="1.6"/></svg>
+        </span>
+        <h3>Climatización</h3>
+        <p>Instalación y reparación de aire acondicionado, ventilación y mantenimiento de frío/calor.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Contactar</a>
+      </article>
+
+      <article class="service-card reveal">
+        <span class="service-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 22V12h6v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Carpintería y reformas</h3>
+        <p>Armarios, puertas, muebles a medida y reformas ligeras de hogar y oficina.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Contactar</a>
+      </article>
+
+      <article class="service-card reveal">
+        <span class="service-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M3 7h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 12h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M3 17h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="7" r="1.6" fill="currentColor"/><circle cx="7" cy="12" r="1.6" fill="currentColor"/><circle cx="7" cy="17" r="1.6" fill="currentColor"/></svg>
+        </span>
+        <h3>Mudanzas y transporte</h3>
+        <p>Traslados locales y nacionales con carga segura, personal y vehículo adecuado.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Contactar</a>
+      </article>
+
+      <article class="service-card reveal">
+        <span class="service-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-5.4 7-11a7 7 0 1 0-14 0c0 5.6 7 11 7 11Z" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <h3>Mantenimiento general</h3>
+        <p>Revisión periódica del hogar u oficina para evitar averías mayores.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Contactar</a>
+      </article>
+    </div>
+
+    <div class="contacto-banner reveal">
+      <h3>¿Necesitas otro servicio?</h3>
+      <p>Si lo que buscas no aparece aquí, solo contactanos. Buscamos el proveedor adecuado para ti.</p>
+      <a href="#contacto" class="btn btn--primary">Contactanos</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EMPRESAS ============ -->
+<section class="empresas" id="empresas">
+  <div class="container">
+    <div class="empresas__grid">
+      <div>
+        <p class="eyebrow eyebrow--dark">B2B y E-commerce</p>
+        <h2 class="section-title">Soluciones corporativas</h2>
+        <p class="empresas__text">Lleva la logística de tu negocio al siguiente nivel con Epicaizo. Diseñamos planes a medida para envíos masivos, recolecciones programadas y tarifas preferenciales para tiendas online.</p>
+        <ul class="empresas__list">
+          <li>✅ Atención ejecutiva personalizada</li>
+          <li>✅ Facturación mensual</li>
+          <li>✅ Tiempos de entrega prioritarios</li>
+        </ul>
+        <a href="#contacto" class="btn btn--primary">Solicitar cotización B2B</a>
+      </div>
+      <div>
+        <div class="featured-image-wrapper">
+           <img src="images/new_shipping_box.png" alt="Paquete Epikaizo" class="featured-image" loading="lazy" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COTIZADOR ============ -->
+<section class="cotizador" id="cotizador">
+  <div class="container">
+    <p class="eyebrow">Simulación de tarifa</p>
+    <h2 class="section-title section-title--light">Calcula antes de enviar</h2>
+    <p class="section-sub">Estos valores son una estimación de referencia; el monto final se confirma en punto de atención.</p>
+
+    <div class="form-card">
+      <div class="tabs" role="tablist">
+        <button class="tab is-active" data-tab="paquete" role="tab" aria-selected="true">Paquete</button>
+        <button class="tab" data-tab="dinero" role="tab" aria-selected="false">Dinero</button>
+      </div>
+
+      <!-- PAQUETE -->
+      <form class="tab-panel is-active" data-panel="paquete" id="formPaquete">
+        <div class="field-row">
+          <div class="field">
+            <label for="peso">Peso del paquete (kg)</label>
+            <input type="number" id="peso" name="peso" min="0.5" step="0.5" placeholder="Ej. 3" required />
+          </div>
+          <div class="field">
+            <label for="destinoPaquete">Destino</label>
+            <select id="destinoPaquete" name="destino" required>
+              <option value="">Selecciona destino</option>
+              <option value="local" data-rate="4">Envío local</option>
+              <option value="nacional" data-rate="9">Envío nacional</option>
+              <option value="internacional" data-rate="22">Envío internacional</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn--primary">Calcular tarifa</button>
+        <div class="result" id="resultPaquete" hidden aria-live="polite">
+          <div class="result__row"><span>Peso</span><strong id="rPeso">—</strong></div>
+          <div class="result__row"><span>Destino</span><strong id="rDestino">—</strong></div>
+          <div class="result__row result__row--total"><span>Total estimado</span><strong id="rTotalPaquete">—</strong></div>
+        </div>
+      </form>
+
+      <!-- DINERO -->
+      <form class="tab-panel" data-panel="dinero" id="formDinero">
+        <div class="field-row">
+          <div class="field">
+            <label for="monto">Monto a enviar</label>
+            <input type="number" id="monto" name="monto" min="10" step="1" placeholder="Ej. 200" required />
+          </div>
+          <div class="field">
+            <label for="destinoDinero">Destino</label>
+            <select id="destinoDinero" name="destinoDinero" required>
+              <option value="">Selecciona destino</option>
+              <option value="local" data-rate="0.02">Entrega local</option>
+              <option value="nacional" data-rate="0.035">Entrega nacional</option>
+              <option value="internacional" data-rate="0.06">Entrega internacional</option>
+            </select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn--primary">Calcular comisión</button>
+        <div class="result" id="resultDinero" hidden aria-live="polite">
+          <div class="result__row"><span>Monto a enviar</span><strong id="rMonto">—</strong></div>
+          <div class="result__row"><span>Comisión</span><strong id="rComision">—</strong></div>
+          <div class="result__row result__row--total"><span>Total a pagar</span><strong id="rTotalDinero">—</strong></div>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RASTREO ============ -->
+<section class="rastreo" id="rastreo">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Seguimiento</p>
+    <h2 class="section-title">Rastrea tu envío</h2>
+    <p class="section-sub section-sub--dark">Ingresa tu número de guía. Formato de ejemplo: <span class="mono">EPZ-000000</span></p>
+
+    <form class="track-form" id="trackForm">
+      <input type="text" id="trackInput" placeholder="EPZ-000000" autocomplete="off" required />
+      <button type="submit" class="btn btn--primary">Rastrear</button>
+    </form>
+
+    <div class="track-result" id="trackResult" hidden aria-live="polite">
+      <div class="track-result__header">
+        <p class="track-result__code">Guía <strong id="trackCode">—</strong></p>
+        <button class="copy-btn" id="copyTrackCode" type="button" aria-label="Copiar código de guía">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          <span>Copiar</span>
+        </button>
+      </div>
+      <ol class="track-timeline" id="trackTimeline">
+        <li data-step="0"><span class="dot"></span><div><strong>Recibido</strong><p>El paquete fue registrado en origen.</p></div></li>
+        <li data-step="1"><span class="dot"></span><div><strong>En tránsito</strong><p>Va en camino hacia el destino.</p></div></li>
+        <li data-step="2"><span class="dot"></span><div><strong>En reparto</strong><p>Está siendo distribuido en destino.</p></div></li>
+        <li data-step="3"><span class="dot"></span><div><strong>Entregado</strong><p>El paquete llegó a su destinatario.</p></div></li>
+      </ol>
+    </div>
+    <p class="track-empty" id="trackEmpty" hidden role="alert">No encontramos una guía con ese formato. Revisa el número e inténtalo otra vez.</p>
+  </div>
+</section>
+
+<!-- ============ RED DE OFICINAS ============ -->
+<section class="oficinas" id="oficinas">
+  <div class="container">
+    <div class="oficinas__header">
+      <div>
+        <p class="eyebrow eyebrow--dark">Red de Oficinas</p>
+        <h2 class="section-title">Encuentra tu punto Epicaizo</h2>
+        <p class="section-sub">Estamos presentes en las principales ciudades con oficinas modernas listas para atenderte.</p>
+      </div>
+      <div>
+        <div class="featured-image-wrapper">
+           <img src="images/new_customer_service.png" alt="Gestión Administrativa Epikaizo" class="featured-image" loading="lazy" />
+        </div>
+      </div>
+    </div>
+    <ul class="stamps">
+      <li><span>Malabo</span></li>
+      <li><span>Bata</span></li>
+      <li><span>Ebebiyín</span></li>
+      <li><span>Mongomo</span></li>
+      <li><span>Luba</span></li>
+      <li><span>Evinayong</span></li>
+      <li><span>Aconibe</span></li>
+      <li><span>Micomeseng</span></li>
+      <li><span>Añisoc</span></li>
+      <li><span>Rebola</span></li>
+      <li><span>Riaba</span></li>
+      <li><span>Nsork</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ NOSOTROS ============ -->
+<section class="nosotros" id="nosotros">
+  <div class="container nosotros__grid">
+    <div>
+      <p class="eyebrow eyebrow--dark">Quiénes somos</p>
+      <h2 class="section-title">Movemos lo que importa</h2>
+      <p class="nosotros__text">Epikaizo nació para resolver dos necesidades del día a día: hacer llegar un paquete y hacer llegar dinero, sin vueltas y sin sorpresas en el precio. Trabajamos con puntos de atención en varias ciudades y un equipo que responde por teléfono y WhatsApp.</p>
+
+      <div class="nosotros__highlights reveal">
+        <div class="highlight">
+          <span class="highlight__num">+8</span>
+          <div>
+            <strong>Años de experiencia</strong>
+            <p>Operando de forma continua con procesos estandarizados.</p>
+          </div>
+        </div>
+        <div class="highlight reveal">
+          <span class="highlight__num">32K+</span>
+          <div>
+            <strong>Envíos exitosos</strong>
+            <p>Paquetes y remesas entregados con trazabilidad completa.</p>
+          </div>
+        </div>
+        <div class="highlight reveal">
+          <span class="highlight__num">96%</span>
+          <div>
+            <strong>Entregas a tiempo</strong>
+            <p>Compromiso real con plazos y rutas optimizadas.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <dl class="manifest">
+      <div><dt>+8</dt><dd>años operando</dd></div>
+      <div><dt>32K+</dt><dd>paquetes entregados</dd></div>
+      <div><dt>18</dt><dd>ciudades de cobertura</dd></div>
+      <div><dt>96%</dt><dd>entregas a tiempo</dd></div>
+    </dl>
+  </div>
+
+  <div class="container">
+    <div class="nosotros__values">
+      <div class="value-card reveal">
+        <span class="value-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 3 7v6c0 5.6 3.8 10.7 9 11 5.2-.3 9-5.4 9-11V7Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Seguridad garantizada</h3>
+        <p>Procesos documentados, personal certificado y protocolos de manejo que protegen cada envío.</p>
+      </div>
+      <div class="value-card reveal">
+        <span class="value-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <h3>Rapidez real</h3>
+        <p>Salidas diarias, ventanillas ágiles y tiempos de entrega medidos, no prometidos.</p>
+      </div>
+      <div class="value-card reveal">
+        <span class="value-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.5 8.5 0 1 1-4.6-7.56" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M21 4v5h-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Soporte cercano</h3>
+        <p>Atención telefónica y por WhatsApp con respuestas humanas en minutos.</p>
+      </div>
+      <div class="value-card reveal">
+        <span class="value-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M2 3h20v14H2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M2 17l5 5 7-7 5 5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Trayectoria profesional</h3>
+        <p>Equipo con formación operativa y comercial, orientado a resultados y mejora continua.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROFESIONALISMO ============ -->
+<section class="profesionalismo" aria-label="Profesionalismo y estándares">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Estándares</p>
+    <h2 class="section-title">Lo que nos distingue como agencia profesional</h2>
+    <p class="section-sub">Cada envío se maneja bajo procesos documentados, control de calidad y acompañamiento real.</p>
+
+    <div class="pro-cards">
+      <div class="pro-card reveal">
+        <span class="pro-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 9 4.6-.3 8-4 8-9V6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Calidad certificada</h3>
+        <p>Protocolos de embalaje, manipulación y entrega revisados periódicamente.</p>
+      </div>
+      <div class="pro-card reveal">
+        <span class="pro-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M2 3h20v14H2z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M2 17l5 5 7-7 5 5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Equipo capacitado</h3>
+        <p>Personal operativo y comercial en formación continua para atender mejor.</p>
+      </div>
+      <div class="pro-card reveal">
+        <span class="pro-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </span>
+        <h3>Tiempos medidos</h3>
+        <p>Rutas optimizadas y salidas diarias para cumplir con plazos reales.</p>
+      </div>
+      <div class="pro-card reveal">
+        <span class="pro-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M21 11.5a8.5 8.5 0 1 1-4.6-7.56" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M21 4v5h-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <h3>Seguimiento transparente</h3>
+        <p>Guía con historial, actualizaciones y contacto directo en cada etapa.</p>
+      </div>
+    </div>
+
+    <div class="pro-badge reveal">
+      <div class="pro-badge__inner">
+        <span class="pro-badge__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        </span>
+        <div>
+          <strong>Compromiso de excelencia</strong>
+          <p>Mejoramos cada proceso para ofrecer la experiencia más confiable del mercado.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CENTRO DE AYUDA ============ -->
+<section class="ayuda" id="ayuda">
+  <div class="container ayuda__grid">
+    <div>
+      <p class="eyebrow eyebrow--dark">Centro de Ayuda</p>
+      <h2 class="section-title">¿Necesitas asistencia?</h2>
+      <p class="ayuda__text">Resuelve tus dudas rápidamente consultando nuestra base de conocimientos o revisando nuestras guías de embalaje.</p>
+      
+      <div class="featured-image-wrapper">
+         <img src="images/new_customer_service.png" alt="Atención al cliente Epikaizo" class="featured-image" loading="lazy" />
+      </div>
+    </div>
+    
+    <div class="faq-list">
+      <details class="faq-item reveal">
+        <summary>¿Cuánto tarda un envío nacional?</summary>
+        <p>Entre 24 y 72 horas dependiendo del destino. Los envíos locales suelen entregarse el mismo día.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>¿Qué necesito para enviar dinero?</summary>
+        <p>Un documento de identidad válido y los datos completos de la persona que recibe el envío.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>¿Puedo pagar en el punto de atención?</summary>
+        <p>Sí, aceptamos pago en efectivo en todos nuestros puntos. Consulta por otros medios de pago disponibles en tu ciudad.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>¿Qué hago si no recuerdo mi número de guía?</summary>
+        <p>Escríbenos por WhatsApp con tu nombre y fecha de envío; podemos ayudarte a localizarlo.</p>
+      </details>
+      <details class="faq-item reveal">
+        <summary>¿Hay límite de peso para los paquetes?</summary>
+        <p>Sí, hasta 30 kg por bulto en envíos estándar. Para cargas mayores, contáctanos para cotizar un servicio especial.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLIENTES / CONFIANZA ============ -->
+<section class="clientes" aria-label="Clientes que confían">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Clientes que confían</p>
+    <h2 class="section-title">Empresas y personas que ya envían con Epicaizo</h2>
+    <div class="logos-grid">
+      <div class="logo-card">Transportes G.E.</div>
+      <div class="logo-card">Mercado Central Bata</div>
+      <div class="logo-card">Importadora Malabo</div>
+      <div class="logo-card">Distribuidora Norte</div>
+      <div class="logo-card">E-commerce Guinea</div>
+      <div class="logo-card">Frutas del Sur</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESO ============ -->
+<section class="proceso" id="proceso">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Cómo funciona</p>
+    <h2 class="section-title">En 3 pasos, tu envío ya está en camino</h2>
+    <div class="pasos">
+      <div class="paso reveal">
+        <span class="paso__num">1</span>
+        <h3>Cotiza o agenda</h3>
+        <p>Calcula tu tarifa en línea o escríbenos para envíos especiales.</p>
+      </div>
+      <div class="paso reveal">
+        <span class="paso__num">2</span>
+        <h3>Recogemos / despachas</h3>
+        <p>Recogida a domicilio o entrega en punto de atención. Tú eliges.</p>
+      </div>
+      <div class="paso reveal">
+        <span class="paso__num">3</span>
+        <h3>Sigue y recibe</h3>
+        <p>Rastrea tu guía en tiempo real y recibe en destino con comprobante.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ TESTIMONIOS ============ -->
+<section class="testimonios" id="testimonios">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Testimonios</p>
+    <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+    <div class="testimonios-grid">
+      <div class="testimonio reveal">
+        <p>"Envié un paquete a Bata y llegó en menos de 24 horas. El seguimiento es excelente."</p>
+        <strong>— María N.</strong>
+        <span>Malabo</span>
+      </div>
+      <div class="testimonio reveal">
+        <p>"Las remesas son mucho más claras aquí. Sin sorpresas, comisión visible y entrega rápida."</p>
+        <strong>— Juan E.</strong>
+        <span>Bata</span>
+      </div>
+      <div class="testimonio reveal">
+        <p>"Como empresa, necesitábamos un socio logístico confiable. Epicaizo cumplió desde el primer día."</p>
+        <strong>— Roberto M.</strong>
+        <span>Ebebiyín</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ EQUIPO ============ -->
+<section class="equipo" id="equipo">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Equipo</p>
+    <h2 class="section-title">La gente que hace que todo fluya</h2>
+    <div class="equipo-grid">
+      <div class="equipo-card reveal">
+        <div class="equipo-card__avatar">CM</div>
+        <h3>Carlos M.</h3>
+        <p>Director de Operaciones</p>
+      </div>
+      <div class="equipo-card reveal">
+        <div class="equipo-card__avatar">LM</div>
+        <h3>Lucía M.</h3>
+        <p>Gerente de Atención al Cliente</p>
+      </div>
+      <div class="equipo-card reveal">
+        <div class="equipo-card__avatar">AP</div>
+        <h3>Antonio P.</h3>
+        <p>Jefe de Logística</p>
+      </div>
+      <div class="equipo-card reveal">
+        <div class="equipo-card__avatar">TS</div>
+        <h3>Teresa S.</h3>
+        <p>Responsable de Empresas</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NOTICIAS / BLOG ============ -->
+<section class="noticias" id="noticias">
+  <div class="container">
+    <p class="eyebrow eyebrow--dark">Noticias</p>
+    <h2 class="section-title">Actualidad y consejos</h2>
+    <div class="noticias-grid">
+      <article class="noticia reveal">
+        <span class="noticia__tag">Logística</span>
+        <h3>Cómo preparar un paquete para envío internacional sin contratiempos</h3>
+        <p>Embalaje, documentación y aduanas: lo que debes revisar antes de enviar.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Leer más</a>
+      </article>
+      <article class="noticia reveal">
+        <span class="noticia__tag">Remesas</span>
+        <h3>Nuevas tarifas para envíos de dinero a provincias</h3>
+        <p>Ajustamos comisiones y horarios para que el dinero llegue más rápido y más barato.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Leer más</a>
+      </article>
+      <article class="noticia reveal">
+        <span class="noticia__tag">Empresas</span>
+        <h3>Epicaizo cierra alianza con distribuidores de la región continental</h3>
+        <p>Más puntos de entrega, más cobertura y mejores tiempos para e-commerce.</p>
+        <a href="#contacto" class="btn btn--sand btn--sm">Leer más</a>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CTA FINAL ============ -->
+<section class="cta-final" id="cta-final">
+  <div class="container">
+    <h2>¿Listo para enviar?</h2>
+    <p>Cotiza ahora, rastrea tu guía o escríbenos por WhatsApp. Estamos aquí para mover lo que importa.</p>
+    <div class="cta-final__actions">
+      <a href="#cotizador" class="btn btn--primary">Cotizar envío</a>
+      <a href="https://wa.me/240222580828" target="_blank" rel="noopener" class="btn btn--ghost">WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTACTO ============ -->
+<section class="contacto" id="contacto">
+  <div class="container contacto__grid">
+    <div>
+      <p class="eyebrow">Hablemos</p>
+      <h2 class="section-title section-title--light">Escríbenos o visítanos</h2>
+      
+      <div class="featured-image-wrapper">
+         <img src="images/epikaizo_office.jpg" alt="Oficina de Epikaizo" class="featured-image featured-image--contact reveal" loading="lazy" />
+      </div>
+
+      <ul class="contact-list">
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8 9.9a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.8 2Z" stroke="currentColor" stroke-width="1.6"/></svg></span>
+           <div><strong>Teléfono / WhatsApp</strong><p>+240 222 580 828</p></div>
+        </li>
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="m4 7 8 6 8-6" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <div><strong>Correo</strong><p>epikaizoservices123@gmail.com</p></div>
+        </li>
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" stroke="currentColor" stroke-width="1.6"/><circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"/></svg></span>
+          <div><strong>Oficina principal</strong><p>Av. del Puerto s/n, Malabo</p></div>
+        </li>
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
+          <div><strong>Horario</strong><p>Lun–Sáb · 8:00–18:00</p></div>
+        </li>
+      </ul>
+    </div>
+
+    <form class="contact-form" id="contactForm">
+      <div class="field">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" name="nombre" required />
+      </div>
+      <div class="field">
+        <label for="telefono">Teléfono</label>
+        <input type="tel" id="telefono" name="telefono" required />
+      </div>
+      <div class="field">
+        <label for="email">Correo electrónico</label>
+        <input type="email" id="email" name="email" required
+          pattern="[^@\s]+@[^@\s]+\.[^@\s]+"
+          autocomplete="email" />
+      </div>
+      <div class="field">
+        <label for="mensaje">Mensaje / Cita</label>
+        <textarea id="mensaje" name="mensaje" rows="4" required></textarea>
+      </div>
+      <button type="submit" class="btn btn--sand">Enviar mensaje</button>
+      <p class="form-note" id="contactNote" hidden role="status" aria-live="polite">Gracias, recibimos tu mensaje. Te contactaremos pronto.</p>
+    </form>
+  </div>
+</section>
+
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="container footer__row">
+    <div class="brand brand--footer">
+      <span class="brand__mark" aria-hidden="true">
+        <img src="images/logo.png" alt="Epikaizo" />
+      </span>
+      <span class="brand__word">Epikaizo</span>
+    </div>
+    <nav class="footer__nav" aria-label="Navegación de pie de página">
+      <a href="#servicios">Servicios</a>
+      <a href="#empresas">Empresas</a>
+      <a href="#cotizador">Cotizar</a>
+      <a href="#rastreo">Rastrear</a>
+      <a href="#oficinas">Oficinas</a>
+      <a href="#ayuda">Ayuda</a>
+      <a href="#proceso">Cómo funciona</a>
+      <a href="#testimonios">Testimonios</a>
+      <a href="#equipo">Equipo</a>
+      <a href="#noticias">Noticias</a>
+      <a href="#contacto">Contacto</a>
+    </nav>
+    <div class="footer__socials">
+      <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></a>
+      <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
+      <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg></a>
+      <a href="https://wa.me/240222580828" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.5 8.5 0 1 1-4.6-7.56"/><path d="M21 4v5h-5"/></svg></a>
+    </div>
+    <p class="footer__legal">© <span id="year"></span> Epikaizo. Todos los derechos reservados.</p>
+    <p class="footer__legal">Epikaizo — Bata / Malabo, Guinea Ecuatorial</p>
+  </div>
+</footer>
+
+<a class="back-to-top" id="backToTop" href="#inicio" aria-label="Volver arriba">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+</a>
+
+<div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+
+<a class="whatsapp-fab" href="https://wa.me/240222580828" target="_blank" rel="noopener" aria-label="Escribir por WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.87.5 3.62 1.44 5.14L2 22l5.11-1.53a9.85 9.85 0 0 0 4.93 1.32h.01c5.46 0 9.9-4.45 9.9-9.91C21.95 6.45 17.5 2 12.04 2Zm5.8 14.1c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.13.11-1.82-.11-.42-.13-.96-.31-1.65-.6-2.9-1.26-4.8-4.17-4.94-4.36-.14-.19-1.18-1.57-1.18-3 0-1.42.75-2.12 1.02-2.41.26-.29.57-.36.76-.36h.55c.18 0 .42-.07.65.5.24.58.82 2 .89 2.14.07.14.12.31.02.5-.1.19-.15.31-.29.48-.14.17-.3.37-.43.5-.14.14-.29.29-.13.57.17.29.75 1.24 1.61 2 1.11 1 2.05 1.31 2.34 1.46.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.38-.24.63-.14.26.1 1.64.77 1.92.91.29.14.48.22.55.34.07.13.07.72-.17 1.4Z"/></svg>
+</a>
+
+<script src="script.js" defer></script>
+<script>
+  window.epkAnalytics = window.epkAnalytics || [];
+  function epkTrack(eventName, data) {
+    try {
+      fetch('http://localhost:3001/api/analytics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: eventName, data: data || {}, ts: Date.now() }),
+        keepalive: true
+      });
+    } catch (e) {}
+  }
+  document.addEventListener('click', function(e) {
+    var target = e.target.closest('a[href="#cotizador"], a[href="#rastreo"], a[href="https://wa.me/240222580828"], .btn--primary, .btn--sand');
+    if (!target) return;
+    var href = target.getAttribute('href') || '';
+    var text = (target.textContent || '').trim().slice(0, 60);
+    epkTrack('cta_click', { href: href, text: text });
+  });
+</script>
+</body>
+</html>
