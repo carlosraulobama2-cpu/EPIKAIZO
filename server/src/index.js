@@ -51,6 +51,38 @@ async function start() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
   });
 
+  // ---- Public tracking endpoint (no auth required) ----
+  app.get('/api/track/:code', (req, res) => {
+    try {
+      const code = (req.params.code || '').trim().toUpperCase();
+      if (!/^EPZ-\d{4,8}$/i.test(code)) {
+        return res.status(400).json({ error: 'Formato de guía inválido. Usa EPZ-XXXXXX.' });
+      }
+      const { prepare } = require('./config/database');
+      // Search by ID that contains the tracking code (case-insensitive)
+      const allPkgs = prepare("SELECT id, status, sender_name, receiver_name, destination, type, date, created_at FROM packages WHERE UPPER(id) LIKE ?").all(`%${code}%`);
+      if (!allPkgs.length) {
+        return res.json({ found: false });
+      }
+      const pkg = allPkgs[0];
+      const statusMap = { recibido: 0, 'en tránsito': 1, 'en transito': 1, 'en reparto': 2, entregado: 3 };
+      const step = statusMap[(pkg.status || '').toLowerCase()] ?? 0;
+      res.json({
+        found: true,
+        code: code,
+        status: pkg.status,
+        step: step,
+        receiver: pkg.receiver_name,
+        destination: pkg.destination,
+        type: pkg.type,
+        date: pkg.date
+      });
+    } catch (err) {
+      console.error('Track error:', err);
+      res.status(500).json({ error: 'Error al rastrear el paquete.' });
+    }
+  });
+
   app.use('/api/tenants', require('./routes/tenants'));
   app.use('/api/users', require('./routes/users'));
   app.use('/api/plans', require('./routes/plans'));

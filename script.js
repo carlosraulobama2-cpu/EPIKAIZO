@@ -281,20 +281,35 @@ function initTracking() {
             return;
         }
         empty.hidden = true;
-        codeEl.textContent = code;
-        if (copyBtn) copyBtn.classList.remove("is-copied");
-        const digits = code.replace(/\D/g, "");
-        const numeric = parseInt(digits, 10) || 0;
-        const currentStep = numeric % 4;
-        steps.forEach((li, i) => {
-            li.classList.remove("is-done", "is-current");
-            if (i < currentStep)
-                li.classList.add("is-done");
-            if (i === currentStep)
-                li.classList.add("is-current");
-        });
-        result.hidden = false;
-        trackEvent("track_package", { code: code });
+        result.hidden = true;
+        // Fetch real tracking data from backend
+        fetch(`/api/track/${encodeURIComponent(code)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.found) {
+                    result.hidden = true;
+                    empty.hidden = false;
+                    empty.textContent = "No encontramos un paquete con esa guía. Revisa el número e inténtalo otra vez.";
+                    return;
+                }
+                codeEl.textContent = code;
+                if (copyBtn) copyBtn.classList.remove("is-copied");
+                const currentStep = data.step || 0;
+                steps.forEach((li, i) => {
+                    li.classList.remove("is-done", "is-current");
+                    if (i < currentStep)
+                        li.classList.add("is-done");
+                    if (i === currentStep)
+                        li.classList.add("is-current");
+                });
+                result.hidden = false;
+                trackEvent("track_package", { code: code, status: data.status });
+            })
+            .catch(() => {
+                result.hidden = true;
+                empty.hidden = false;
+                empty.textContent = "Error de conexión. Inténtalo de nuevo o escríbenos por WhatsApp.";
+            });
     });
     if (copyBtn) {
         copyBtn.addEventListener("click", async () => {
@@ -359,7 +374,7 @@ function initContactForm() {
             message: mensaje,
             tenantId: 'public'
         };
-        fetch('http://localhost:3001/api/messages', {
+        fetch('/api/messages', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -411,7 +426,7 @@ function sanitize(text) {
 // -------------------------------------------------------------
 function trackEvent(name, data) {
     try {
-        fetch("http://localhost:3001/api/analytics", {
+        fetch("/api/analytics", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             keepalive: true,
