@@ -4,50 +4,57 @@
 
 // --- AUTHENTICATION CHECK ---
 (function() {
-  var session = localStorage.getItem('epk_session');
-  if (!session) {
+  var token = localStorage.getItem('epk_token');
+  if (!token) {
     window.location.href = 'login.html';
-  } else {
-    window.currentUser = JSON.parse(session);
   }
 })();
 // ----------------------------
 
 var API_BASE = 'http://localhost:3001/api';
+function getAuthHeaders() {
+  var headers = { 'Content-Type': 'application/json' };
+  var token = localStorage.getItem('epk_token');
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return headers;
+}
+function getTenantHeaders() {
+  var tenant = JSON.parse(localStorage.getItem('epk_tenant') || '{}');
+  var headers = { 'x-tenant-id': tenant.id || '' };
+  var token = localStorage.getItem('epk_token');
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return headers;
+}
 var api = {
   get: async function(endpoint) {
-    const tenant = JSON.parse(localStorage.getItem('epk_tenant') || '{}');
     const res = await fetch(API_BASE + endpoint, {
-      headers: { 'x-tenant-id': tenant.id || '' }
+      headers: getTenantHeaders()
     });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Error'); }
     return res.json();
   },
   post: async function(endpoint, body) {
-    const tenant = JSON.parse(localStorage.getItem('epk_tenant') || '{}');
     const res = await fetch(API_BASE + endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenant.id || '' },
+      headers: getTenantHeaders(),
       body: JSON.stringify(body)
     });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Error'); }
     return res.json();
   },
   put: async function(endpoint, body) {
-    const tenant = JSON.parse(localStorage.getItem('epk_tenant') || '{}');
     const res = await fetch(API_BASE + endpoint, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'x-tenant-id': tenant.id || '' },
+      headers: getTenantHeaders(),
       body: JSON.stringify(body)
     });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Error'); }
     return res.json();
   },
   del: async function(endpoint) {
-    const tenant = JSON.parse(localStorage.getItem('epk_tenant') || '{}');
     const res = await fetch(API_BASE + endpoint, {
       method: 'DELETE',
-      headers: { 'x-tenant-id': tenant.id || '' }
+      headers: getTenantHeaders()
     });
     if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.error || 'Error'); }
     return res.json();
@@ -4505,7 +4512,10 @@ console.log('Dashboard init complete');
   }
 
   function loadWhatsappMessages() {
-    fetch('http://localhost:3001/api/whatsapp/messages')
+    var token = localStorage.getItem('epk_token');
+    fetch('http://localhost:3001/api/whatsapp/messages', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    })
       .then(function(res) { return res.json(); })
       .then(function(data) {
         container.innerHTML = '';
@@ -4580,7 +4590,10 @@ console.log('Dashboard init complete');
   }
 
   function loadEmailMessages() {
-    fetch('/api/gmail/emails?max=20')
+    var token = localStorage.getItem('epk_token');
+    fetch('/api/gmail/emails?max=20', {
+      headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+    })
       .then(function(res) { return res.json(); })
       .then(function(data) {
         container.innerHTML = '';

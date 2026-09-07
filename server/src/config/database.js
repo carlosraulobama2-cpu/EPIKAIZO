@@ -50,6 +50,16 @@ async function initDb() {
       ['public', 'Public', 'public', 'plan-free', '{}', now, now]);
     saveDb();
   }
+  const adminUser = db.prepare('SELECT id FROM users WHERE email = ?').get('admin@epikaizo.com');
+  if (!adminUser) {
+    const bcrypt = require('bcryptjs');
+    const userId = 'USER-ADMIN-001';
+    const now = new Date().toISOString();
+    const hashedPassword = bcrypt.hashSync('admin123', 10);
+    db.run('INSERT INTO users (id, tenant_id, name, email, password, role, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)',
+      [userId, 'public', 'Administrador', 'admin@epikaizo.com', hashedPassword, 'admin', 'active', now, now]);
+    saveDb();
+  }
   return db;
 }
 

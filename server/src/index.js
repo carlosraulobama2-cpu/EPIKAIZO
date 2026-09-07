@@ -84,6 +84,7 @@ async function start() {
   });
 
   app.use('/api/tenants', require('./routes/tenants'));
+  app.use('/api/auth', require('./routes/auth'));
   app.use('/api/users', require('./routes/users'));
   app.use('/api/plans', require('./routes/plans'));
   app.use('/api/packages', require('./routes/packages'));
