@@ -2,6 +2,7 @@ const { initDb } = require('./config/database');
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { authenticate } = require('./middleware/auth');
 require('dotenv').config();
 
 async function start() {
@@ -83,27 +84,27 @@ async function start() {
     }
   });
 
-  app.use('/api/tenants', require('./routes/tenants'));
+  app.use('/api/tenants', authenticate, require('./routes/tenants'));
   app.use('/api/auth', require('./routes/auth'));
-  app.use('/api/users', require('./routes/users'));
-  app.use('/api/plans', require('./routes/plans'));
-  app.use('/api/packages', require('./routes/packages'));
-  app.use('/api/cars', require('./routes/cars'));
-  app.use('/api/leads', require('./routes/entities'));
-  app.use('/api/tasks', require('./routes/entities'));
-  app.use('/api/orders', require('./routes/entities'));
-  app.use('/api/expenses', require('./routes/entities'));
-  app.use('/api/employees', require('./routes/entities'));
-  app.use('/api/providers', require('./routes/entities'));
-  app.use('/api/notifications', require('./routes/entities'));
-app.use('/api/messages', require('./routes/messages'));
-app.use('/api/gmail', require('./routes/gmail'));
-app.use('/api/invoices', require('./routes/invoices'));
-app.use('/api/backup', require('./routes/backup'));
-app.use('/api/audit', require('./routes/audit'));
-app.use('/api/settings', require('./routes/settings'));
-app.use('/api/dashboard', require('./routes/dashboard'));
-  app.use('/api/whatsapp', require('./routes/whatsapp'));
+  app.use('/api/users', authenticate, require('./routes/users'));
+  app.use('/api/plans', authenticate, require('./routes/plans'));
+  app.use('/api/packages', authenticate, require('./routes/packages'));
+  app.use('/api/cars', authenticate, require('./routes/cars'));
+  app.use('/api/leads', authenticate, require('./routes/entities'));
+  app.use('/api/tasks', authenticate, require('./routes/entities'));
+  app.use('/api/orders', authenticate, require('./routes/entities'));
+  app.use('/api/expenses', authenticate, require('./routes/entities'));
+  app.use('/api/employees', authenticate, require('./routes/entities'));
+  app.use('/api/providers', authenticate, require('./routes/entities'));
+  app.use('/api/notifications', authenticate, require('./routes/entities'));
+  app.use('/api/messages', require('./routes/messages'));
+  app.use('/api/gmail', authenticate, require('./routes/gmail'));
+  app.use('/api/invoices', authenticate, require('./routes/invoices'));
+  app.use('/api/backup', authenticate, require('./routes/backup'));
+  app.use('/api/audit', authenticate, require('./routes/audit'));
+  app.use('/api/settings', authenticate, require('./routes/settings'));
+  app.use('/api/dashboard', authenticate, require('./routes/dashboard'));
+  app.use('/api/whatsapp', authenticate, require('./routes/whatsapp'));
   app.use('/api/chatbot', require('./routes/chatbot'));
 
   app.post('/api/analytics', (req, res) => {
