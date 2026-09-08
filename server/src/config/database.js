@@ -273,8 +273,12 @@ function saveDb() {
 }
 
 function prepare(sql) {
-  const text = sql.replace(/\?/g, '$' + (++prepare.counter));
-  prepare.counter = 0;
+  const placeholders = [];
+  let idx = 0;
+  const text = sql.replace(/\?/g, () => {
+    idx += 1;
+    return '$' + idx;
+  });
   return {
     get(...params) {
       return pool.query(text, params).then(result => {
@@ -290,6 +294,5 @@ function prepare(sql) {
     }
   };
 }
-prepare.counter = 0;
 
 module.exports = { initDb, getDb, saveDb, prepare };

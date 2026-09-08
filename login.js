@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const errorMsg = document.getElementById('loginError');
 
   if (localStorage.getItem('epk_token')) {
-    window.location.href = 'dashboard.html';
+    window.location.href = 'panel.html';
   }
 
   loginForm.addEventListener('submit', async (e) => {
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       localStorage.setItem('epk_token', data.token);
       localStorage.setItem('epk_user', JSON.stringify(data.user));
-      window.location.href = 'dashboard.html';
+      window.location.href = 'panel.html';
     } catch (err) {
       errorMsg.textContent = 'Error de conexión con el servidor';
       errorMsg.style.display = 'block';

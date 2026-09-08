@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { authenticate } = require('./middleware/auth');
+const { requireAdmin } = require('./middleware/admin');
 require('dotenv').config();
 
 async function start() {
@@ -26,8 +27,12 @@ async function start() {
   const rootDir = path.join(__dirname, '../..');
   app.use(express.static(rootDir));
 
-  app.get(['/dashboard.html', '/index.html'], (req, res) => {
+  app.get(['/panel.html', '/index.html'], (req, res) => {
     res.sendFile(path.join(rootDir, req.url === '/' ? 'index.html' : req.url));
+  });
+
+  app.get('/admin-panel', requireAdmin, (req, res) => {
+    res.sendFile(path.join(rootDir, 'panel.html'));
   });
 
   app.use((req, res, next) => {
@@ -97,7 +102,7 @@ async function start() {
   app.use('/api/employees', authenticate, require('./routes/entities'));
   app.use('/api/providers', authenticate, require('./routes/entities'));
   app.use('/api/notifications', authenticate, require('./routes/entities'));
-  app.use('/api/messages', require('./routes/messages'));
+  app.use('/api/messages', authenticate, require('./routes/messages'));
   app.use('/api/gmail', authenticate, require('./routes/gmail'));
   app.use('/api/invoices', authenticate, require('./routes/invoices'));
   app.use('/api/backup', authenticate, require('./routes/backup'));

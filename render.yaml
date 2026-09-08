@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: epikaizo
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node src/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES
+        value: 7d
+      - key: WHATSAPP_TOKEN
+        sync: false
+      - key: WHATSAPP_PHONE_NUMBER_ID
+        sync: false
+      - key: WHATSAPP_VERIFY_TOKEN
+        value: epk_verify_2026
+      - key: WHATSAPP_API_VERSION
+        value: v19.0
+      - key: GOOGLE_AI_API_KEY
+        sync: false
+      - key: GOOGLE_AI_MODEL
+        value: gemini-2.0-flash-lite
+      - key: GMAIL_CLIENT_ID
+        sync: false
+      - key: GMAIL_CLIENT_SECRET
+        sync: false
+      - key: GMAIL_REFRESH_TOKEN
+        sync: false
+      - key: GMAIL_ACCESS_TOKEN
+        sync: false
+      - key: GMAIL_USER
+        value: me
+      - key: ALLOWED_ORIGINS
+        value: https://epikaizo.com,https://www.epikaizo.com,http://localhost:3001
