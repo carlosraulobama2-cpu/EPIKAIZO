@@ -1,7 +1,7 @@
 // Vehículos en venta: inventario, reservas y venta con factura y contrato de compraventa.
 import { api } from '../api.js';
 import { h, icon, pageHead, badge, button, primary, empty, drawer, formDrawer, formDialog, confirmDialog, field, section, toast } from '../ui.js';
-import { date, today, FUEL, TRANSMISSION, PAYMENT, number } from '../format.js';
+import { date, today, FUEL, TRANSMISSION, PAYMENT, number, moneyMix } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 import { openDocDetail, printDocument } from './_billing.js';
 
@@ -58,6 +58,8 @@ function gallery(ctx, v, photos, reload) {
 
 const title = (v) => `${v.brand} ${v.model}${v.year ? ` (${v.year})` : ''}`;
 
+const CURRENCIES = [['XAF', 'Francos CFA (FCFA)'], ['USD', 'Dólares (USD)'], ['EUR', 'Euros (EUR)']];
+
 export default async function vehicles(root, ctx) {
   const f = { status: 'stock', q: '' };
   const kpis = h('div', { class: 'grid grid--kpi', style: 'margin-bottom:16px' });
@@ -72,7 +74,7 @@ export default async function vehicles(root, ctx) {
         kpi('truck', 'Disponibles', number(s.disponibles), 'Listos para vender'),
         kpi('clock', 'Reservados', number(s.reservados), 'Apartados para un cliente'),
         kpi('check', 'Vendidos este mes', number(s.vendidos_mes), 'Con factura emitida'),
-        kpi('money', 'Valor en venta', ctx.money(s.valor_stock), 'Precio de venta del stock'));
+        kpi('money', 'Valor en venta', moneyMix(s.valor_stock, 'total', ctx.settings.rates.currency), 'Precio de venta del stock'));
     },
     onRowClick: (v) => openVehicle(ctx, v.id, list),
     toolbar: [
@@ -85,7 +87,7 @@ export default async function vehicles(root, ctx) {
       { label: 'Vehículo', render: (v) => primary(title(v), h('span', null, h('span', { class: 'mono' }, v.code), [v.color, v.mileage_km != null ? `${number(v.mileage_km)} km` : null, v.condition === 'nuevo' ? 'Nuevo' : null].filter(Boolean).map((x) => ` · ${x}`).join(''))) },
       { label: 'Matrícula / bastidor', hideSm: true, render: (v) => primary(v.plate || '—', v.vin || '') },
       { label: 'Estado', render: (v) => [badge('vehicle', v.status), v.status === 'reservado' && v.reserved_for ? h('div', { class: 'sub' }, `Para ${v.reserved_for}`) : null] },
-      { label: 'Precio', num: true, render: (v) => primary(h('strong', null, ctx.money(v.sale_price)), ctx.can('gestor') && v.purchase_price ? `Margen ${ctx.money(v.sale_price - v.purchase_price)}` : null) },
+      { label: 'Precio', num: true, render: (v) => primary(h('strong', null, ctx.money(v.sale_price, v.currency)), ctx.can('gestor') && v.purchase_price ? `Margen ${ctx.money(v.sale_price - v.purchase_price, v.currency)}` : null) },
     ],
   });
 
@@ -117,7 +119,8 @@ function edit(ctx, list, v) {
       field({ name: 'fuel', label: 'Combustible', type: 'select', options: Object.entries(FUEL), value: v?.fuel }),
       field({ name: 'transmission', label: 'Cambio', type: 'select', options: Object.entries(TRANSMISSION), value: v?.transmission }),
       section('Precio'),
-      field({ name: 'sale_price', label: `Precio de venta (${ctx.settings.rates.currency})`, type: 'number', min: '1', step: '0.01', value: v?.sale_price, required: true }),
+      field({ name: 'sale_price', label: 'Precio de venta', type: 'number', min: '1', step: '0.01', value: v?.sale_price, required: true }),
+      field({ name: 'currency', label: 'Moneda', type: 'select', options: CURRENCIES, value: v?.currency || ctx.settings.rates.currency, required: true }),
       field({ name: 'purchase_price', label: 'Precio de compra (coste)', type: 'number', min: '0', step: '0.01', value: v?.purchase_price, hint: 'Solo lo ven gestores y administradores.' }),
       v ? null : field({ name: 'register_purchase', label: 'Apuntar la compra como gasto en Caja', type: 'checkbox', full: true }),
       field({ name: 'notes', label: 'Notas (extras, revisiones, estado de la carrocería…)', type: 'textarea', value: v?.notes, full: true }),
@@ -146,17 +149,17 @@ async function openVehicle(ctx, id, list) {
   head.replaceChildren(h('h2', null, title(v), ' ', badge('vehicle', v.status)), h('p', null, `${v.code} · ${v.condition === 'nuevo' ? 'Nuevo' : 'De ocasión'}`));
   const row = (k, val) => (val === null || val === undefined || val === '' ? null : [h('dt', null, k), h('dd', null, val)]);
   d.setBody(h('div', { class: 'stack' },
-    h('div', { class: 'vehicle-price' }, h('span', null, 'Precio de venta'), h('strong', null, ctx.money(v.sale_price))),
+    h('div', { class: 'vehicle-price' }, h('span', null, 'Precio de venta'), h('strong', null, ctx.money(v.sale_price, v.currency))),
     h('dl', { class: 'dl' },
       row('Bastidor (VIN)', v.vin), row('Matrícula', v.plate), row('Kilómetros', v.mileage_km != null ? `${number(v.mileage_km)} km` : null),
       row('Color', v.color), row('Combustible', FUEL[v.fuel]), row('Cambio', TRANSMISSION[v.transmission]),
-      ctx.can('gestor') ? row('Precio de compra', v.purchase_price ? ctx.money(v.purchase_price) : null) : null,
-      ctx.can('gestor') && v.purchase_price ? row('Margen', ctx.money(v.sale_price - v.purchase_price)) : null,
+      ctx.can('gestor') ? row('Precio de compra', v.purchase_price ? ctx.money(v.purchase_price, v.currency) : null) : null,
+      ctx.can('gestor') && v.purchase_price ? row('Margen', ctx.money(v.sale_price - v.purchase_price, v.currency)) : null,
       row('Reservado para', v.reserved_for ? `${v.reserved_for} · ${v.reserved_phone}${v.reserved_until ? ` · hasta ${date(v.reserved_until)}` : ''}` : null),
       row('Vendido', v.sold_at ? date(v.sold_at, true) : null),
       row('Notas', v.notes)),
     gallery(ctx, v, data.photos || [], reload),
-    data.invoice ? h('div', { class: 'alert alert--info' }, icon('invoice'), h('span', null, 'Factura de venta ', h('strong', { class: 'mono' }, data.invoice.number), ` · ${ctx.money(data.invoice.amount)} · cobrado ${ctx.money(data.invoice.paid_amount)}`)) : null));
+    data.invoice ? h('div', { class: 'alert alert--info' }, icon('invoice'), h('span', null, 'Factura de venta ', h('strong', { class: 'mono' }, data.invoice.number), ` · ${ctx.money(data.invoice.amount, data.invoice.currency)} · cobrado ${ctx.money(data.invoice.paid_amount, data.invoice.currency)}`)) : null));
 
   const actions = [];
   if (v.status === 'vendido' && data.invoice) {
@@ -191,6 +194,17 @@ async function openVehicle(ctx, id, list) {
   if (v.status !== 'vendido' && ctx.can('gestor')) {
     actions.unshift(button('Editar', { iconName: 'edit', onClick: () => { d.close(); edit(ctx, list, v); } }));
     actions.push(button('Vender', { variant: 'primary', iconName: 'invoice', onClick: () => { d.close(); sell(ctx, v, list); } }));
+    if (!data.invoice) actions.unshift(button('Quitar', { iconName: 'trash', onClick: async () => {
+      if (!(await confirmDialog({ title: `Quitar ${title(v)}`, text: 'Deja de verse en la web y se borran sus fotos. No se puede deshacer.', confirm: 'Quitar del inventario', danger: true }))) return;
+      try {
+        await api.del(`/vehicles/${v.id}`);
+        toast('Vehículo quitado del inventario');
+        d.close();
+        await list.reload();
+      } catch (err) {
+        toast(err.message, 'bad');
+      }
+    } }));
   }
   if (actions.length) d.panel.append(h('div', { class: 'drawer__foot' }, actions));
 }
@@ -209,7 +223,7 @@ function sell(ctx, v, list) {
       field({ name: 'client_email', label: 'Correo', type: 'email' }),
       field({ name: 'client_address', label: 'Dirección', required: true, full: true }),
       section('Precio y pago'),
-      field({ name: 'price', label: `Precio (base, ${ctx.settings.rates.currency})`, type: 'number', step: '0.01', min: '1', value: v.sale_price, required: true }),
+      field({ name: 'price', label: `Precio (base, ${v.currency})`, type: 'number', step: '0.01', min: '1', value: v.sale_price, required: true }),
       field({ name: 'tax_rate', label: `${ctx.settings.billing.tax_name || 'IVA'} %`, type: 'number', step: '0.01', min: '0', max: '50', value: tax, required: true, hint: 'Confirma con tu asesor el impuesto aplicable a la venta de vehículos.' }),
       h('div', { class: 'quote-box', 'aria-live': 'polite' }, h('span', null, 'Total de la factura'), h('strong', { 'data-total': '' }, '—')),
       field({ name: 'paid_now', label: 'Cobrado ahora', type: 'number', step: '0.01', min: '0', hint: 'Todo, una señal o nada.' }),
@@ -221,7 +235,7 @@ function sell(ctx, v, list) {
       const update = () => {
         const base = Number(form.elements.price.value) || 0;
         const rate = Number(form.elements.tax_rate.value) || 0;
-        out.textContent = ctx.money(base + (base * rate) / 100);
+        out.textContent = ctx.money(base + (base * rate) / 100, v.currency);
       };
       form.addEventListener('input', update);
       update();

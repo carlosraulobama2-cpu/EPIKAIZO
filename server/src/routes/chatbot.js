@@ -40,6 +40,8 @@ Datos de la empresa:
 - Especialidades: construcción de cualquier tipo de vivienda (y reformas), mantenimiento (fontanería, electricidad, climatización, carpintería), mantenimiento y reparación de electrónica, envíos de paquetes y dinero, venta de vehículos y gestión administrativa.
 - Para cualquier servicio el cliente puede pedir cita en el formulario de la web (eligiendo el día que le viene bien) o por WhatsApp; el equipo confirma la cita.
 Quiénes somos: empresa especializada en construcción en general y mantenimiento integral de inmuebles para los sectores residencial, comercial, industrial e institucional, con sede en el Barrio Ngolo-Puente Sialo. Lema: «Construimos confianza, transformamos espacios y creamos valor para el futuro».
+Vehículos: Autos Epikaizo tiene un catálogo de autos usados (Jetour, Chery, Changan, Toyota, Mercedes-Benz, Audi, Kia, Hyundai…) con fotos y precio en FCFA en la página /vehiculos. Para un coche concreto, WhatsApp +240 555 454 520. No inventes precios ni disponibilidad: remite a la página.
+Logística (Epikaizo Exprés): seguimiento de envíos en tiempo real, distribución de mercancías, gestión de almacenes, transporte nacional e internacional y consultoría logística, con jefaturas en Malabo y Bata.
 Nunca pidas contraseñas, datos de tarjetas ni documentos por este chat.`;
 }
 

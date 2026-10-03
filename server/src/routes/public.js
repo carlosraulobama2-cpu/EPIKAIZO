@@ -116,7 +116,7 @@ router.get(
       `SELECT code, brand, model, year, mileage_km, color, fuel, transmission, condition, sale_price, currency, status, notes,
               COALESCE((SELECT array_agg(p.id ORDER BY p.position, p.created_at) FROM vehicle_photos p WHERE p.vehicle_id = vehicles.id), '{}') AS photos
          FROM vehicles WHERE tenant_id = $1 AND status IN ('disponible', 'reservado')
-        ORDER BY CASE status WHEN 'disponible' THEN 0 ELSE 1 END, created_at DESC LIMIT 60`,
+        ORDER BY CASE status WHEN 'disponible' THEN 0 ELSE 1 END, created_at DESC, code LIMIT 200`,
       [tenantId]
     );
     res.setHeader('Cache-Control', 'public, max-age=120');

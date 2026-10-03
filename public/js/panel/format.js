@@ -1,8 +1,16 @@
 // Formato de importes, fechas y estados en español.
 
+/** Importes en varias monedas, p. ej. «1.250 $ · 12.014.851 FCFA». rows: [{ currency, [key] }]. */
+export function moneyMix(rows, key, fallback = 'USD') {
+  const parts = (rows || []).filter((r) => Number(r[key]) !== 0).map((r) => money(r[key], r.currency));
+  return parts.length ? parts.join(' · ') : money(0, fallback);
+}
+
 export function money(value, currency = 'USD') {
   const n = Number(value || 0);
-  const digits = currency === 'XAF' ? 0 : 2;
+  // En Guinea Ecuatorial se escribe «FCFA», no «XAF».
+  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(n)} FCFA`;
+  const digits = 2;
   try {
     return new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
   } catch {

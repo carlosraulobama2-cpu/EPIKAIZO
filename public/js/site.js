@@ -13,7 +13,8 @@ async function getJSON(url, options) {
 }
 
 function money(value, currency) {
-  const digits = currency === 'XAF' ? 0 : 2;
+  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(value)} FCFA`;
+  const digits = 2;
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
 }
 
@@ -312,59 +313,115 @@ function lightbox(v) {
   close.focus();
 }
 
+function carCard(v, whatsapp) {
+  const card = el('article', 'car');
+  const name = `${v.brand} ${v.model}`;
+  const top = el('div', `car__top${v.photos.length ? ' car__top--photo' : ''}`);
+  if (v.photos.length) {
+    const img = el('img');
+    img.src = `/api/public/vehicle-photos/${v.photos[0]}`;
+    img.alt = name;
+    img.loading = 'lazy';
+    const open = el('button', 'car__open');
+    open.type = 'button';
+    open.setAttribute('aria-label', `Ver fotos del ${name}`);
+    open.append(img);
+    if (v.photos.length > 1) open.append(el('span', 'car__count', `${v.photos.length} fotos`));
+    open.addEventListener('click', () => lightbox(v));
+    top.append(open);
+  } else {
+    top.append(carIcon());
+  }
+  top.append(el('span', `car__badge${v.status === 'reservado' ? ' car__badge--res' : ''}`, v.status === 'reservado' ? 'Reservado' : v.condition === 'nuevo' ? 'Nuevo' : 'De ocasión'));
+  const body = el('div', 'car__body');
+  const specs = el('div', 'car__specs');
+  [v.year, v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES')} km` : null, FUEL[v.fuel], GEARS[v.transmission], v.color]
+    .filter(Boolean).forEach((x) => specs.append(el('span', null, String(x))));
+  const price = el('p', 'car__price', money(v.sale_price, v.currency));
+  const actions = el('div', 'car__actions');
+  const btn = el('a', 'btn btn--primary', v.status === 'reservado' ? 'Avisadme si queda libre' : 'Me interesa');
+  btn.href = '#contacto';
+  btn.addEventListener('click', () => {
+    const topic = $('#cTopic');
+    const msg = $('#cMessage');
+    if (topic) topic.value = 'vehiculos';
+    if (msg && !msg.value) msg.value = `Me interesa el ${name}${v.year ? ` de ${v.year}` : ''} (ref. ${v.code}). ¿Cuándo puedo ir a verlo?`;
+    track('cta_click', { vehicle: v.code });
+  });
+  actions.append(btn);
+  if (whatsapp) {
+    const wa = el('a', 'btn btn--wa', 'WhatsApp');
+    wa.href = `https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hola, me interesa el ${name}${v.year ? ` de ${v.year}` : ''} (ref. ${v.code}) de ${money(v.sale_price, v.currency)}.`)}`;
+    wa.target = '_blank';
+    wa.rel = 'noopener';
+    wa.addEventListener('click', () => track('whatsapp_click', { vehicle: v.code }));
+    actions.append(wa);
+  }
+  body.append(el('h3', null, name), el('span', 'car__ref', `Ref. ${v.code}`), specs);
+  if (v.notes) body.append(el('p', 'car__notes', v.notes));
+  body.append(price, actions);
+  card.append(top, body);
+  return card;
+}
+
 async function initCars() {
   const box = $('#carsList');
   if (!box) return;
+  const whatsapp = (box.dataset.whatsapp || '').replace(/\D/g, '');
+  let items;
   try {
-    const { items } = await getJSON('/api/public/vehicles');
-    if (!items.length) {
+    ({ items } = await getJSON('/api/public/vehicles'));
+  } catch {
+    box.replaceChildren(el('p', 'form-error', 'No hemos podido cargar los vehículos. Llámanos al +240 222 580 828.'));
+    return;
+  }
+  if (!items.length) {
+    const empty = el('div', 'cars__empty');
+    empty.append(el('h3', null, 'Ahora mismo no tenemos vehículos publicados'), el('p', 'muted', 'Dinos qué buscas (marca, presupuesto, uso) y te avisamos en cuanto llegue uno.'));
+    box.replaceChildren(empty);
+    return;
+  }
+
+  const form = $('#carsFilter');
+  const q = $('#carsQ');
+  const brand = $('#carsBrand');
+  const fuel = $('#carsFuel');
+  const sort = $('#carsSort');
+  const count = $('#carsCount');
+  const cards = new Map(items.map((v) => [v, carCard(v, whatsapp)]));
+  const norm = (t) => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+  const render = () => {
+    const text = norm(q ? q.value : '').trim();
+    let list = items.filter((v) =>
+      (!text || norm(`${v.brand} ${v.model} ${v.year || ''} ${v.code}`).includes(text)) &&
+      (!brand || !brand.value || v.brand === brand.value) &&
+      (!fuel || !fuel.value || v.fuel === fuel.value));
+    const by = sort ? sort.value : '';
+    if (by === 'price-asc') list = [...list].sort((a, b) => a.sale_price - b.sale_price);
+    if (by === 'price-desc') list = [...list].sort((a, b) => b.sale_price - a.sale_price);
+    if (by === 'year-desc') list = [...list].sort((a, b) => (b.year || 0) - (a.year || 0));
+    if (count) count.textContent = list.length === items.length ? `${items.length} vehículos en el catálogo` : `${list.length} de ${items.length} vehículos`;
+    if (!list.length) {
       const empty = el('div', 'cars__empty');
-      empty.append(el('h3', null, 'Ahora mismo no tenemos vehículos publicados'), el('p', 'muted', 'Dinos qué buscas (marca, presupuesto, uso) y te avisamos en cuanto llegue uno.'));
+      empty.append(el('h3', null, 'Ningún vehículo coincide'), el('p', 'muted', 'Prueba con otra marca o quita algún filtro.'));
       box.replaceChildren(empty);
       return;
     }
-    box.replaceChildren(...items.map((v) => {
-      const card = el('article', 'car');
-      const top = el('div', `car__top${v.photos.length ? ' car__top--photo' : ''}`);
-      if (v.photos.length) {
-        const img = el('img');
-        img.src = `/api/public/vehicle-photos/${v.photos[0]}`;
-        img.alt = `${v.brand} ${v.model}`;
-        img.loading = 'lazy';
-        const open = el('button', 'car__open');
-        open.type = 'button';
-        open.setAttribute('aria-label', `Ver fotos del ${v.brand} ${v.model}`);
-        open.append(img);
-        if (v.photos.length > 1) open.append(el('span', 'car__count', `${v.photos.length} fotos`));
-        open.addEventListener('click', () => lightbox(v));
-        top.append(open);
-      } else {
-        top.append(carIcon());
-      }
-      top.append(el('span', `car__badge${v.status === 'reservado' ? ' car__badge--res' : ''}`, v.status === 'reservado' ? 'Reservado' : v.condition === 'nuevo' ? 'Nuevo' : 'De ocasión'));
-      const body = el('div', 'car__body');
-      const name = `${v.brand} ${v.model}`;
-      const specs = el('div', 'car__specs');
-      [v.year, v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES')} km` : null, FUEL[v.fuel], GEARS[v.transmission], v.color]
-        .filter(Boolean).forEach((x) => specs.append(el('span', null, String(x))));
-      const price = el('p', 'car__price', money(v.sale_price, v.currency));
-      price.append(' ', el('small', null, '+ impuestos'));
-      const btn = el('a', 'btn btn--primary', v.status === 'reservado' ? 'Avisadme si queda libre' : 'Me interesa');
-      btn.href = '#contacto';
-      btn.addEventListener('click', () => {
-        const topic = $('#cTopic');
-        const msg = $('#cMessage');
-        if (topic) topic.value = 'vehiculos';
-        if (msg && !msg.value) msg.value = `Me interesa el ${name}${v.year ? ` de ${v.year}` : ''} (ref. ${v.code}). ¿Cuándo puedo ir a verlo?`;
-        track('cta_click', { vehicle: v.code });
-      });
-      body.append(el('h3', null, name), specs, price, btn);
-      card.append(top, body);
-      return card;
-    }));
-  } catch {
-    box.replaceChildren(el('p', 'form-error', 'No hemos podido cargar los vehículos. Llámanos al +240 222 580 828.'));
+    box.replaceChildren(...list.map((v) => cards.get(v)));
+  };
+
+  if (form) {
+    for (const b of [...new Set(items.map((v) => v.brand))].sort((a, b) => a.localeCompare(b, 'es'))) {
+      const opt = el('option', null, b);
+      opt.value = b;
+      brand.append(opt);
+    }
+    form.addEventListener('input', render);
+    form.addEventListener('submit', (e) => e.preventDefault());
+    form.hidden = items.length < 4;
   }
+  render();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

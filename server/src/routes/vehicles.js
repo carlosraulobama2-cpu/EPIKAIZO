@@ -10,10 +10,12 @@ const { audit } = require('../services/audit');
 const { upsertClient } = require('../services/clients');
 const billing = require('../services/billing');
 const { getSettings } = require('../services/settings');
+const { vehicleCode } = require('../services/codes');
 
 const router = express.Router();
 const STATUSES = ['disponible', 'reservado', 'vendido'];
 const METHODS = ['efectivo', 'transferencia', 'movil', 'tarjeta'];
+const CURRENCIES = ['USD', 'EUR', 'XAF'];
 
 const fields = {
   brand: text({ min: 2, max: 40 }),
@@ -28,6 +30,7 @@ const fields = {
   condition: oneOf(['nuevo', 'usado']),
   purchase_price: number({ min: 0, optional: true }),
   sale_price: number({ min: 1 }),
+  currency: oneOf(CURRENCIES, { optional: true }),
   notes: text({ max: 1000, optional: true }),
 };
 
@@ -37,16 +40,6 @@ const hideCost = (req, v) => {
   const { purchase_price: _cost, ...rest } = v;
   return rest;
 };
-
-async function nextCode(tenantId, client) {
-  const row = await db.one(
-    `INSERT INTO counters (tenant_id, name, value) VALUES ($1, 'vehiculo', 1)
-     ON CONFLICT (tenant_id, name) DO UPDATE SET value = counters.value + 1 RETURNING value`,
-    [tenantId],
-    client
-  );
-  return `VEH-${String(row.value).padStart(4, '0')}`;
-}
 
 /** Texto de la línea de factura con todo lo que identifica al vehículo. */
 function describe(v) {
@@ -66,18 +59,20 @@ router.get(
     const f = filters(req.tenantId)
       .eq('status', req.query.status, STATUSES)
       .search(['code', 'brand', 'model', 'vin', 'plate', 'color', 'reserved_for'], req.query.q);
-    const [items, count, stock] = await Promise.all([
-      db.many(`SELECT *, (SELECT id FROM vehicle_photos p WHERE p.vehicle_id = vehicles.id ORDER BY position, created_at LIMIT 1) AS cover_id FROM vehicles WHERE ${f.sql} ORDER BY CASE status WHEN 'disponible' THEN 0 WHEN 'reservado' THEN 1 ELSE 2 END, created_at DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
+    const [items, count, stock, value] = await Promise.all([
+      db.many(`SELECT *, (SELECT id FROM vehicle_photos p WHERE p.vehicle_id = vehicles.id ORDER BY position, created_at LIMIT 1) AS cover_id FROM vehicles WHERE ${f.sql} ORDER BY CASE status WHEN 'disponible' THEN 0 WHEN 'reservado' THEN 1 ELSE 2 END, created_at DESC, code LIMIT ${limit} OFFSET ${offset}`, f.params),
       db.one(`SELECT count(*)::int AS n FROM vehicles WHERE ${f.sql}`, f.params),
       db.one(
         `SELECT count(*) FILTER (WHERE status = 'disponible')::int AS disponibles,
                 count(*) FILTER (WHERE status = 'reservado')::int AS reservados,
-                count(*) FILTER (WHERE status = 'vendido' AND sold_at >= date_trunc('month', now()))::int AS vendidos_mes,
-                COALESCE(sum(sale_price) FILTER (WHERE status <> 'vendido'), 0) AS valor_stock
+                count(*) FILTER (WHERE status = 'vendido' AND sold_at >= date_trunc('month', now()))::int AS vendidos_mes
            FROM vehicles WHERE tenant_id = $1`,
         [req.tenantId]
       ),
+      // Valor del stock por moneda: no se suman dólares con francos.
+      db.many("SELECT currency, sum(sale_price) AS total FROM vehicles WHERE tenant_id = $1 AND status <> 'vendido' GROUP BY currency ORDER BY total DESC", [req.tenantId]),
     ]);
+    stock.valor_stock = value;
     res.json({ items: items.map((v) => hideCost(req, v)), total: count.n, stock });
   })
 );
@@ -110,16 +105,16 @@ router.post(
       const row = await db.one(
         `INSERT INTO vehicles (id, tenant_id, code, brand, model, year, vin, plate, mileage_km, color, fuel, transmission, condition, purchase_price, sale_price, currency, notes, created_by)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18) RETURNING *`,
-        [crypto.randomUUID(), req.tenantId, await nextCode(req.tenantId, client), input.brand, input.model, input.year, input.vin && input.vin.toUpperCase(),
+        [crypto.randomUUID(), req.tenantId, await vehicleCode(req.tenantId, client), input.brand, input.model, input.year, input.vin && input.vin.toUpperCase(),
           input.plate && input.plate.toUpperCase(), input.mileage_km, input.color, input.fuel, input.transmission, input.condition, input.purchase_price,
-          input.sale_price, rates.currency, input.notes, req.user.id],
+          input.sale_price, input.currency || rates.currency, input.notes, req.user.id],
         client
       );
       // Opcional: apuntar la compra del vehículo como gasto en Caja.
       if (input.register_purchase && input.purchase_price > 0) {
         await db.query(
           "INSERT INTO cash_movements (id, tenant_id, type, category, concept, amount, currency, date, reference, created_by) VALUES ($1,$2,'gasto','Compra de vehículos',$3,$4,$5,CURRENT_DATE,$6,$7)",
-          [crypto.randomUUID(), req.tenantId, `Compra ${row.brand} ${row.model}`, input.purchase_price, rates.currency, row.code, req.user.id],
+          [crypto.randomUUID(), req.tenantId, `Compra ${row.brand} ${row.model}`, input.purchase_price, row.currency, row.code, req.user.id],
           client
         );
       }
@@ -137,6 +132,7 @@ router.patch(
     const v = await load(req);
     if (v.status === 'vendido') throw new HttpError(409, 'Un vehículo vendido no se modifica. Si la venta fue un error, anula su factura.');
     const input = validate(req.body, fields, { partial: true });
+    if (input.currency === null) delete input.currency;
     const keys = Object.keys(input);
     if (!keys.length) throw new HttpError(422, 'No hay cambios que guardar');
     for (const k of ['vin', 'plate']) if (input[k]) input[k] = input[k].toUpperCase();
@@ -146,6 +142,20 @@ router.patch(
     );
     await audit(req, 'vehiculo.editar', { entity: 'vehicle', entityId: v.id, details: { campos: keys } });
     res.json({ vehicle: row });
+  })
+);
+
+/** Quitar del inventario un vehículo que ya no se vende. Si tiene facturas, se conserva por el historial. */
+router.delete(
+  '/:id',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const v = await load(req);
+    const billed = await db.one('SELECT 1 FROM invoices WHERE vehicle_id = $1 LIMIT 1', [v.id]);
+    if (v.status === 'vendido' || v.invoice_id || billed) throw new HttpError(409, 'Este vehículo tiene facturas y se conserva en el historial');
+    await db.query('DELETE FROM vehicles WHERE id = $1', [v.id]);
+    await audit(req, 'vehiculo.borrar', { entity: 'vehicle', entityId: v.id, details: { codigo: v.code, vehiculo: `${v.brand} ${v.model}` } });
+    res.json({ deleted: true });
   })
 );
 

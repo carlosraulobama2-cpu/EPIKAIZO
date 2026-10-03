@@ -150,7 +150,8 @@ function contractPage(d) {
     const currency = d.invoice.currency || 'USD';
     const digits = currency === 'XAF' ? 0 : 2;
     const fmt = new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits });
-    money = (v) => fmt.format(Number(v || 0));
+    const whole = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 });
+    money = currency === 'XAF' ? (v) => `${whole.format(Number(v || 0))} FCFA` : (v) => fmt.format(Number(v || 0));
     document.title = `${TITLES[d.invoice.kind]} ${d.invoice.number} · ${d.company.name}`;
     const pages = [invoicePage(d)];
     if (d.vehicle && d.invoice.kind === 'factura') pages.push(contractPage(d));

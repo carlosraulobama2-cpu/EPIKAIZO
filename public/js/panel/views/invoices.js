@@ -1,6 +1,6 @@
 // Facturación: presupuestos, facturas (con cobros parciales) y rectificativas.
 import { h, icon, pageHead, badge, button, primary, empty } from '../ui.js';
-import { date, DOC_KIND } from '../format.js';
+import { date, DOC_KIND, moneyMix } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 import { openDocEditor, openDocDetail } from './_billing.js';
 
@@ -26,11 +26,12 @@ export default async function invoices(root, ctx) {
     filters: () => ({ ...f, ...VIEWS.find((v) => v[0] === view)[2] }),
     onData: (data) => {
       const t = data.totals;
+      const cur = ctx.settings.rates.currency;
       kpis.replaceChildren(
-        kpi('cash', 'Pendiente de cobro', ctx.money(t.pending), 'Facturas emitidas sin cobrar del todo'),
-        kpi('alert', 'Vencido', ctx.money(t.overdue), 'Pasada la fecha de vencimiento', Number(t.overdue) > 0 ? '--bad' : null),
-        kpi('check', 'Cobrado este mes', ctx.money(t.paid_month), 'De facturas emitidas este mes'),
-        kpi('invoice', 'Presupuestos abiertos', ctx.money(t.quotes_open), 'Pendientes o aceptados sin facturar'));
+        kpi('cash', 'Pendiente de cobro', moneyMix(t, 'pending', cur), 'Facturas emitidas sin cobrar del todo'),
+        kpi('alert', 'Vencido', moneyMix(t, 'overdue', cur), 'Pasada la fecha de vencimiento', t.some((r) => Number(r.overdue) > 0) ? '--bad' : null),
+        kpi('check', 'Cobrado este mes', moneyMix(t, 'paid_month', cur), 'De facturas emitidas este mes'),
+        kpi('invoice', 'Presupuestos abiertos', moneyMix(t, 'quotes_open', cur), 'Pendientes o aceptados sin facturar'));
     },
     onRowClick: (r) => openDocDetail(ctx, r.id, { onChange: () => list.reload() }),
     toolbar: [
@@ -50,8 +51,8 @@ export default async function invoices(root, ctx) {
       { label: 'Concepto', hideSm: true, render: (r) => h('span', { class: 'clamp' }, r.concept) },
       { label: 'Estado', render: (r) => [badge('invoice', r.status), r.overdue ? h('div', { class: 'small', style: 'color:var(--bad);margin-top:4px' }, `Vencida el ${date(r.due_date)}`) : null] },
       { label: 'Total', num: true, render: (r) => primary(
-        h('strong', null, `${r.kind === 'rectificativa' ? '−' : ''}${ctx.money(r.amount)}`),
-        r.kind === 'factura' && Number(r.paid_amount) > 0 && r.status !== 'pagada' ? `Cobrado ${ctx.money(r.paid_amount)}` : r.kind === 'presupuesto' && r.status === 'pendiente' && r.valid_until ? `Válido hasta ${date(r.valid_until)}` : null) },
+        h('strong', null, `${r.kind === 'rectificativa' ? '−' : ''}${ctx.money(r.amount, r.currency)}`),
+        r.kind === 'factura' && Number(r.paid_amount) > 0 && r.status !== 'pagada' ? `Cobrado ${ctx.money(r.paid_amount, r.currency)}` : r.kind === 'presupuesto' && r.status === 'pendiente' && r.valid_until ? `Válido hasta ${date(r.valid_until)}` : null) },
     ],
   });
 

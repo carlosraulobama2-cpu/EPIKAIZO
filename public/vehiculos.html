@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Venta de vehículos · Epikaizo Services S.L.</title>
-  <meta name="description" content="Vehículos nuevos y de ocasión con factura y contrato de compraventa. Consulta los disponibles y pide cita para verlos.">
+  <title>Autos Epikaizo · Catálogo de vehículos de ocasión</title>
+  <meta name="description" content="Catálogo de autos usados de Autos Epikaizo: Jetour, Chery, Changan, Toyota, Mercedes-Benz, Audi y más, con precio en FCFA, fotos, factura y contrato de compraventa.">
   <meta name="theme-color" content="#070594">
   <link rel="canonical" href="https://epikaizo.com/vehiculos">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -12,9 +12,9 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Epikaizo Services S.L.">
   <meta property="og:locale" content="es_ES">
-  <meta property="og:title" content="Venta de vehículos · Epikaizo Services S.L.">
-  <meta property="og:description" content="Vehículos nuevos y de ocasión con factura y contrato de compraventa. Consulta los disponibles y pide cita para verlos.">
-  <meta property="og:image" content="https://epikaizo.com/img/og.jpg">
+  <meta property="og:title" content="Autos Epikaizo · Catálogo de vehículos de ocasión">
+  <meta property="og:description" content="Catálogo de autos usados de Autos Epikaizo: Jetour, Chery, Changan, Toyota, Mercedes-Benz, Audi y más, con precio en FCFA, fotos, factura y contrato de compraventa.">
+  <meta property="og:image" content="https://epikaizo.com/img/coche.webp">
   <meta property="og:url" content="https://epikaizo.com/vehiculos">
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">
@@ -61,19 +61,28 @@
   <section class="hero hero--page hero--cars">
     <div class="container hero__grid">
       <div class="hero__copy">
-        <p class="eyebrow">Venta de vehículos</p>
+        <img class="autos-logo" src="/img/autos-epikaizo.webp" alt="Autos Epikaizo" width="489" height="108">
         <h1>Tu próximo vehículo, con <span class="hl">garantía de papeles</span>.</h1>
-        <p class="lead">Vehículos nuevos y de ocasión para tu familia o tu negocio. Ven a verlos con cita previa: te entregamos factura y contrato de compraventa, y puedes reservar con una señal.</p>
-        <div class="hero__cta"><a class="btn btn--primary btn--lg" href="#stock">Ver disponibles</a><a class="btn btn--ghost btn--lg" href="#contacto" data-topic="vehiculos">Pide tu cita</a></div>
+        <p class="lead">Catálogo de autos usados: SUV, berlinas, híbridos y eléctricos de Jetour, Chery, Changan, Toyota, Mercedes-Benz, Audi y más. Te entregamos factura y contrato de compraventa, y puedes reservar con una señal.</p>
+        <div class="hero__cta"><a class="btn btn--primary btn--lg" href="#stock">Ver el catálogo</a><a class="btn btn--ghost btn--lg" href="https://wa.me/240555454520?text=Hola%2C%20me%20interesa%20un%20veh%C3%ADculo%20del%20cat%C3%A1logo%20de%20Autos%20Epikaizo" target="_blank" rel="noopener">WhatsApp +240 555 454 520</a></div>
       </div>
-      <div class="hero__media cars-art" aria-hidden="true"><span class="cars-art__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-3l2-5h14l2 5v3a2 2 0 0 1-2 2M5 17v2M19 17v2M3 12h18"/></svg></span></div>
+      <div class="hero__media cars-collage" aria-hidden="true">
+        <img src="/img/autos/1.webp" alt="" width="400" height="400"><img src="/img/autos/2.webp" alt="" width="400" height="400"><img src="/img/autos/3.webp" alt="" width="400" height="400"><img src="/img/autos/4.webp" alt="" width="400" height="400">
+      </div>
     </div>
   </section>
 
   <section class="section" id="stock">
     <div class="container">
-      <header class="section__head"><p class="eyebrow">Disponibles ahora</p><h2>Vehículos en venta</h2><p class="section__sub">Precios con impuestos aparte. Pulsa «Me interesa» y te llamamos para enseñártelo.</p></header>
-      <div class="cars" id="carsList" aria-live="polite"><p class="muted">Cargando vehículos…</p></div>
+      <header class="section__head"><p class="eyebrow">Catálogo</p><h2>Vehículos en venta</h2><p class="section__sub">Precios en francos CFA (FCFA). Pulsa una foto para verlas todas, o «Me interesa» y te llamamos.</p></header>
+      <form class="cars-filter" id="carsFilter" role="search" aria-label="Buscar en el catálogo" hidden>
+        <input class="input" id="carsQ" type="search" placeholder="Busca marca o modelo" aria-label="Marca o modelo">
+        <select class="input" id="carsBrand" aria-label="Marca"><option value="">Todas las marcas</option></select>
+        <select class="input" id="carsFuel" aria-label="Combustible"><option value="">Cualquier combustible</option><option value="gasolina">Gasolina</option><option value="diesel">Diésel</option><option value="hibrido">Híbrido</option><option value="electrico">Eléctrico</option></select>
+        <select class="input" id="carsSort" aria-label="Ordenar"><option value="">Destacados</option><option value="price-asc">Precio: de menor a mayor</option><option value="price-desc">Precio: de mayor a menor</option><option value="year-desc">Más recientes</option></select>
+        <p class="cars-filter__count muted" id="carsCount" aria-live="polite"></p>
+      </form>
+      <div class="cars" id="carsList" aria-live="polite" data-whatsapp="240555454520"><p class="muted">Cargando vehículos…</p></div>
     </div>
   </section>
 
@@ -86,6 +95,7 @@
         <li><span>3</span><h3>Resérvalo</h3><p>Puedes apartarlo con una señal; el resto, a la entrega.</p></li>
         <li><span>4</span><h3>Llévatelo con sus papeles</h3><p>Factura con el número de bastidor, contrato de compraventa y la documentación del vehículo.</p></li>
       </ol>
+      <p class="autos-contact"><span class="ico ico--sm" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12Z"/></svg></span> <strong>Autos Epikaizo International Trade Co., Ltd.</strong> · WhatsApp <a href="https://wa.me/240555454520" target="_blank" rel="noopener">+240 555 454 520</a> · <a href="mailto:epikaizoservices123@gmail.com">epikaizoservices123@gmail.com</a></p>
     </div>
   </section>
 

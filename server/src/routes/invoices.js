@@ -35,12 +35,14 @@ router.get(
         f.params
       ),
       db.one(`SELECT count(*)::int AS n FROM invoices WHERE ${f.sql}`, f.params),
-      db.one(
-        `SELECT COALESCE(sum(amount - paid_amount) FILTER (WHERE kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial')), 0) AS pending,
+      // Por moneda: no se suman dólares con francos.
+      db.many(
+        `SELECT currency,
+                COALESCE(sum(amount - paid_amount) FILTER (WHERE kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial')), 0) AS pending,
                 COALESCE(sum(amount - paid_amount) FILTER (WHERE kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < CURRENT_DATE), 0) AS overdue,
                 COALESCE(sum(paid_amount) FILTER (WHERE kind = 'factura' AND date_trunc('month', issue_date) = date_trunc('month', CURRENT_DATE)), 0) AS paid_month,
                 COALESCE(sum(amount) FILTER (WHERE kind = 'presupuesto' AND status IN ('pendiente', 'aceptado')), 0) AS quotes_open
-           FROM invoices WHERE ${all.sql}`,
+           FROM invoices WHERE ${all.sql} GROUP BY currency ORDER BY currency`,
         all.params
       ),
     ]);

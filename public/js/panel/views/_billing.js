@@ -179,6 +179,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
   }
   const inv = data.invoice;
   const pending = round(Number(inv.amount) - Number(inv.paid_amount));
+  const m = (v) => ctx.money(v, inv.currency);
   const isQuote = inv.kind === 'presupuesto';
   const isInvoice = inv.kind === 'factura';
   const overdue = isInvoice && ['emitida', 'enviada', 'parcial'].includes(inv.status) && inv.due_date && String(inv.due_date).slice(0, 10) < today();
@@ -193,18 +194,18 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
     columns: [
       { label: 'Descripción', render: (l) => l.description },
       { label: 'Cant.', num: true, render: (l) => String(Number(l.quantity)) },
-      { label: 'Precio', num: true, render: (l) => ctx.money(l.unit_price) },
+      { label: 'Precio', num: true, render: (l) => m(l.unit_price) },
       { label: ctx.settings.billing.tax_name || 'IVA', num: true, render: (l) => `${Number(l.tax_rate)} %` },
-      { label: 'Importe', num: true, render: (l) => ctx.money(l.base) },
+      { label: 'Importe', num: true, render: (l) => m(l.base) },
     ],
   });
 
   const totals = h('div', { class: 'doc-totals doc-totals--block' },
-    h('div', null, h('span', null, 'Base imponible'), h('strong', null, ctx.money(inv.subtotal))),
-    h('div', null, h('span', null, ctx.settings.billing.tax_name || 'IVA'), h('strong', null, ctx.money(inv.tax_amount))),
-    h('div', { class: 'doc-totals__total' }, h('span', null, inv.kind === 'rectificativa' ? 'Total rectificado' : 'Total'), h('strong', null, `${inv.kind === 'rectificativa' ? '−' : ''}${ctx.money(inv.amount)}`)),
-    isInvoice ? h('div', null, h('span', null, 'Cobrado'), h('strong', { style: 'color:var(--ok)' }, ctx.money(inv.paid_amount))) : null,
-    isInvoice && pending > 0 && inv.status !== 'anulada' ? h('div', null, h('span', null, 'Pendiente'), h('strong', { style: 'color:var(--bad)' }, ctx.money(pending))) : null);
+    h('div', null, h('span', null, 'Base imponible'), h('strong', null, m(inv.subtotal))),
+    h('div', null, h('span', null, ctx.settings.billing.tax_name || 'IVA'), h('strong', null, m(inv.tax_amount))),
+    h('div', { class: 'doc-totals__total' }, h('span', null, inv.kind === 'rectificativa' ? 'Total rectificado' : 'Total'), h('strong', null, `${inv.kind === 'rectificativa' ? '−' : ''}${m(inv.amount)}`)),
+    isInvoice ? h('div', null, h('span', null, 'Cobrado'), h('strong', { style: 'color:var(--ok)' }, m(inv.paid_amount))) : null,
+    isInvoice && pending > 0 && inv.status !== 'anulada' ? h('div', null, h('span', null, 'Pendiente'), h('strong', { style: 'color:var(--bad)' }, m(pending))) : null);
 
   const links = [];
   if (data.vehicle) links.push(h('a', { href: `#/vehiculos/${data.vehicle.id}` }, icon('truck'), `Vehículo ${data.vehicle.code}: ${data.vehicle.brand} ${data.vehicle.model}`));
@@ -230,7 +231,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
   if (isQuote) {
     const pct = Number(data.invoiced_pct || 0);
     blocks.push(h('div', { class: 'card card__body stack' },
-      h('div', { class: 'row-between' }, h('strong', null, 'Facturado'), h('span', null, `${pct} % · ${ctx.money((Number(inv.subtotal) * pct) / 100)} de ${ctx.money(inv.subtotal)} (base)`)),
+      h('div', { class: 'row-between' }, h('strong', null, 'Facturado'), h('span', null, `${pct} % · ${m((Number(inv.subtotal) * pct) / 100)} de ${m(inv.subtotal)} (base)`)),
       h('div', { class: 'bar-list__track' }, h('div', { class: 'bar-list__fill', style: `width:${Math.min(pct, 100)}%` })),
       data.invoices.length
         ? table({
@@ -240,7 +241,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
             { label: 'Factura', render: (r) => h('span', { class: 'mono' }, r.number) },
             { label: '%', num: true, render: (r) => `${Number(r.invoiced_pct)} %` },
             { label: 'Estado', render: (r) => badge('invoice', r.status) },
-            { label: 'Total', num: true, render: (r) => ctx.money(r.amount) },
+            { label: 'Total', num: true, render: (r) => m(r.amount) },
           ],
         })
         : h('p', { class: 'muted small' }, inv.status === 'aceptado' ? 'Aún no se ha facturado nada. Puedes facturar un anticipo.' : 'Cuando el cliente lo acepte, podrás facturarlo.')));
@@ -256,7 +257,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
           { label: 'Forma', render: (p) => PAYMENT[p.method] || p.method },
           { label: 'Referencia', render: (p) => p.reference || '—' },
           { label: 'Registrado por', hideSm: true, render: (p) => p.user_name || '—' },
-          { label: 'Importe', num: true, render: (p) => ctx.money(p.amount) },
+          { label: 'Importe', num: true, render: (p) => m(p.amount) },
         ],
       })));
   }
@@ -283,7 +284,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
         danger: true,
         fields: [
           field({ name: 'reason', label: 'Motivo', required: true, placeholder: 'Ej. Error en los datos del cliente' }),
-          paid ? field({ name: 'refunded', label: `Confirmo que se han devuelto ${ctx.money(inv.paid_amount)} al cliente`, type: 'checkbox' }) : null,
+          paid ? field({ name: 'refunded', label: `Confirmo que se han devuelto ${m(inv.paid_amount)} al cliente`, type: 'checkbox' }) : null,
         ],
       });
       if (!values) return;
@@ -298,7 +299,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
     if (pending > 0) actions.push(button('Registrar cobro', { variant: 'primary', iconName: 'cash', onClick: async () => {
       const values = await formDialog({
         title: 'Registrar cobro',
-        text: `Pendiente: ${ctx.money(pending)}. Puedes cobrar una parte (anticipo) o todo.`,
+        text: `Pendiente: ${m(pending)}. Puedes cobrar una parte (anticipo) o todo.`,
         confirm: 'Registrar',
         fields: [
           field({ name: 'amount', label: 'Importe', type: 'number', step: '0.01', min: '0.01', value: pending, required: true }),
