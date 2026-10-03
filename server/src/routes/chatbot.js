@@ -1,120 +1,75 @@
+// Asistente de la web (Gemini). Público, así que tiene límite por IP, mensajes cortos y memoria acotada.
 const express = require('express');
+const config = require('../config');
+const { route, validate, text, HttpError } = require('../lib/http');
+const { rateLimit } = require('../lib/security');
+const { getSettings } = require('../services/settings');
+
 const router = express.Router();
 
-const GOOGLE_AI_API_KEY = process.env.GOOGLE_AI_API_KEY || '';
-const GOOGLE_AI_MODEL = process.env.GOOGLE_AI_MODEL || 'gemini-2.0-flash';
-const BASE_URL = `https://generativelanguage.googleapis.com/v1/models/${GOOGLE_AI_MODEL}:generateContent`;
+const MAX_SESSIONS = 500;
+const SESSION_TTL = 30 * 60_000;
+const MAX_TURNS = 12;
+const sessions = new Map(); // sessionId -> { history, at }
 
-const SYSTEM_PROMPT = `Eres el asistente virtual de Epicaizo, una empresa de envíos de paquetes y dinero en Guinea Ecuatorial.
-Responde en español, de forma amable, profesional y concisa.
-Conocimiento de la empresa:
-- Teléfono/WhatsApp: +240 222 580 828
-- Correo: hola@epicaizo.com
-- Oficina: Av. del Puerto s/n, Malabo
-- Horario: lunes a sábado, 8:00 a 18:00
-- Cobertura: 18 ciudades (Malabo, Bata, Ebebiyín, Mongomo, Luba, Evinayong, Aconibe, Micomeseng, Añisoc, Rebola, Riaba, Nsork, etc.)
-- Paquetes: nacionales e internacionales, peso máximo 30 kg, recogida a domicilio, guía de rastreo
-- Dinero/remesas: comisión visible, entrega en efectivo en punto asociado
-- Tarifas aproximadas: paquetes locales desde 4 USD/kg, nacionales desde 9 USD/kg, internacionales desde 22 USD/kg
-- Remesas: comisión desde 2% (local), 3.5% (nacional), 6% (internacional)
-- B2B: soluciones corporativas para e-commerce, facturación mensual, tarifas preferenciales
-- +8 años de experiencia, +32K envíos entregados, 96% entregas a tiempo
-- Web: https://epicaizo.com (cotizador y rastreo en línea)
-Si no sabes algo, derivar al formulario de contacto o al WhatsApp +240 222 580 828.`;
-
-const conversationStore = new Map();
-
-function buildContents(sessionId, newMessage) {
-  const history = conversationStore.get(sessionId) || [];
-  const contents = [];
-  
-  if (history.length === 0) {
-    contents.push({
-      role: 'user',
-      parts: [{ text: SYSTEM_PROMPT }]
-    });
+function history(sessionId) {
+  const now = Date.now();
+  for (const [id, s] of sessions) if (now - s.at > SESSION_TTL) sessions.delete(id);
+  let session = sessions.get(sessionId);
+  if (!session) {
+    if (sessions.size >= MAX_SESSIONS) sessions.delete(sessions.keys().next().value);
+    session = { history: [], at: now };
+    sessions.set(sessionId, session);
   }
-  
-  for (const turn of history) {
-    contents.push({
-      role: turn.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: turn.content }]
-    });
-  }
-  
-  contents.push({
-    role: 'user',
-    parts: [{ text: newMessage }]
-  });
-  
-  return contents;
+  session.at = now;
+  return session.history;
 }
 
-router.post('/', async (req, res) => {
-  try {
-    const { message, sessionId } = req.body;
-    if (!message || typeof message !== 'string') {
-      return res.status(400).json({ error: 'El campo message es requerido' });
-    }
+async function systemPrompt() {
+  const { company, rates, cities } = await getSettings(config.tenantId);
+  const kg = rates.package_per_kg;
+  const pct = rates.money_commission_pct;
+  return `Eres el asistente virtual de ${company.name} (Epikaizo), empresa de Guinea Ecuatorial de construcción y mantenimiento, gestión administrativa y logística (envíos de paquetes y de dinero).
+Responde en español, con amabilidad y en pocas frases. No inventes datos: si no sabes algo, ofrece el WhatsApp ${company.phone} o el formulario de contacto de la web.
+Datos de la empresa:
+- Teléfono y WhatsApp: ${company.phone}. Correo: ${company.email}. Oficina: ${company.address}. Horario: ${company.hours}.
+- Ciudades: ${cities.join(', ')}.
+- Paquetes: tarifa base ${rates.package_base_fee} ${rates.currency} más ${kg.local}/${kg.nacional}/${kg.internacional} ${rates.currency} por kg (local/nacional/internacional).
+- Envíos de dinero: comisión ${pct.local}% / ${pct.nacional}% / ${pct.internacional}% (local/nacional/internacional), mínimo ${rates.money_min_commission} ${rates.currency}.
+- Rastreo con la guía EPZ-000000 en ${config.publicUrl}/#rastreo. Cotizador en ${config.publicUrl}/#envios.
+- Servicios: construcción, fontanería, electricidad, climatización, carpintería y reformas, mudanzas, mantenimiento y gestión administrativa. Presupuesto sin compromiso por el formulario o WhatsApp.
+Nunca pidas contraseñas, datos de tarjetas ni documentos por este chat.`;
+}
 
-    if (!GOOGLE_AI_API_KEY) {
-      return res.status(500).json({ error: 'API key de Google AI no configurada' });
-    }
-
-    const sid = sessionId || 'default';
-    const contents = buildContents(sid, message);
-
-    const url = `${BASE_URL}?key=${GOOGLE_AI_API_KEY}`;
+router.post(
+  '/',
+  rateLimit({ windowMs: 10 * 60_000, max: 20, message: 'Has hecho muchas preguntas seguidas. Escríbenos por WhatsApp y te atendemos.' }),
+  route(async (req, res) => {
+    const input = validate(req.body, { message: text({ min: 1, max: 600 }), sessionId: text({ min: 8, max: 64, optional: true }) });
+    if (!config.ai.key) throw new HttpError(503, 'El asistente no está disponible ahora. Escríbenos por WhatsApp.');
+    const turns = history(input.sessionId || req.ip);
+    const contents = [...turns, { role: 'user', parts: [{ text: input.message }] }];
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.ai.model)}:generateContent`;
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.ai.key },
       body: JSON.stringify({
+        systemInstruction: { parts: [{ text: await systemPrompt() }] },
         contents,
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 500
-        }
-      })
-    });
-
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('Google AI error:', response.status, errText);
-      let clientMsg = 'Error al consultar la IA';
-      try {
-        const parsed = JSON.parse(errText);
-        if (parsed.error?.message) clientMsg = parsed.error.message;
-        else if (parsed.message) clientMsg = parsed.message;
-        else clientMsg = errText.slice(0, 300);
-      } catch {
-        clientMsg = errText.slice(0, 300) || String(response.status);
-      }
-      return res.status(502).json({ error: clientMsg, status: response.status });
+        generationConfig: { temperature: 0.4, maxOutputTokens: 400 },
+      }),
+      signal: AbortSignal.timeout(20_000),
+    }).catch(() => null);
+    if (!response || !response.ok) {
+      if (response) console.error('Gemini respondió', response.status);
+      throw new HttpError(502, 'El asistente no ha podido responder. Inténtalo de nuevo o escríbenos por WhatsApp.');
     }
-
     const data = await response.json();
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'Lo siento, no pude generar una respuesta. Por favor intenta de nuevo o contacta por WhatsApp.';
-
-    const history = conversationStore.get(sid) || [];
-    history.push({ role: 'user', content: message });
-    history.push({ role: 'assistant', content: reply });
-    if (history.length > 20) history.length = 20;
-    conversationStore.set(sid, history);
-
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || 'No he podido responder. Escríbenos por WhatsApp y te ayudamos.';
+    turns.push({ role: 'user', parts: [{ text: input.message }] }, { role: 'model', parts: [{ text: reply }] });
+    if (turns.length > MAX_TURNS) turns.splice(0, turns.length - MAX_TURNS);
     res.json({ reply });
-  } catch (err) {
-    console.error('Chatbot error:', err);
-    res.status(500).json({ error: 'Error interno del servidor' });
-  }
-});
-
-router.post('/clear', (req, res) => {
-  const { sessionId } = req.body;
-  const sid = sessionId || 'default';
-  conversationStore.delete(sid);
-  res.json({ success: true });
-});
+  })
+);
 
 module.exports = router;

@@ -1,7 +1,0 @@
-User-agent: *
-Allow: /
-Disallow: /server/
-Disallow: /panel.html
-Disallow: /login.html
-
-Sitemap: https://epikaizo.com/sitemap.xml

@@ -1,29 +1,22 @@
+// Registro de actividad: quién hizo qué y cuándo. Solo lectura (no se puede borrar desde el panel).
 const express = require('express');
+const db = require('../db');
+const { route, paging } = require('../lib/http');
+const { filters } = require('../lib/list');
+
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
-const { requireTenant } = require('../middleware/plan');
-const { prepare, saveDb } = require('../config/database');
 
-router.use(authenticate);
-router.use(requireTenant);
-
-router.get('/', (req, res) => {
-  try {
-    const logs = prepare('SELECT * FROM audit_log WHERE tenant_id = ? ORDER BY date DESC LIMIT 100').all(req.tenantId);
-    res.json(logs);
-  } catch (err) {
-    res.status(500).json({ error: 'Error' });
-  }
-});
-
-router.delete('/', (req, res) => {
-  try {
-    prepare('DELETE FROM audit_log WHERE tenant_id = ?').run(req.tenantId);
-    saveDb();
-    res.json({ cleared: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Error' });
-  }
-});
+router.get(
+  '/',
+  route(async (req, res) => {
+    const { limit, offset } = paging(req.query);
+    const f = filters(req.tenantId).range('created_at', req.query.from, req.query.to).search(['action', 'user_name', 'entity_id', 'details'], req.query.q);
+    const [items, count] = await Promise.all([
+      db.many(`SELECT id, user_name, action, entity, entity_id, details, ip, created_at FROM audit_log WHERE ${f.sql} ORDER BY created_at DESC, id DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
+      db.one(`SELECT count(*)::int AS n FROM audit_log WHERE ${f.sql}`, f.params),
+    ]);
+    res.json({ items, total: count.n });
+  })
+);
 
 module.exports = router;

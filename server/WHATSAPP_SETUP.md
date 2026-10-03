@@ -1,74 +1,38 @@
-# Configuración de WhatsApp Business API
+# Configurar WhatsApp Business (Meta)
 
-## 1. Crear cuenta en Meta Developer Portal
+## 1. Crear la app en Meta
 
-1. Ve a https://developers.facebook.com
-2. Crea una app de tipo "Business"
-3. Agrega el producto "WhatsApp"
-4. Conecta tu número de teléfono empresarial (+240 222 580 828)
+1. Entra en https://developers.facebook.com y crea una app de tipo **Business**.
+2. Añade el producto **WhatsApp** y conecta el número de la empresa (+240 222 580 828).
 
-## 2. Obtener credenciales
+## 2. Datos que necesitas
 
-En el panel de Meta Developer, obtén:
-- **Phone Number ID**: ID del número de teléfono
-- **Access Token**: Token de acceso permanente (o de corta duración renovable)
-- **WhatsApp Business Account ID**: ID de la cuenta
+En el panel de Meta copia:
 
-## 3. Configurar variables de entorno
+- **Phone Number ID** → `WHATSAPP_PHONE_NUMBER_ID`
+- **Token de acceso permanente** (usuario del sistema) → `WHATSAPP_TOKEN`
+- **App Secret** (Configuración de la app > Básica) → `WHATSAPP_APP_SECRET`
+- Un **verify token** inventado por ti, largo y aleatorio → `WHATSAPP_VERIFY_TOKEN`
 
-Edita el archivo `server/.env`:
+Ponlos como variables de entorno en Render, o en `server/.env` en local. **Nunca en el código ni en `render.yaml`.**
 
-```env
-WHATSAPP_TOKEN=tu_access_token_aqui
-WHATSAPP_PHONE_NUMBER_ID=tu_phone_number_id_aqui
-WHATSAPP_VERIFY_TOKEN=epk_verify_2026
-WHATSAPP_API_VERSION=v19.0
-```
+## 3. Webhook
 
-## 4. Configurar webhook
+1. En Meta ve a **WhatsApp > Configuración > Webhook**.
+2. URL: `https://epikaizo.com/api/whatsapp`
+3. Verify token: el mismo valor que pusiste en `WHATSAPP_VERIFY_TOKEN`.
+4. Suscríbete al evento `messages`.
 
-1. En Meta Developer, ve a WhatsApp > Configuration
-2. En "Webhook", ingresa la URL de tu servidor:
-   - Producción: `https://tu-dominio.com/api/whatsapp`
-   - Desarrollo: usa ngrok o similar para exponer tu localhost
-3. Verify token: `epk_verify_2026`
-4. Suscríbete a los eventos: `messages`
+El servidor solo acepta avisos firmados por Meta, es decir, con la cabecera `X-Hub-Signature-256` firmada con tu App Secret.
 
-## 5. Iniciar el servidor
+## 4. Qué hace
 
-```bash
-cd server
-npm install
-npm start
-```
-
-El webhook estará disponible en `GET /api/whatsapp` (verificación) y `POST /api/whatsapp` (mensajes entrantes).
-
-## 6. Probar
-
-Envía un mensaje desde WhatsApp a +240 222 580 828. El servidor responderá automáticamente con un mensaje de bienvenida.
-
-## Endpoints adicionales
-
-- `POST /api/whatsapp/send` - Enviar mensaje de texto
-  ```json
-  {
-    "to": "240222580828",
-    "text": "Hola desde Epicaizo"
-  }
-  ```
-
-- `POST /api/whatsapp/template` - Enviar plantilla aprobada
-  ```json
-  {
-    "to": "240222580828",
-    "templateName": "nombre_de_plantilla",
-    "languageCode": "es"
-  }
-  ```
+- **Mensajes entrantes.** Llegan a la **Bandeja** del panel, sin duplicados aunque Meta los reenvíe, y reciben una respuesta automática corta.
+- **Respuestas desde el panel.** En la Bandeja, abre el mensaje y pulsa **Enviar por WhatsApp**.
+- **Facturas.** Al marcar un envío como **Entregado**, el destinatario recibe la factura con su código QR de verificación. También se puede enviar desde **Facturas**.
 
 ## Notas
 
-- Requiere que Meta apruebe tu cuenta de WhatsApp Business
-- Las plantillas deben ser aprobadas previamente en Meta Business Manager
-- En desarrollo local, usa ngrok: `ngrok http 3001`
+- Meta tiene que aprobar la cuenta de WhatsApp Business.
+- Fuera de la ventana de 24 horas desde el último mensaje del cliente, Meta solo permite **plantillas** aprobadas.
+- En local puedes exponer el servidor con `ngrok http 3001` para probar el webhook.

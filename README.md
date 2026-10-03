@@ -1,0 +1,99 @@
+# Epikaizo Services
+
+Web pública y panel de gestión de Epikaizo: construcción y mantenimiento, gestión administrativa y envíos de paquetes y dinero en Guinea Ecuatorial.
+
+## Qué hay
+
+| Parte | Dónde | Qué hace |
+|---|---|---|
+| Web pública | `public/index.html`, `public/css/site.css`, `public/js/site.js` | Servicios, cotizador con las tarifas reales, rastreo por guía EPZ, formulario de contacto, asistente y WhatsApp |
+| Panel | `public/panel.html`, `public/js/panel/` | Resumen, envíos, servicios y obras, clientes, bandeja, facturas, caja, informes, equipo, proveedores, actividad y ajustes |
+| Servidor | `server/src/` | API Express + Postgres. Solo publica la carpeta `public/` |
+| Pruebas | `server/test/` | Seguridad y flujos completos contra una base de datos de pruebas |
+
+## Arrancar en local
+
+Necesitas Node 22 y Postgres 16.
+
+```bash
+cd server
+cp .env.example .env    # rellena DATABASE_URL, JWT_SECRET, ADMIN_EMAIL y ADMIN_PASSWORD
+npm install
+npm run dev             # http://localhost:3001  ·  panel en /panel
+```
+
+En el primer arranque se crean las tablas y el administrador inicial (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). Al entrar por primera vez, el panel obliga a cambiar la contraseña. **No existe ninguna contraseña por defecto.**
+
+Para crear o recuperar un administrador desde la terminal (también en la Shell de Render):
+
+```bash
+npm run create-admin -- correo@empresa.com "Nombre Apellido"
+```
+
+## Pruebas
+
+```bash
+createdb epikaizo_test
+TEST_DATABASE_URL=postgresql://USUARIO:CLAVE@localhost:5432/epikaizo_test npm test
+```
+
+Las pruebas borran y recrean la base de datos de pruebas: no apuntes `TEST_DATABASE_URL` a producción. GitHub Actions las ejecuta en cada cambio (`.github/workflows/ci.yml`).
+
+## Roles
+
+| Rol | Puede |
+|---|---|
+| Operador | Envíos, servicios y obras, clientes y bandeja |
+| Gestor | Lo anterior, más facturas, caja, informes, equipo y proveedores |
+| Administrador | Todo, incluidos accesos al panel, ajustes, actividad y copia de seguridad |
+
+La empresa y el rol salen siempre de la sesión del usuario, nunca de lo que envía el navegador.
+
+## Seguridad
+
+- Sesión en cookie `HttpOnly`, `SameSite=Strict` y `Secure`. El JavaScript no puede leer el token.
+- Contraseñas con bcrypt.
+- Bloqueo de 15 minutos tras 5 intentos fallidos.
+- Al cambiar la contraseña, el rol o bloquear a alguien, se cierran sus sesiones.
+- Sin registro público: las cuentas las crea un administrador, con contraseña temporal.
+- Consultas SQL siempre con parámetros. Toda entrada se valida en el servidor.
+- El panel pinta los datos como texto, así que no hay XSS posible por `innerHTML`.
+- Cabeceras CSP, `X-Frame-Options` y HSTS. Fuentes alojadas en el propio servidor: la web no hace peticiones a terceros.
+- Límite de peticiones en login, contacto, rastreo, analítica y asistente.
+- El webhook de WhatsApp comprueba la firma de Meta (`WHATSAPP_APP_SECRET`).
+- El rastreo público muestra el nombre recortado de quien recibe y nunca teléfonos.
+- La exportación CSV neutraliza fórmulas de Excel.
+- Registro de actividad de solo lectura.
+
+## Desplegar en Render
+
+`render.yaml` ya está preparado (`rootDir: server`). En el panel de Render rellena:
+
+- `DATABASE_URL`
+- `ADMIN_EMAIL` y `ADMIN_PASSWORD` (mínimo 12 caracteres)
+- Las claves de WhatsApp, Google AI y Gmail si las usas
+
+`JWT_SECRET` se genera solo.
+
+El webhook de WhatsApp es `https://TU-DOMINIO/api/whatsapp`. El verify token es el valor que pongas en `WHATSAPP_VERIFY_TOKEN`.
+
+Las tablas de la versión anterior (con fechas en texto) no se borran: al migrar se renombran a `legacy_*` para conservar cualquier dato.
+
+## Estructura
+
+```
+public/                 lo único que se publica
+  index.html            web
+  panel.html            panel (módulos en js/panel/)
+  login.html            acceso del equipo
+  verificar.html        verificación del QR de las facturas
+  privacidad.html       política de privacidad (borrador, revisar con un abogado)
+  css/ js/ img/ fonts/
+server/
+  src/app.js            rutas y permisos por rol, a la vista en un solo sitio
+  src/migrations/       esquema SQL versionado
+  src/routes/           una ruta por área
+  src/services/         facturas, WhatsApp, ajustes, clientes, auditoría
+  test/                 pruebas
+assets-originales/      fotos y logo en alta resolución (no se publican)
+```

@@ -1,0 +1,11 @@
+{
+  "name": "Epikaizo Services",
+  "short_name": "Epikaizo",
+  "description": "Construcción, gestión administrativa y envíos de paquetes y dinero en Guinea Ecuatorial.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#070594",
+  "lang": "es",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

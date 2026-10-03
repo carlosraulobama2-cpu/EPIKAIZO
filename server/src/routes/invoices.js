@@ -1,86 +1,87 @@
+// Facturas: listado, alta manual, cobro, anulación y envío por WhatsApp. Solo gestores y administradores.
 const express = require('express');
+const db = require('../db');
+const { route, validate, paging, text, phone, email, number, oneOf, HttpError } = require('../lib/http');
+const { filters } = require('../lib/list');
+const { audit } = require('../services/audit');
+const { createInvoice, sendInvoiceWhatsApp, qrPng } = require('../services/invoices');
+const { getSettings } = require('../services/settings');
+
 const router = express.Router();
-const fs = require('fs');
-const path = require('path');
-const { authenticate } = require('../middleware/auth');
-const { requireTenant } = require('../middleware/plan');
-const { prepare } = require('../config/database');
-const { createInvoice, sendInvoiceWhatsApp } = require('../services/invoiceService');
 
-router.use(authenticate);
-router.use(requireTenant);
+router.get(
+  '/',
+  route(async (req, res) => {
+    const { limit, offset } = paging(req.query);
+    const f = filters(req.tenantId)
+      .eq('status', req.query.status, ['emitida', 'enviada', 'pagada', 'anulada'])
+      .range('created_at', req.query.from, req.query.to)
+      .search(['number', 'client_name', 'client_phone', 'concept'], req.query.q);
+    const [items, count, totals] = await Promise.all([
+      db.many(`SELECT * FROM invoices WHERE ${f.sql} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
+      db.one(`SELECT count(*)::int AS n FROM invoices WHERE ${f.sql}`, f.params),
+      db.one(
+        `SELECT COALESCE(sum(amount) FILTER (WHERE status IN ('emitida', 'enviada')), 0) AS pending,
+                COALESCE(sum(amount) FILTER (WHERE status = 'pagada'), 0) AS paid
+           FROM invoices WHERE ${f.sql}`,
+        f.params
+      ),
+    ]);
+    res.json({ items, total: count.n, totals });
+  })
+);
 
-router.get('/', (req, res) => {
-  try {
-    const tenantId = req.tenantId;
-    const rows = prepare('SELECT * FROM invoices WHERE tenant_id = ? ORDER BY date DESC').all(tenantId);
-    res.json({ invoices: rows });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get('/:id', (req, res) => {
-  try {
-    const tenantId = req.tenantId;
-    const invoice = prepare('SELECT * FROM invoices WHERE id = ? AND tenant_id = ?').get(req.params.id, tenantId);
-    if (!invoice) return res.status(404).json({ error: 'Factura no encontrada' });
-    res.json({ invoice });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.get('/:id/qr', (req, res) => {
-  try {
-    const tenantId = req.tenantId;
-    const invoice = prepare('SELECT * FROM invoices WHERE id = ? AND tenant_id = ?').get(req.params.id, tenantId);
-    if (!invoice || !invoice.qr_path) return res.status(404).json({ error: 'QR no disponible' });
-    const fullPath = path.join(__dirname, '../..', '..', invoice.qr_path);
-    if (!fs.existsSync(fullPath)) return res.status(404).json({ error: 'Archivo QR no encontrado' });
-    res.sendFile(fullPath);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/', async (req, res) => {
-  try {
-    const tenantId = req.tenantId;
-    const { client_name, client_phone, client_email, amount, currency, verify_url } = req.body;
-    if (!client_name || !client_phone || !amount) {
-      return res.status(400).json({ error: 'client_name, client_phone y amount son requeridos' });
-    }
-    const numericAmount = Number(amount);
-    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-      return res.status(400).json({ error: 'amount debe ser un número mayor a 0' });
-    }
-    const cleanText = (v) => (typeof v === 'string' ? v.replace(/[<>]/g, '').trim() : '');
-
-    const invoice = await createInvoice({
-      tenantId,
-      clientName: cleanText(client_name),
-      clientPhone: cleanText(client_phone),
-      clientEmail: cleanText(client_email),
-      amount: numericAmount,
-      currency: cleanText(currency) || 'XAF',
-      verifyUrl: cleanText(verify_url)
+router.post(
+  '/',
+  route(async (req, res) => {
+    const input = validate(req.body, {
+      client_name: text({ min: 2, max: 120 }),
+      client_phone: phone(),
+      client_email: email({ optional: true }),
+      concept: text({ min: 3, max: 200 }),
+      amount: number({ min: 0.01 }),
     });
+    const { rates } = await getSettings(req.tenantId);
+    const invoice = await createInvoice(req.tenantId, { ...input, currency: rates.currency }, { userId: req.user.id });
+    await audit(req, 'factura.crear', { entity: 'invoice', entityId: invoice.id, details: { numero: invoice.number, importe: invoice.amount } });
+    res.status(201).json({ invoice });
+  })
+);
 
-    res.json({ success: true, invoice });
-  } catch (err) {
-    console.error('Error creating invoice:', err);
-    res.status(500).json({ error: err.message });
-  }
-});
+async function load(req) {
+  const invoice = await db.one('SELECT * FROM invoices WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
+  if (!invoice) throw new HttpError(404, 'Factura no encontrada');
+  return invoice;
+}
 
-router.post('/:id/send-whatsapp', async (req, res) => {
-  try {
-    const result = await sendInvoiceWhatsApp(req.params.id);
-    res.json(result);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+router.get('/:id/qr.png', route(async (req, res) => {
+  const invoice = await load(req);
+  res.type('png').send(await qrPng(invoice));
+}));
+
+router.post(
+  '/:id/status',
+  route(async (req, res) => {
+    const input = validate(req.body, { status: oneOf(['pagada', 'anulada']) });
+    const invoice = await load(req);
+    if (invoice.status === 'anulada') throw new HttpError(409, 'La factura está anulada');
+    if (invoice.status === input.status) return res.json({ invoice });
+    const updated = await db.one('UPDATE invoices SET status = $2 WHERE id = $1 RETURNING *', [invoice.id, input.status]);
+    await audit(req, `factura.${input.status}`, { entity: 'invoice', entityId: invoice.id, details: { numero: invoice.number } });
+    res.json({ invoice: updated });
+  })
+);
+
+router.post(
+  '/:id/send',
+  route(async (req, res) => {
+    const invoice = await load(req);
+    if (invoice.status === 'anulada') throw new HttpError(409, 'No se envía una factura anulada');
+    const { company } = await getSettings(req.tenantId);
+    const updated = await sendInvoiceWhatsApp(invoice, company.name);
+    await audit(req, 'factura.enviar', { entity: 'invoice', entityId: invoice.id, details: { numero: invoice.number } });
+    res.json({ invoice: updated });
+  })
+);
 
 module.exports = router;

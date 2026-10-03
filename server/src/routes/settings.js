@@ -1,40 +1,67 @@
+// Ajustes de la empresa y copia de seguridad (exportar). Leer: cualquier usuario; cambiar: admin.
 const express = require('express');
+const db = require('../db');
+const { route, validate, text, phone, email, number, oneOf } = require('../lib/http');
+const { requireRole } = require('../middleware/auth');
+const { audit } = require('../services/audit');
+const { getSettings, saveSetting } = require('../services/settings');
+
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
-const { requireTenant } = require('../middleware/plan');
-const { prepare, saveDb } = require('../config/database');
 
-router.use(authenticate);
-router.use(requireTenant);
+router.get('/', route(async (req, res) => res.json(await getSettings(req.tenantId))));
 
-router.get('/', (req, res) => {
-  try {
-    const rows = prepare('SELECT key, value FROM settings WHERE tenant_id = ?').all(req.tenantId);
-    const settings = {};
-    rows.forEach(r => { settings[r.key] = JSON.parse(r.value); });
-    res.json(settings);
-  } catch (err) {
-    res.status(500).json({ error: 'Error' });
-  }
-});
-
-router.put('/', (req, res) => {
-  try {
-    const settings = req.body || {};
-    Object.keys(settings).forEach(key => {
-      const existing = prepare('SELECT id FROM settings WHERE tenant_id = ? AND key = ?').get(req.tenantId, key);
-      const now = new Date().toISOString();
-      if (existing) {
-        prepare('UPDATE settings SET value=?, updated_at=? WHERE id=?').run(JSON.stringify(settings[key]), now, existing.id);
-      } else {
-        prepare('INSERT INTO settings (id, tenant_id, key, value, updated_at) VALUES (?,?,?,?,?)').run(require('uuid').v4(), req.tenantId, key, JSON.stringify(settings[key]), now);
-      }
+router.put(
+  '/',
+  requireRole('admin'),
+  route(async (req, res) => {
+    const body = req.body || {};
+    const company = validate(body.company, {
+      name: text({ min: 2, max: 120 }),
+      phone: text({ min: 6, max: 30 }),
+      whatsapp: phone(),
+      email: email(),
+      address: text({ max: 200 }),
+      hours: text({ max: 120 }),
+      city: text({ max: 80 }),
     });
-    saveDb();
-    res.json({ updated: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Error' });
-  }
-});
+    const scopes = (obj, max) => validate(obj, { local: number({ min: 0, max }), nacional: number({ min: 0, max }), internacional: number({ min: 0, max }) });
+    const r = body.rates || {};
+    const rates = {
+      ...validate(r, { currency: oneOf(['USD', 'EUR', 'XAF']), package_base_fee: number({ min: 0, max: 1e7 }), money_min_commission: number({ min: 0, max: 1e7 }) }),
+      package_per_kg: scopes(r.package_per_kg, 1e7),
+      money_commission_pct: scopes(r.money_commission_pct, 50),
+    };
+    const cities = Array.isArray(body.cities)
+      ? [...new Set(body.cities.map((c) => String(c).trim()).filter((c) => c && c.length <= 60))].slice(0, 60)
+      : undefined;
+    await db.tx(async (client) => {
+      await saveSetting(req.tenantId, 'company', company, client);
+      await saveSetting(req.tenantId, 'rates', rates, client);
+      if (cities && cities.length) await saveSetting(req.tenantId, 'cities', cities, client);
+      await audit(req, 'ajustes.guardar', { entity: 'settings', details: { rates } }, client);
+    });
+    res.json(await getSettings(req.tenantId));
+  })
+);
+
+// Exportar todo (JSON). La importación masiva se quitó: permitía borrar datos e inyectar SQL.
+const EXPORT_TABLES = ['clients', 'shipments', 'shipment_events', 'jobs', 'messages', 'invoices', 'cash_movements', 'employees', 'providers'];
+
+router.get(
+  '/export',
+  requireRole('admin'),
+  route(async (req, res) => {
+    const data = {};
+    for (const table of EXPORT_TABLES) {
+      data[table] = table === 'shipment_events'
+        ? await db.many('SELECT e.* FROM shipment_events e JOIN shipments s ON s.id = e.shipment_id WHERE s.tenant_id = $1', [req.tenantId])
+        : await db.many(`SELECT * FROM ${table} WHERE tenant_id = $1`, [req.tenantId]);
+    }
+    await audit(req, 'copia.exportar', { entity: 'settings' });
+    const day = new Date().toISOString().slice(0, 10);
+    res.setHeader('Content-Disposition', `attachment; filename="epikaizo-copia-${day}.json"`);
+    res.json({ exported_at: new Date().toISOString(), version: 2, data });
+  })
+);
 
 module.exports = router;
