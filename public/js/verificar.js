@@ -14,9 +14,10 @@
     if (!res.ok) throw new Error('not found');
     const { invoice, company } = await res.json();
     const money = new Intl.NumberFormat('es-ES', { style: 'currency', currency: invoice.currency, currencyDisplay: 'narrowSymbol' }).format(invoice.amount);
-    const status = { emitida: 'Emitida, pendiente de pago', enviada: 'Enviada, pendiente de pago', pagada: 'Pagada', anulada: 'ANULADA: no es válida' }[invoice.status] || invoice.status;
+    const status = { emitida: 'Emitida, pendiente de pago', enviada: 'Enviada, pendiente de pago', parcial: 'Pagada en parte', pagada: 'Pagada', anulada: 'ANULADA: no es válida', pendiente: 'Presupuesto pendiente de aceptar', aceptado: 'Presupuesto aceptado', rechazado: 'Presupuesto rechazado', facturado: 'Presupuesto ya facturado' }[invoice.status] || invoice.status;
     const dl = document.createElement('dl');
-    for (const [k, v] of [['Número', invoice.number], ['Emitida por', company.name], ['Cliente', invoice.client_name], ['Concepto', invoice.concept], ['Importe', money], ['Fecha', new Date(invoice.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })], ['Estado', status]]) {
+    const kind = { factura: 'Factura', presupuesto: 'Presupuesto', rectificativa: 'Factura rectificativa' }[invoice.kind] || 'Factura';
+    for (const [k, v] of [['Documento', kind], ['Número', invoice.number], ['Emitida por', company.name], ['Cliente', invoice.client_name], ['Concepto', invoice.concept], ['Importe', money], ['Fecha', new Date(invoice.issue_date || invoice.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })], ['Estado', status]]) {
       const dt = document.createElement('dt');
       dt.textContent = k;
       const dd = document.createElement('dd');
@@ -27,7 +28,7 @@
     note.className = 'muted small';
     note.style.marginTop = '20px';
     note.textContent = `Si algún dato no coincide con tu factura en papel, llámanos al ${company.phone}.`;
-    box.replaceChildren(banner(invoice.status === 'anulada' ? 'Esta factura existe pero está anulada.' : '✓ Factura auténtica de Epikaizo Services', invoice.status !== 'anulada'), dl, note);
+    box.replaceChildren(banner(invoice.status === 'anulada' ? 'Este documento existe pero está anulado.' : `✓ ${kind} auténtico/a de ${company.name}`, invoice.status !== 'anulada'), dl, note);
   } catch {
     box.replaceChildren(banner('No encontramos esta factura. Puede ser falsa: llámanos al +240 222 580 828 antes de pagar.', false));
   }

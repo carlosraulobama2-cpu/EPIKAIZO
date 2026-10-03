@@ -23,7 +23,12 @@ const LEDGER = `
   UNION ALL
   SELECT tenant_id, COALESCE(finished_at, updated_at)::date, COALESCE(price, 0), 0 FROM jobs WHERE status = 'terminado'
   UNION ALL
-  SELECT tenant_id, date, CASE WHEN type = 'ingreso' THEN amount ELSE 0 END, CASE WHEN type = 'gasto' THEN amount ELSE 0 END FROM cash_movements`;
+  SELECT tenant_id, date, CASE WHEN type = 'ingreso' THEN amount ELSE 0 END, CASE WHEN type = 'gasto' THEN amount ELSE 0 END FROM cash_movements
+  UNION ALL
+  -- Facturas que no vienen de un envío ni de un trabajo (venta de vehículos, gestiones...): cuenta la
+  -- base imponible (el IVA no es ingreso). Una rectificativa resta lo que anula.
+  SELECT tenant_id, issue_date, CASE WHEN kind = 'factura' THEN subtotal ELSE -subtotal END, 0 FROM invoices
+   WHERE kind IN ('factura', 'rectificativa') AND shipment_id IS NULL AND job_id IS NULL`;
 
 router.get(
   '/dashboard',
@@ -44,7 +49,7 @@ router.get(
            (SELECT count(*)::int FROM shipments WHERE tenant_id = $1 AND status = 'registrado' AND created_at < now() - interval '48 hours') AS shipments_stale,
            (SELECT count(*)::int FROM jobs WHERE tenant_id = $1 AND status NOT IN ('terminado', 'cancelado')) AS jobs_open,
            (SELECT count(*)::int FROM messages WHERE tenant_id = $1 AND status = 'nuevo' AND direction = 'entrante') AS messages_new,
-           (SELECT COALESCE(sum(amount), 0) FROM invoices WHERE tenant_id = $1 AND status IN ('emitida', 'enviada')) AS invoices_pending`,
+           (SELECT COALESCE(sum(amount - paid_amount), 0) FROM invoices WHERE tenant_id = $1 AND kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial')) AS invoices_pending`,
         [t]
       ),
       db.many(
@@ -133,8 +138,10 @@ const EXPORTS = {
             FROM cash_movements WHERE tenant_id = $1 AND date BETWEEN $2 AND $3 ORDER BY date`,
   },
   facturas: {
-    sql: `SELECT number AS numero, client_name AS cliente, client_phone AS telefono, concept AS concepto, amount AS importe, currency AS moneda, status AS estado, created_at AS fecha
-            FROM invoices WHERE tenant_id = $1 AND created_at::date BETWEEN $2 AND $3 ORDER BY created_at`,
+    sql: `SELECT number AS numero, kind AS tipo, issue_date AS fecha, client_name AS cliente, client_document AS documento, client_phone AS telefono,
+                 concept AS concepto, subtotal AS base_imponible, tax_amount AS impuesto, amount AS total, paid_amount AS cobrado,
+                 currency AS moneda, status AS estado, due_date AS vencimiento
+            FROM invoices WHERE tenant_id = $1 AND issue_date BETWEEN $2 AND $3 ORDER BY issue_date, number`,
   },
 };
 

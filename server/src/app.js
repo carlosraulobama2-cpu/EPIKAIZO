@@ -55,6 +55,7 @@ function createApp() {
   api.use('/clients', operador, require('./routes/clients'));
   api.use('/inbox', operador, require('./routes/inbox'));
   api.use('/invoices', gestor, require('./routes/invoices'));
+  api.use('/vehicles', operador, require('./routes/vehicles'));
   api.use('/settings', operador, require('./routes/settings'));
   api.use('/users', admin, require('./routes/users'));
   api.use('/audit', admin, require('./routes/audit'));

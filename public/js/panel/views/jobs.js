@@ -1,8 +1,9 @@
 // Servicios y obras: construcción, mantenimiento, oficios y gestión administrativa.
 import { api } from '../api.js';
-import { h, pageHead, badge, button, primary, empty, formDrawer, field, section, toast, confirmDialog, busy } from '../ui.js';
+import { h, pageHead, badge, button, primary, empty, formDrawer, field, section, toast, confirmDialog } from '../ui.js';
 import { date, STATUS } from '../format.js';
 import { listCard, searchInput, selectFilter, tabs } from './_list.js';
+import { openDocEditor } from './_billing.js';
 
 export default async function jobs(root, ctx) {
   const [{ categories }, employees] = await Promise.all([
@@ -51,16 +52,22 @@ function openForm(ctx, list, categories, employees, job) {
     if (!editing) return;
     const foot = d.panel.querySelector('.drawer__foot');
     if (ctx.can('gestor')) {
+      // Presupuesto y factura salen con los datos del trabajo ya rellenos; se pueden añadir líneas
+      // (materiales, mano de obra, desplazamiento...) antes de emitir.
+      const prefill = {
+        client_name: job.client_name,
+        client_phone: job.client_phone,
+        client_address: [job.address, job.city].filter(Boolean).join(', '),
+        job_id: job.id,
+        lines: [{ description: `${categories[job.category]}: ${job.title}`, quantity: 1, unit_price: job.price || job.budget || '' }],
+      };
       foot.prepend(button('Facturar', {
         iconName: 'invoice',
-        onClick: async (e) => {
-          try {
-            const res = await busy(e.currentTarget, api.post(`/jobs/${job.id}/invoice`));
-            toast(res.existing ? `Ya tenía la factura ${res.invoice.number}` : `Factura ${res.invoice.number} creada`);
-          } catch (err) {
-            toast(err.message, 'bad');
-          }
-        },
+        onClick: () => { d.close(); openDocEditor(ctx, { kind: 'factura', prefill, onSaved: () => list.reload() }); },
+      }));
+      foot.prepend(button('Presupuestar', {
+        iconName: 'edit',
+        onClick: () => { d.close(); openDocEditor(ctx, { kind: 'presupuesto', prefill: { ...prefill, notes: 'Plazo de ejecución: a convenir. Forma de pago: 30 % al aceptar, certificaciones según avance de obra y resto a la entrega.' }, onSaved: () => list.reload() }); },
       }));
       foot.prepend(button('', {
         variant: 'danger', iconName: 'trash', title: 'Borrar trabajo',

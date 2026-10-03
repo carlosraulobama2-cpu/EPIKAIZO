@@ -128,7 +128,7 @@ router.get(
   '/invoices/:id',
   route(async (req, res) => {
     if (!/^[0-9a-f-]{36}$/i.test(req.params.id)) throw new HttpError(404, 'Factura no encontrada');
-    const invoice = await db.one('SELECT number, client_name, concept, amount, currency, status, created_at FROM invoices WHERE id = $1', [req.params.id]);
+    const invoice = await db.one('SELECT kind, number, client_name, concept, subtotal, tax_amount, amount, paid_amount, currency, status, issue_date, created_at FROM invoices WHERE id = $1', [req.params.id]);
     if (!invoice) throw new HttpError(404, 'Factura no encontrada');
     const { company } = await getSettings(tenantId);
     res.json({ invoice: { ...invoice, client_name: maskName(invoice.client_name) }, company: { name: company.name, phone: company.phone } });

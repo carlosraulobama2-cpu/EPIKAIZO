@@ -31,6 +31,17 @@ router.put(
       package_per_kg: scopes(r.package_per_kg, 1e7),
       money_commission_pct: scopes(r.money_commission_pct, 50),
     };
+    const billingSettings = body.billing
+      ? validate(body.billing, {
+        tax_name: text({ min: 2, max: 20 }),
+        tax_rate: number({ min: 0, max: 50 }),
+        tax_id: text({ max: 40, optional: true }),
+        bank_account: text({ max: 120, optional: true }),
+        payment_days: number({ min: 0, max: 365 }),
+        quote_valid_days: number({ min: 1, max: 365 }),
+        footer: text({ max: 300, optional: true }),
+      })
+      : null;
     const cities = Array.isArray(body.cities)
       ? [...new Set(body.cities.map((c) => String(c).trim()).filter((c) => c && c.length <= 60))].slice(0, 60)
       : undefined;
@@ -38,6 +49,7 @@ router.put(
       await saveSetting(req.tenantId, 'company', company, client);
       await saveSetting(req.tenantId, 'rates', rates, client);
       if (cities && cities.length) await saveSetting(req.tenantId, 'cities', cities, client);
+      if (billingSettings) await saveSetting(req.tenantId, 'billing', billingSettings, client);
       await audit(req, 'ajustes.guardar', { entity: 'settings', details: { rates } }, client);
     });
     res.json(await getSettings(req.tenantId));
@@ -45,7 +57,7 @@ router.put(
 );
 
 // Exportar todo (JSON). La importación masiva se quitó: permitía borrar datos e inyectar SQL.
-const EXPORT_TABLES = ['clients', 'shipments', 'shipment_events', 'jobs', 'messages', 'invoices', 'cash_movements', 'employees', 'providers'];
+const EXPORT_TABLES = ['clients', 'shipments', 'shipment_events', 'jobs', 'messages', 'invoices', 'invoice_payments', 'vehicles', 'cash_movements', 'employees', 'providers'];
 
 router.get(
   '/export',
@@ -53,9 +65,9 @@ router.get(
   route(async (req, res) => {
     const data = {};
     for (const table of EXPORT_TABLES) {
-      data[table] = table === 'shipment_events'
-        ? await db.many('SELECT e.* FROM shipment_events e JOIN shipments s ON s.id = e.shipment_id WHERE s.tenant_id = $1', [req.tenantId])
-        : await db.many(`SELECT * FROM ${table} WHERE tenant_id = $1`, [req.tenantId]);
+      if (table === 'shipment_events') data[table] = await db.many('SELECT e.* FROM shipment_events e JOIN shipments s ON s.id = e.shipment_id WHERE s.tenant_id = $1', [req.tenantId]);
+      else if (table === 'invoice_payments') data[table] = await db.many('SELECT p.* FROM invoice_payments p JOIN invoices i ON i.id = p.invoice_id WHERE i.tenant_id = $1', [req.tenantId]);
+      else data[table] = await db.many(`SELECT * FROM ${table} WHERE tenant_id = $1`, [req.tenantId]);
     }
     await audit(req, 'copia.exportar', { entity: 'settings' });
     const day = new Date().toISOString().slice(0, 10);

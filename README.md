@@ -49,6 +49,25 @@ Las pruebas borran y recrean la base de datos de pruebas: no apuntes `TEST_DATAB
 
 La empresa y el rol salen siempre de la sesión del usuario, nunca de lo que envía el navegador.
 
+## Facturación
+
+| Caso | Documento | Cómo se hace en el panel |
+|---|---|---|
+| Obra o construcción | Presupuesto (PRE) → facturas de anticipo, certificación y liquidación | Servicios y obras → **Presupuestar** → el cliente acepta → **Facturar** un % (nunca más del 100 %) |
+| Servicio o reparación | Factura (FAC) con líneas e IVA | Servicios y obras → **Facturar**, o Facturación → **Nueva factura** |
+| Venta de vehículo | Factura con bastidor, matrícula y km, y contrato de compraventa | Vehículos → **Vender** (admite una señal y el resto pendiente) |
+| Envío | Factura automática al registrarlo; queda pagada si se cobra en el mostrador | Automático |
+| Error en una factura | Factura rectificativa (REC) | **Anular**: nunca se borra ni se edita una factura emitida |
+
+Otras reglas:
+
+- **Numeración:** cada serie (FAC, PRE, REC) tiene su numeración anual correlativa.
+- **Cálculo:** los importes los calcula el servidor a partir de las líneas.
+- **Cobros:** pueden ser parciales (la factura pasa a *parcial* y luego a *pagada*). Una factura con cobros solo se anula si se confirma la devolución al cliente.
+- **Impresión:** `documento.html` imprime en A4 o guarda en PDF con el QR de verificación.
+- **Ajustes:** en Ajustes → Facturación se configuran el NIF, la cuenta bancaria, el impuesto por defecto (15 %), los días de pago y la validez de los presupuestos. **Confirma el IVA y los textos legales con tu asesor.**
+- **Informes:** las facturas cuentan por su base imponible (el IVA no es ingreso) y las rectificativas restan.
+
 ## Seguridad
 
 - Sesión en cookie `HttpOnly`, `SameSite=Strict` y `Secure`. El JavaScript no puede leer el token.

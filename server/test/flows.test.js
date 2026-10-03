@@ -64,8 +64,11 @@ test('los estados siguen un orden: un envío entregado no vuelve atrás', async 
 test('cancelar un envío anula su factura', async () => {
   const { data } = await admin.post('/api/shipments', PACKAGE);
   await admin.post(`/api/shipments/${data.shipment.id}/status`, { status: 'cancelado' });
-  const inv = await db.one('SELECT status FROM invoices WHERE shipment_id = $1', [data.shipment.id]);
+  const inv = await db.one("SELECT id, status FROM invoices WHERE shipment_id = $1 AND kind = 'factura'", [data.shipment.id]);
   assert.equal(inv.status, 'anulada');
+  // No se borra: queda su factura rectificativa (REC) que la compensa
+  const rec = await db.one("SELECT number FROM invoices WHERE rectifies_id = $1 AND kind = 'rectificativa'", [inv.id]);
+  assert.match(rec.number, /^REC-\d{4}-\d{5}$/);
 });
 
 test('las facturas se numeran sin duplicados aunque lleguen a la vez', async () => {
@@ -89,7 +92,10 @@ test('mensaje de la web convertido en trabajo, facturado y terminado', async () 
   await admin.patch(`/api/jobs/${job.data.item.id}`, { price: 1500, status: 'terminado' });
   const invoice = await admin.post(`/api/jobs/${job.data.item.id}/invoice`);
   assert.equal(invoice.status, 201);
-  assert.equal(Number(invoice.data.invoice.amount), 1500);
+  // Precio del trabajo = base imponible; se añade el IVA de Ajustes (15 % por defecto)
+  assert.equal(Number(invoice.data.invoice.subtotal), 1500);
+  assert.equal(Number(invoice.data.invoice.tax_amount), 225);
+  assert.equal(Number(invoice.data.invoice.amount), 1725);
 });
 
 test('resumen e informes: ingresos = comisiones + trabajos + caja; gastos de caja', async () => {
@@ -98,8 +104,8 @@ test('resumen e informes: ingresos = comisiones + trabajos + caja; gastos de caj
   assert.equal(dash.status, 200);
   assert.equal(dash.data.chart.length, 6);
   assert.equal(Number(dash.data.month.expense), 40);
-  // 32 + 60 (dinero) + 32 (entregado) + 1500 (trabajo); el cancelado no cuenta
-  assert.equal(Number(dash.data.month.income), 32 + 60 + 32 + 1500);
+  // 32 + 60 (dinero) + 32 (entregado) + 1500 (trabajo) + 8 facturas manuales de 100; el cancelado no cuenta
+  assert.equal(Number(dash.data.month.income), 32 + 60 + 32 + 1500 + 800);
 
   const summary = await admin.get('/api/reports/summary');
   assert.equal(summary.status, 200);

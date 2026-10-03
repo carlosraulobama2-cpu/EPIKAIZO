@@ -8,7 +8,7 @@ const { requireRole } = require('../middleware/auth');
 const { audit } = require('../services/audit');
 const { upsertClient } = require('../services/clients');
 const { jobCode } = require('../services/codes');
-const { createInvoice } = require('../services/invoices');
+const billing = require('../services/billing');
 const { getSettings } = require('../services/settings');
 
 const router = express.Router();
@@ -137,14 +137,27 @@ router.post(
     if (!job) throw new HttpError(404, 'Trabajo no encontrado');
     const amount = Number(job.price || job.budget || 0);
     if (!(amount > 0)) throw new HttpError(422, 'Pon un precio al trabajo antes de facturarlo');
-    const existing = await db.one("SELECT * FROM invoices WHERE job_id = $1 AND status <> 'anulada'", [job.id]);
+    const existing = await db.one("SELECT * FROM invoices WHERE job_id = $1 AND kind = 'factura' AND status <> 'anulada' ORDER BY created_at LIMIT 1", [job.id]);
     if (existing) return res.json({ invoice: existing, existing: true });
-    const invoice = await createInvoice(
-      req.tenantId,
-      { client_name: job.client_name, client_phone: job.client_phone, concept: `${CATEGORIES[job.category]}: ${job.title} (${job.code})`, amount, currency: job.currency, job_id: job.id },
-      { userId: req.user.id }
-    );
-    await audit(req, 'factura.crear', { entity: 'invoice', entityId: invoice.id, details: { numero: invoice.number, trabajo: job.code } });
+    const settings = await getSettings(req.tenantId);
+    const invoice = await db.tx(async (client) => {
+      const inv = await billing.createDocument(
+        req.tenantId,
+        {
+          kind: 'factura',
+          client_id: job.client_id,
+          client_name: job.client_name,
+          client_phone: job.client_phone,
+          client_address: [job.address, job.city].filter(Boolean).join(', ') || null,
+          concept: `${CATEGORIES[job.category]}: ${job.title} (${job.code})`,
+          lines: [{ description: `${CATEGORIES[job.category]}: ${job.title} (${job.code})`, quantity: 1, unit_price: amount, tax_rate: settings.billing.tax_rate }],
+          job_id: job.id,
+        },
+        { userId: req.user.id, client, billing: settings.billing, currency: job.currency }
+      );
+      await audit(req, 'factura.crear', { entity: 'invoice', entityId: inv.id, details: { numero: inv.number, trabajo: job.code } }, client);
+      return inv;
+    });
     res.status(201).json({ invoice });
   })
 );

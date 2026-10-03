@@ -27,6 +27,14 @@ export default async function settings(root, ctx) {
       field({ name: 'pct_nacional', label: 'Nacional', type: 'number', step: '0.1', min: '0', max: '50', value: r.money_commission_pct.nacional, required: true }),
       field({ name: 'pct_internacional', label: 'Internacional', type: 'number', step: '0.1', min: '0', max: '50', value: r.money_commission_pct.internacional, required: true }),
       field({ name: 'money_min_commission', label: 'Comisión mínima', type: 'number', step: '0.01', min: '0', value: r.money_min_commission, required: true })) }),
+    card({ title: 'Facturación', subtitle: 'Datos que salen en facturas, presupuestos y contratos. Confirma el impuesto con tu asesor fiscal.', body: h('div', { class: 'form' },
+      field({ name: 'tax_id', label: 'NIF de la empresa', value: s.billing.tax_id }),
+      field({ name: 'bank_account', label: 'Cuenta bancaria para cobros', value: s.billing.bank_account, placeholder: 'Banco, nº de cuenta' }),
+      field({ name: 'tax_name', label: 'Nombre del impuesto', value: s.billing.tax_name, required: true }),
+      field({ name: 'tax_rate', label: 'Impuesto por defecto (%)', type: 'number', step: '0.01', min: '0', max: '50', value: s.billing.tax_rate, required: true }),
+      field({ name: 'payment_days', label: 'Días para pagar una factura', type: 'number', min: '0', max: '365', value: s.billing.payment_days, required: true }),
+      field({ name: 'quote_valid_days', label: 'Días de validez de un presupuesto', type: 'number', min: '1', max: '365', value: s.billing.quote_valid_days, required: true }),
+      field({ name: 'footer', label: 'Texto al pie de los documentos', value: s.billing.footer, full: true })) }),
     card({ title: 'Ciudades', subtitle: 'Una por línea. Salen en los formularios y en la web.', body: h('div', { class: 'form' },
       field({ name: 'cities', label: 'Ciudades con servicio', type: 'textarea', value: s.cities.join('\n'), full: true, required: true })) }));
 
@@ -43,6 +51,7 @@ export default async function settings(root, ctx) {
         package_per_kg: { local: v.kg_local, nacional: v.kg_nacional, internacional: v.kg_internacional },
         money_commission_pct: { local: v.pct_local, nacional: v.pct_nacional, internacional: v.pct_internacional },
       },
+      billing: { tax_name: v.tax_name, tax_rate: v.tax_rate, tax_id: v.tax_id, bank_account: v.bank_account, payment_days: v.payment_days, quote_valid_days: v.quote_valid_days, footer: v.footer },
       cities: String(v.cities || '').split('\n').map((x) => x.trim()).filter(Boolean),
     };
     try {

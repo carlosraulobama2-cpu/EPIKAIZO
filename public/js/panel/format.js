@@ -72,8 +72,18 @@ export const STATUS = {
   invoice: {
     emitida: ['Emitida', 'info'],
     enviada: ['Enviada', 'brand'],
+    parcial: ['Cobro parcial', 'warn'],
     pagada: ['Pagada', 'ok'],
     anulada: ['Anulada', 'bad'],
+    pendiente: ['Pendiente', 'info'],
+    aceptado: ['Aceptado', 'brand'],
+    rechazado: ['Rechazado', 'bad'],
+    facturado: ['Facturado', 'ok'],
+  },
+  vehicle: {
+    disponible: ['Disponible', 'ok'],
+    reservado: ['Reservado', 'warn'],
+    vendido: ['Vendido', ''],
   },
   message: {
     nuevo: ['Nuevo', 'bad'],
@@ -90,6 +100,9 @@ export const ROLE_HELP = {
   gestor: 'Operaciones, facturas, caja, informes, equipo y proveedores',
   operador: 'Envíos, trabajos, clientes y bandeja de mensajes',
 };
+export const DOC_KIND = { factura: 'Factura', presupuesto: 'Presupuesto', rectificativa: 'Factura rectificativa' };
+export const FUEL = { gasolina: 'Gasolina', diesel: 'Diésel', hibrido: 'Híbrido', electrico: 'Eléctrico' };
+export const TRANSMISSION = { manual: 'Manual', automatico: 'Automático' };
 export const PAYMENT = { efectivo: 'Efectivo', transferencia: 'Transferencia', movil: 'Pago móvil', tarjeta: 'Tarjeta' };
 export const SCOPE = { local: 'Local', nacional: 'Nacional', internacional: 'Internacional' };
 export const TOPIC = {

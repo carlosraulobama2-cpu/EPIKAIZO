@@ -1,20 +1,31 @@
 // Facturas: numeración correlativa, QR de verificación y envío por WhatsApp.
-const crypto = require('crypto');
 const QRCode = require('qrcode');
 const config = require('../config');
 const db = require('../db');
-const { invoiceNumber } = require('./codes');
+const { createDocument } = require('./billing');
+const { getSettings } = require('./settings');
 const whatsapp = require('./whatsapp');
 
+/**
+ * Factura de una sola línea sin impuesto (la de cada envío: el precio del envío ya es final).
+ * Para facturas con varias líneas e IVA se usa billing.createDocument.
+ */
 async function createInvoice(tenantId, data, { userId = null, client } = {}) {
-  const id = crypto.randomUUID();
-  const number = await invoiceNumber(tenantId, client);
-  return db.one(
-    `INSERT INTO invoices (id, tenant_id, number, client_name, client_phone, client_email, concept, amount, currency, shipment_id, job_id, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *`,
-    [id, tenantId, number, data.client_name, data.client_phone, data.client_email || null, data.concept, data.amount, data.currency,
-      data.shipment_id || null, data.job_id || null, userId],
-    client
+  const { billing } = await getSettings(tenantId);
+  return createDocument(
+    tenantId,
+    {
+      kind: 'factura',
+      client_id: data.client_id,
+      client_name: data.client_name,
+      client_phone: data.client_phone,
+      client_email: data.client_email,
+      concept: data.concept,
+      lines: [{ description: data.concept, quantity: 1, unit_price: data.amount, tax_rate: 0 }],
+      shipment_id: data.shipment_id,
+      job_id: data.job_id,
+    },
+    { userId, client, billing, currency: data.currency }
   );
 }
 
@@ -30,9 +41,11 @@ function money(value, currency) {
   return new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'USD' }).format(Number(value));
 }
 
+const DOC_NAME = { factura: 'la factura', presupuesto: 'el presupuesto', rectificativa: 'la factura rectificativa' };
+
 async function sendInvoiceWhatsApp(invoice, companyName) {
   const caption =
-    `Hola ${invoice.client_name}. Te enviamos la factura ${invoice.number} de ${companyName} por ${money(invoice.amount, invoice.currency)}. ` +
+    `Hola ${invoice.client_name}. Te enviamos ${DOC_NAME[invoice.kind || 'factura']} ${invoice.number} de ${companyName} por ${money(invoice.amount, invoice.currency)}. ` +
     `Escanea el código o abre ${verifyUrl(invoice)} para comprobarla.`;
   await whatsapp.sendImage(invoice.client_phone, `${config.publicUrl}/api/public/invoices/${invoice.id}/qr.png`, caption);
   return db.one("UPDATE invoices SET status = CASE WHEN status = 'emitida' THEN 'enviada' ELSE status END, sent_at = now() WHERE id = $1 RETURNING *", [invoice.id]);

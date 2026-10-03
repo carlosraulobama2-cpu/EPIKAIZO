@@ -23,15 +23,9 @@ async function nextNumber(tenantId, name, client) {
   return Number(row.value);
 }
 
-async function invoiceNumber(tenantId, client) {
-  const year = new Date().getFullYear();
-  const n = await nextNumber(tenantId, `factura-${year}`, client);
-  return `FAC-${year}-${String(n).padStart(5, '0')}`;
-}
-
 async function jobCode(tenantId, client) {
   const n = await nextNumber(tenantId, 'trabajo', client);
   return `SRV-${String(n).padStart(5, '0')}`;
 }
 
-module.exports = { newTrackingCode, invoiceNumber, jobCode };
+module.exports = { newTrackingCode, jobCode };

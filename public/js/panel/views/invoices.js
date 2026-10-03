@@ -1,98 +1,76 @@
-// Facturas: se crean solas con cada envío; también a mano o desde un trabajo terminado.
-import { api } from '../api.js';
-import { h, pageHead, badge, button, primary, empty, drawer, formDrawer, field, toast, busy, confirmDialog, card } from '../ui.js';
-import { date } from '../format.js';
+// Facturación: presupuestos, facturas (con cobros parciales) y rectificativas.
+import { h, icon, pageHead, badge, button, primary, empty } from '../ui.js';
+import { date, DOC_KIND } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
+import { openDocEditor, openDocDetail } from './_billing.js';
+
+const VIEWS = [
+  ['factura', 'Facturas', { kind: 'factura' }],
+  ['presupuesto', 'Presupuestos', { kind: 'presupuesto' }],
+  ['pendientes', 'Por cobrar', { status: 'pendientes' }],
+  ['vencidas', 'Vencidas', { status: 'vencidas' }],
+  ['rectificativa', 'Rectificativas', { kind: 'rectificativa' }],
+];
 
 export default async function invoices(root, ctx) {
-  const f = { status: '', q: ctx.query.get('q') || '' };
-  const totals = h('div', { class: 'grid grid--2', style: 'margin-bottom:16px' });
+  let view = ctx.query.get('ver') || 'factura';
+  const f = { q: ctx.query.get('q') || '', from: '', to: '' };
+  const kpis = h('div', { class: 'grid grid--kpi', style: 'margin-bottom:16px' });
+  const kpi = (iconName, label, value, foot, tone) => h('div', { class: 'card kpi' },
+    h('div', { class: 'kpi__label' }, icon(iconName), label),
+    h('div', { class: 'kpi__value', style: tone ? `color:var(${tone})` : null }, value),
+    h('div', { class: 'kpi__foot' }, foot));
+
   const list = listCard({
     endpoint: '/invoices',
-    filters: () => f,
+    filters: () => ({ ...f, ...VIEWS.find((v) => v[0] === view)[2] }),
     onData: (data) => {
-      totals.replaceChildren(
-        h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, 'Pendiente de cobro'), h('div', { class: 'kpi__value' }, ctx.money(data.totals.pending)), h('div', { class: 'kpi__foot' }, 'Facturas emitidas o enviadas sin pagar')),
-        h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, 'Cobrado'), h('div', { class: 'kpi__value' }, ctx.money(data.totals.paid)), h('div', { class: 'kpi__foot' }, 'Facturas marcadas como pagadas')));
+      const t = data.totals;
+      kpis.replaceChildren(
+        kpi('cash', 'Pendiente de cobro', ctx.money(t.pending), 'Facturas emitidas sin cobrar del todo'),
+        kpi('alert', 'Vencido', ctx.money(t.overdue), 'Pasada la fecha de vencimiento', Number(t.overdue) > 0 ? '--bad' : null),
+        kpi('check', 'Cobrado este mes', ctx.money(t.paid_month), 'De facturas emitidas este mes'),
+        kpi('invoice', 'Presupuestos abiertos', ctx.money(t.quotes_open), 'Pendientes o aceptados sin facturar'));
     },
-    onRowClick: (r) => open(ctx, r, list),
+    onRowClick: (r) => openDocDetail(ctx, r.id, { onChange: () => list.reload() }),
     toolbar: [
-      tabs([['', 'Todas'], ['emitida', 'Emitidas'], ['enviada', 'Enviadas'], ['pagada', 'Pagadas'], ['anulada', 'Anuladas']], (v) => { f.status = v; list.reload(true); }),
+      tabs(VIEWS.map(([v, l]) => [v, l]), (v) => { view = v; list.reload(true); }, view),
       searchInput('Número, cliente o concepto', (e) => { f.q = e.target.value; list.reloadDebounced(); }, f.q),
+      h('input', { class: 'input input--date', type: 'date', 'aria-label': 'Desde', onChange: (e) => { f.from = e.target.value; list.reload(true); } }),
+      h('input', { class: 'input input--date', type: 'date', 'aria-label': 'Hasta', onChange: (e) => { f.to = e.target.value; list.reload(true); } }),
     ],
-    emptyState: () => empty({ iconName: 'invoice', title: 'No hay facturas', text: 'Se crean automáticamente al registrar un envío.' }),
+    emptyState: () => empty({
+      iconName: 'invoice',
+      title: view === 'presupuesto' ? 'No hay presupuestos' : view === 'vencidas' ? 'Nada vencido. ¡Bien!' : 'No hay documentos',
+      text: view === 'presupuesto' ? 'Para obras y servicios grandes, empieza por un presupuesto.' : 'Las facturas de envíos se crean solas; las demás, con «Nueva factura».',
+    }),
     columns: [
-      { label: 'Número', render: (r) => primary(h('span', { class: 'mono' }, r.number), date(r.created_at)) },
+      { label: 'Número', render: (r) => primary(h('span', { class: 'mono' }, r.number), `${DOC_KIND[r.kind]} · ${date(r.issue_date)}`) },
       { label: 'Cliente', render: (r) => primary(r.client_name, r.client_phone) },
-      { label: 'Concepto', hideSm: true, render: (r) => r.concept },
-      { label: 'Estado', render: (r) => badge('invoice', r.status) },
-      { label: 'Importe', num: true, render: (r) => h('strong', null, ctx.money(r.amount)) },
+      { label: 'Concepto', hideSm: true, render: (r) => h('span', { class: 'clamp' }, r.concept) },
+      { label: 'Estado', render: (r) => [badge('invoice', r.status), r.overdue ? h('div', { class: 'small', style: 'color:var(--bad);margin-top:4px' }, `Vencida el ${date(r.due_date)}`) : null] },
+      { label: 'Total', num: true, render: (r) => primary(
+        h('strong', null, `${r.kind === 'rectificativa' ? '−' : ''}${ctx.money(r.amount)}`),
+        r.kind === 'factura' && Number(r.paid_amount) > 0 && r.status !== 'pagada' ? `Cobrado ${ctx.money(r.paid_amount)}` : r.kind === 'presupuesto' && r.status === 'pendiente' && r.valid_until ? `Válido hasta ${date(r.valid_until)}` : null) },
     ],
   });
+
   root.append(
-    pageHead('Facturas', 'Cada factura lleva un código QR para que el cliente compruebe que es auténtica.', [
+    pageHead('Facturación', 'Presupuestos, facturas con IVA, cobros parciales y rectificativas. Cada documento lleva un QR para que el cliente compruebe que es auténtico.', [
       button('Exportar CSV', { iconName: 'download', onClick: () => window.open('/api/reports/export/facturas.csv') }),
-      button('Nueva factura', { variant: 'primary', iconName: 'plus', onClick: () => create(ctx, list) }),
+      button('Nuevo presupuesto', { iconName: 'plus', onClick: () => openDocEditor(ctx, { kind: 'presupuesto', onSaved: () => list.reload() }) }),
+      button('Nueva factura', { variant: 'primary', iconName: 'plus', onClick: () => openDocEditor(ctx, { kind: 'factura', onSaved: () => list.reload() }) }),
     ]),
-    totals,
-    list.node
-  );
-  await list.reload();
-}
-
-function create(ctx, list) {
-  formDrawer({
-    title: 'Nueva factura',
-    subtitle: 'Para servicios que no son un envío (gestorías, asesoría, alquileres…).',
-    submitLabel: 'Emitir factura',
-    fields: [
-      field({ name: 'client_name', label: 'Cliente', required: true }),
-      field({ name: 'client_phone', label: 'Teléfono', type: 'tel', required: true }),
-      field({ name: 'client_email', label: 'Correo', type: 'email', full: true }),
-      field({ name: 'concept', label: 'Concepto', required: true, full: true }),
-      field({ name: 'amount', label: `Importe (${ctx.settings.rates.currency})`, type: 'number', step: '0.01', min: '0.01', required: true }),
-    ],
-    onSubmit: async (values) => {
-      const res = await api.post('/invoices', values);
-      toast(`Factura ${res.invoice.number} emitida`);
-      await list.reload(true);
-    },
-  });
-}
-
-function open(ctx, inv, list) {
-  const act = (label, run, opts = {}) => button(label, {
-    ...opts,
-    onClick: async (e) => {
-      if (opts.confirm && !(await confirmDialog(opts.confirm))) return;
-      try {
-        await busy(e.currentTarget, run());
-        d.close();
-        list.reload();
-      } catch (err) {
-        toast(err.message, 'bad');
-      }
-    },
-  });
-  const verify = `${location.origin}/verificar.html?f=${inv.id}`;
-  const d = drawer({
-    title: inv.number,
-    subtitle: `Emitida el ${date(inv.created_at, true)}`,
-    body: h('div', { class: 'stack' },
+    kpis,
+    list.node,
+    h('div', { class: 'card card__body help', style: 'margin-top:16px' },
+      h('h3', null, '¿Qué documento uso?'),
       h('dl', { class: 'dl' },
-        h('dt', null, 'Estado'), h('dd', null, badge('invoice', inv.status)),
-        h('dt', null, 'Cliente'), h('dd', null, `${inv.client_name} · ${inv.client_phone}`),
-        inv.client_email ? [h('dt', null, 'Correo'), h('dd', null, inv.client_email)] : null,
-        h('dt', null, 'Concepto'), h('dd', null, inv.concept),
-        h('dt', null, 'Importe'), h('dd', null, h('strong', null, ctx.money(inv.amount))),
-        inv.sent_at ? [h('dt', null, 'Enviada'), h('dd', null, date(inv.sent_at, true))] : null),
-      card({ title: 'Código QR de verificación', subtitle: 'El cliente lo escanea y ve que la factura es real.', body: h('div', { style: 'display:flex;gap:16px;align-items:center;flex-wrap:wrap' },
-        h('img', { src: `/api/invoices/${inv.id}/qr.png`, alt: 'Código QR de la factura', width: '140', height: '140' }),
-        h('div', { class: 'stack' }, h('a', { href: verify, target: '_blank', rel: 'noopener' }, 'Abrir página de verificación'), h('span', { class: 'small muted' }, verify))) })),
-    actions: inv.status === 'anulada' ? [] : [
-      act('Anular', () => api.post(`/invoices/${inv.id}/status`, { status: 'anulada' }).then(() => toast('Factura anulada')), { variant: 'danger', confirm: { title: 'Anular factura', text: `La factura ${inv.number} quedará anulada. No se puede deshacer.`, confirm: 'Anular', danger: true } }),
-      act('Enviar por WhatsApp', () => api.post(`/invoices/${inv.id}/send`).then(() => toast('Factura enviada')), { iconName: 'send' }),
-      inv.status !== 'pagada' ? act('Marcar pagada', () => api.post(`/invoices/${inv.id}/status`, { status: 'pagada' }).then(() => toast('Factura cobrada')), { variant: 'primary', iconName: 'check' }) : null,
-    ],
-  });
+        h('dt', null, 'Obra o construcción'), h('dd', null, 'Presupuesto → el cliente acepta → factura de anticipo → certificaciones según avanza la obra → liquidación final.'),
+        h('dt', null, 'Servicio o reparación'), h('dd', null, 'Factura directa desde el trabajo (o presupuesto antes, si el importe es alto).'),
+        h('dt', null, 'Venta de un vehículo'), h('dd', null, 'Desde Vehículos → Vender. Se emite la factura con bastidor, matrícula y km, y el contrato de compraventa.'),
+        h('dt', null, 'Me he equivocado'), h('dd', null, 'Anula la factura: se emite una rectificativa. Nunca se borra una factura.'))));
+  await list.reload();
+  if (ctx.params[0]) openDocDetail(ctx, ctx.params[0], { onChange: () => list.reload() });
+  if (ctx.query.get('nuevo') === 'presupuesto' || ctx.query.get('nuevo') === 'factura') openDocEditor(ctx, { kind: ctx.query.get('nuevo'), onSaved: () => list.reload() });
 }

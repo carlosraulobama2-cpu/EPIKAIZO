@@ -19,6 +19,16 @@ const DEFAULTS = {
     money_commission_pct: { local: 2, nacional: 3.5, internacional: 6 },
     money_min_commission: 2,
   },
+  // Facturación. El IVA general de Guinea Ecuatorial es del 15 %: confírmalo con tu asesor fiscal.
+  billing: {
+    tax_name: 'IVA',
+    tax_rate: 15,
+    tax_id: '',
+    bank_account: '',
+    payment_days: 15,
+    quote_valid_days: 30,
+    footer: 'Gracias por confiar en Epikaizo Services.',
+  },
   cities: ['Malabo', 'Bata', 'Ebebiyín', 'Mongomo', 'Luba', 'Evinayong', 'Aconibe', 'Micomeseng', 'Añisoc', 'Rebola', 'Riaba', 'Nsork'],
 };
 
@@ -33,6 +43,7 @@ async function getSettings(tenantId) {
       package_per_kg: { ...DEFAULTS.rates.package_per_kg, ...((stored.rates || {}).package_per_kg || {}) },
       money_commission_pct: { ...DEFAULTS.rates.money_commission_pct, ...((stored.rates || {}).money_commission_pct || {}) },
     },
+    billing: { ...DEFAULTS.billing, ...(stored.billing || {}) },
     cities: stored.cities || DEFAULTS.cities,
   };
 }

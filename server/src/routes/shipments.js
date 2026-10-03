@@ -8,6 +8,7 @@ const { requireRole } = require('../middleware/auth');
 const { audit } = require('../services/audit');
 const { upsertClient } = require('../services/clients');
 const { newTrackingCode } = require('../services/codes');
+const billing = require('../services/billing');
 const { createInvoice, sendInvoiceWhatsApp } = require('../services/invoices');
 const { getSettings, quote } = require('../services/settings');
 
@@ -89,7 +90,7 @@ router.get(
           WHERE e.shipment_id = $1 ORDER BY e.created_at, e.id`,
         [shipment.id]
       ),
-      db.one('SELECT id, number, status, amount, currency FROM invoices WHERE shipment_id = $1 ORDER BY created_at LIMIT 1', [shipment.id]),
+      db.one("SELECT id, number, status, amount, currency FROM invoices WHERE shipment_id = $1 AND kind = 'factura' ORDER BY created_at LIMIT 1", [shipment.id]),
     ]);
     res.json({ shipment, events, invoice, next_statuses: NEXT[shipment.status] });
   })
@@ -119,10 +120,11 @@ router.post(
         client
       );
       await db.query('INSERT INTO shipment_events (shipment_id, status, location, created_by) VALUES ($1, $2, $3, $4)', [shipment.id, 'registrado', input.origin, req.user.id], client);
-      const invoice = fee > 0
+      let invoice = fee > 0
         ? await createInvoice(
           req.tenantId,
           {
+            client_id: clientId,
             client_name: input.sender_name,
             client_phone: input.sender_phone,
             concept: input.kind === 'paquete' ? `Envío de paquete ${shipment.tracking_code} a ${input.destination}` : `Envío de dinero ${shipment.tracking_code} a ${input.destination}`,
@@ -133,6 +135,10 @@ router.post(
           { userId: req.user.id, client }
         )
         : null;
+      // Cobrado en el mostrador: la factura queda pagada con su forma de pago.
+      if (invoice && input.paid) {
+        invoice = await billing.registerPayment(invoice, { amount: Number(invoice.amount), method: input.payment_method || 'efectivo' }, { userId: req.user.id, client });
+      }
       await audit(req, 'envio.crear', { entity: 'shipment', entityId: shipment.id, details: { guia: shipment.tracking_code, tipo: shipment.kind, total } }, client);
       return { shipment, invoice };
     });
@@ -179,7 +185,13 @@ router.post(
       );
       await db.query('INSERT INTO shipment_events (shipment_id, status, location, note, created_by) VALUES ($1,$2,$3,$4,$5)', [shipment.id, input.status, input.location, input.note, req.user.id], client);
       if (input.status === 'cancelado') {
-        await db.query("UPDATE invoices SET status = 'anulada' WHERE shipment_id = $1 AND status <> 'pagada'", [shipment.id], client);
+        // La factura no se borra: se anula con su rectificativa.
+        const invoice = await db.one("SELECT * FROM invoices WHERE shipment_id = $1 AND kind = 'factura' AND status <> 'anulada' ORDER BY created_at LIMIT 1", [shipment.id], client);
+        if (invoice) {
+          const { billing: billingSettings } = await getSettings(req.tenantId);
+          const reason = Number(invoice.paid_amount) > 0 ? 'Envío cancelado (importe cobrado devuelto al cliente)' : 'Envío cancelado';
+          await billing.annul({ ...invoice, paid_amount: 0 }, reason, { userId: req.user.id, client, billing: billingSettings });
+        }
       }
       await audit(req, 'envio.estado', { entity: 'shipment', entityId: shipment.id, details: { de: shipment.status, a: input.status } }, client);
       return row;
@@ -188,7 +200,7 @@ router.post(
     // Aviso por WhatsApp al entregar: si falla, el cambio de estado ya está guardado y lo decimos.
     let notified = null;
     if (input.notify && input.status === 'entregado') {
-      const invoice = await db.one('SELECT * FROM invoices WHERE shipment_id = $1 ORDER BY created_at LIMIT 1', [shipment.id]);
+      const invoice = await db.one("SELECT * FROM invoices WHERE shipment_id = $1 AND kind = 'factura' ORDER BY created_at LIMIT 1", [shipment.id]);
       if (invoice) {
         try {
           const { company } = await getSettings(req.tenantId);
