@@ -41,3 +41,15 @@ form.addEventListener('submit', async (e) => {
     btn.textContent = 'Entrar';
   }
 });
+
+// La versión anterior del panel guardaba datos simulados en el navegador (epk_packages, epk_cars…).
+// El panel actual lo lee todo del servidor: se borran para que no quede ningún dato falso.
+function clearLegacyStorage() {
+  try {
+    for (const key of Object.keys(localStorage)) if (key.startsWith('epk_')) localStorage.removeItem(key);
+  } catch {
+    // Navegador sin almacenamiento: no hay nada que limpiar.
+  }
+}
+
+clearLegacyStorage();
