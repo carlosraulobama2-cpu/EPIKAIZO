@@ -108,6 +108,38 @@ router.post(
   })
 );
 
+/** Coches en venta para la web: solo datos de anuncio (nunca coste, bastidor completo ni comprador). */
+router.get(
+  '/vehicles',
+  route(async (req, res) => {
+    const rows = await db.many(
+      `SELECT code, brand, model, year, mileage_km, color, fuel, transmission, condition, sale_price, currency, status, notes,
+              COALESCE((SELECT array_agg(p.id ORDER BY p.position, p.created_at) FROM vehicle_photos p WHERE p.vehicle_id = vehicles.id), '{}') AS photos
+         FROM vehicles WHERE tenant_id = $1 AND status IN ('disponible', 'reservado')
+        ORDER BY CASE status WHEN 'disponible' THEN 0 ELSE 1 END, created_at DESC LIMIT 60`,
+      [tenantId]
+    );
+    res.setHeader('Cache-Control', 'public, max-age=120');
+    res.json({ items: rows });
+  })
+);
+
+/** Foto de un coche anunciado (no se sirven fotos de vehículos ya vendidos). */
+router.get(
+  '/vehicle-photos/:id',
+  route(async (req, res) => {
+    if (!/^[0-9a-f-]{36}$/i.test(req.params.id)) throw new HttpError(404, 'Foto no encontrada');
+    const photo = await db.one(
+      `SELECT p.mime, p.data FROM vehicle_photos p JOIN vehicles v ON v.id = p.vehicle_id
+        WHERE p.id = $1 AND v.tenant_id = $2 AND v.status IN ('disponible', 'reservado')`,
+      [req.params.id, tenantId]
+    );
+    if (!photo) throw new HttpError(404, 'Foto no encontrada');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.type(photo.mime).send(photo.data);
+  })
+);
+
 const EVENTS = ['quote_package', 'quote_money', 'track', 'contact', 'whatsapp_click', 'cta_click'];
 
 router.post(

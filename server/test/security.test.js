@@ -24,6 +24,15 @@ test('no se sirven el código del servidor, .env ni archivos ocultos', async () 
   }
 });
 
+test('las páginas de la web se sirven con dirección limpia', async () => {
+  const a = agent(server.base);
+  for (const path of ['/', '/construccion', '/envios', '/vehiculos']) {
+    const res = await a.get(path);
+    assert.equal(res.status, 200, path);
+    assert.match(String(res.data), /EPIKAIZO|Epikaizo/);
+  }
+});
+
 test('la web lleva cabeceras de seguridad', async () => {
   const res = await agent(server.base).get('/');
   assert.equal(res.status, 200);

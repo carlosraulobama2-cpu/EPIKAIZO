@@ -39,6 +39,7 @@ Datos de la empresa:
 - Rastreo con la guía EPZ-000000 en ${config.publicUrl}/#rastreo. Cotizador en ${config.publicUrl}/#envios.
 - Especialidades: construcción de cualquier tipo de vivienda (y reformas), mantenimiento (fontanería, electricidad, climatización, carpintería), mantenimiento y reparación de electrónica, envíos de paquetes y dinero, venta de vehículos y gestión administrativa.
 - Para cualquier servicio el cliente puede pedir cita en el formulario de la web (eligiendo el día que le viene bien) o por WhatsApp; el equipo confirma la cita.
+Quiénes somos: empresa especializada en construcción en general y mantenimiento integral de inmuebles para los sectores residencial, comercial, industrial e institucional, con sede en el Barrio Ngolo-Puente Sialo. Lema: «Construimos confianza, transformamos espacios y creamos valor para el futuro».
 Nunca pidas contraseñas, datos de tarjetas ni documentos por este chat.`;
 }
 

@@ -6,7 +6,7 @@ Web pública y panel de gestión de Epikaizo: construcción y mantenimiento, ges
 
 | Parte | Dónde | Qué hace |
 |---|---|---|
-| Web pública | `public/index.html`, `public/css/site.css`, `public/js/site.js` | Servicios, cotizador con las tarifas reales, rastreo por guía EPZ, formulario de contacto, asistente y WhatsApp |
+| Web pública | `public/index.html`, `construccion.html`, `envios.html`, `vehiculos.html` + `css/site.css`, `js/site.js` | Inicio (presentación de la empresa), Construcción y mantenimiento, Envíos (cotizador y rastreo) y Vehículos en venta (salen del inventario del panel, con sus fotos); formulario «Pide tu cita», asistente y WhatsApp |
 | Panel | `public/panel.html`, `public/js/panel/` | Resumen, envíos, servicios y obras, clientes, bandeja, facturas, caja, informes, equipo, proveedores, actividad y ajustes |
 | Servidor | `server/src/` | API Express + Postgres. Solo publica la carpeta `public/` |
 | Pruebas | `server/test/` | Seguridad y flujos completos contra una base de datos de pruebas |
@@ -102,7 +102,10 @@ Las tablas de la versión anterior (con fechas en texto) no se borran: al migrar
 
 ```
 public/                 lo único que se publica
-  index.html            web
+  index.html            inicio: presentación, misión, visión, valores, clientes
+  construccion.html     construcción, mantenimiento, gestión de obras y metodología
+  envios.html           cotizador, rastreo y empresas
+  vehiculos.html        coches en venta (fotos subidas desde el panel)
   panel.html            panel (módulos en js/panel/)
   login.html            acceso del equipo
   verificar.html        verificación del QR de las facturas

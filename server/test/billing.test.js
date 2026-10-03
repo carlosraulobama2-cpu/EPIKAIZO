@@ -147,10 +147,23 @@ test('venta de vehículo: factura con bastidor y matrícula, cobro, vendido; el 
   assert.equal(doc.data.vehicle.code, v.code);
   assert.ok(doc.data.company.name);
 
+  // La web pública no publica vendidos ni datos internos
+  const { agent } = require('./helpers');
+  const pub = await agent(server.base).get('/api/public/vehicles');
+  assert.equal(pub.status, 200);
+  assert.ok(!pub.data.items.some((x) => x.code === v.code), 'un vendido no se anuncia');
+  for (const item of pub.data.items) {
+    assert.equal(item.purchase_price, undefined);
+    assert.equal(item.vin, undefined);
+    assert.equal(item.reserved_for, undefined);
+  }
+
   // Anular la venta (con devolución) deja el vehículo disponible otra vez
   await gestor.post(`/api/invoices/${inv.id}/annul`, { reason: 'El cliente desiste de la compra', refunded: true });
   const back = await gestor.get(`/api/vehicles/${v.id}`);
   assert.equal(back.data.vehicle.status, 'disponible');
+  const listed = await agent(server.base).get('/api/public/vehicles');
+  assert.ok(listed.data.items.some((x) => x.code === v.code && x.sale_price), 'vuelve a anunciarse');
 });
 
 test('informes: la venta cuenta por su base imponible y la rectificativa la compensa; el operador no puede facturar', async () => {
@@ -158,4 +171,27 @@ test('informes: la venta cuenta por su base imponible y la rectificativa la comp
   const csv = await gestor.get('/api/reports/export/facturas.csv');
   assert.match(csv.data, /numero;tipo;fecha;cliente;documento/);
   assert.match(csv.data, /rectificativa/);
+});
+
+test('fotos de vehículos: solo imágenes reales, solo gestores, y la web solo muestra las de coches en venta', async () => {
+  const { agent } = require('./helpers');
+  const PNG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+  const { data } = await gestor.post('/api/vehicles', { brand: 'Nissan', model: 'Patrol', condition: 'usado', sale_price: 25000 });
+  const v = data.vehicle;
+  assert.equal((await operador.post(`/api/vehicles/${v.id}/photos`, { data: PNG })).status, 403);
+  const fake = 'data:image/png;base64,' + Buffer.from('<script>alert(1)</script>').toString('base64');
+  assert.equal((await gestor.post(`/api/vehicles/${v.id}/photos`, { data: fake })).status, 422);
+  const up = await gestor.post(`/api/vehicles/${v.id}/photos`, { data: PNG });
+  assert.equal(up.status, 201);
+  assert.equal(up.data.photo.mime, 'image/png');
+
+  const listed = (await agent(server.base).get('/api/public/vehicles')).data.items.find((x) => x.code === v.code);
+  assert.deepEqual(listed.photos, [up.data.photo.id]);
+  const img = await fetch(`${server.base}/api/public/vehicle-photos/${up.data.photo.id}`);
+  assert.equal(img.status, 200);
+  assert.equal(img.headers.get('content-type'), 'image/png');
+
+  // Vendido: la foto deja de ser pública
+  await gestor.post(`/api/vehicles/${v.id}/sell`, { client_name: 'Comprador Prueba', client_phone: '222101010', client_document: 'DIP 1', client_address: 'Malabo', price: 25000, tax_rate: 0 });
+  assert.equal((await fetch(`${server.base}/api/public/vehicle-photos/${up.data.photo.id}`)).status, 404);
 });

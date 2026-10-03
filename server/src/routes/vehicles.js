@@ -67,7 +67,7 @@ router.get(
       .eq('status', req.query.status, STATUSES)
       .search(['code', 'brand', 'model', 'vin', 'plate', 'color', 'reserved_for'], req.query.q);
     const [items, count, stock] = await Promise.all([
-      db.many(`SELECT * FROM vehicles WHERE ${f.sql} ORDER BY CASE status WHEN 'disponible' THEN 0 WHEN 'reservado' THEN 1 ELSE 2 END, created_at DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
+      db.many(`SELECT *, (SELECT id FROM vehicle_photos p WHERE p.vehicle_id = vehicles.id ORDER BY position, created_at LIMIT 1) AS cover_id FROM vehicles WHERE ${f.sql} ORDER BY CASE status WHEN 'disponible' THEN 0 WHEN 'reservado' THEN 1 ELSE 2 END, created_at DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
       db.one(`SELECT count(*)::int AS n FROM vehicles WHERE ${f.sql}`, f.params),
       db.one(
         `SELECT count(*) FILTER (WHERE status = 'disponible')::int AS disponibles,
@@ -92,8 +92,11 @@ router.get(
   '/:id',
   route(async (req, res) => {
     const v = await load(req);
-    const invoice = v.invoice_id ? await db.one('SELECT id, number, status, amount, paid_amount, currency, issue_date FROM invoices WHERE id = $1', [v.invoice_id]) : null;
-    res.json({ vehicle: hideCost(req, v), invoice });
+    const [invoice, photos] = await Promise.all([
+      v.invoice_id ? db.one('SELECT id, number, status, amount, paid_amount, currency, issue_date FROM invoices WHERE id = $1', [v.invoice_id]) : null,
+      db.many('SELECT id, size, position FROM vehicle_photos WHERE vehicle_id = $1 ORDER BY position, created_at', [v.id]),
+    ]);
+    res.json({ vehicle: hideCost(req, v), invoice, photos });
   })
 );
 
@@ -143,6 +146,77 @@ router.patch(
     );
     await audit(req, 'vehiculo.editar', { entity: 'vehicle', entityId: v.id, details: { campos: keys } });
     res.json({ vehicle: row });
+  })
+);
+
+// ---------- Fotos ----------
+const MAX_PHOTOS = 8;
+const MAX_BYTES = 1.5 * 1024 * 1024;
+
+/** Comprueba el tipo real por los primeros bytes: no nos fiamos de lo que diga el navegador. */
+function sniff(buf) {
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
+  if (buf.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+  if (buf.slice(0, 4).toString('ascii') === 'RIFF' && buf.slice(8, 12).toString('ascii') === 'WEBP') return 'image/webp';
+  return null;
+}
+
+router.post(
+  '/:id/photos',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const v = await load(req);
+    const raw = String((req.body || {}).data || '');
+    const match = /^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/.exec(raw);
+    if (!match) throw new HttpError(422, 'Envía la foto en formato JPEG, PNG o WebP');
+    const buf = Buffer.from(match[2], 'base64');
+    if (buf.length > MAX_BYTES) throw new HttpError(413, 'La foto es demasiado grande (máximo 1,5 MB)');
+    const mime = sniff(buf);
+    if (!mime) throw new HttpError(422, 'El archivo no es una imagen válida');
+    const count = await db.one('SELECT count(*)::int AS n, COALESCE(max(position), -1) AS last FROM vehicle_photos WHERE vehicle_id = $1', [v.id]);
+    if (count.n >= MAX_PHOTOS) throw new HttpError(409, `Máximo ${MAX_PHOTOS} fotos por vehículo`);
+    const photo = await db.one(
+      'INSERT INTO vehicle_photos (id, tenant_id, vehicle_id, mime, data, size, position, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, mime, size, position',
+      [crypto.randomUUID(), req.tenantId, v.id, mime, buf, buf.length, Number(count.last) + 1, req.user.id]
+    );
+    await audit(req, 'vehiculo.foto', { entity: 'vehicle', entityId: v.id, details: { codigo: v.code } });
+    res.status(201).json({ photo });
+  })
+);
+
+router.get(
+  '/:id/photos/:photoId',
+  route(async (req, res) => {
+    const photo = await db.one('SELECT mime, data FROM vehicle_photos WHERE id = $1 AND vehicle_id = $2 AND tenant_id = $3', [req.params.photoId, req.params.id, req.tenantId]);
+    if (!photo) throw new HttpError(404, 'Foto no encontrada');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.type(photo.mime).send(photo.data);
+  })
+);
+
+router.post(
+  '/:id/photos/:photoId/cover',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const v = await load(req);
+    const ok = await db.one('SELECT 1 FROM vehicle_photos WHERE id = $1 AND vehicle_id = $2', [req.params.photoId, v.id]);
+    if (!ok) throw new HttpError(404, 'Foto no encontrada');
+    // La portada pasa a la primera posición; el resto conserva su orden.
+    await db.query('UPDATE vehicle_photos SET position = position + 1 WHERE vehicle_id = $1', [v.id]);
+    await db.query('UPDATE vehicle_photos SET position = 0 WHERE id = $1', [req.params.photoId]);
+    res.json({ ok: true });
+  })
+);
+
+router.delete(
+  '/:id/photos/:photoId',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const v = await load(req);
+    const row = await db.one('DELETE FROM vehicle_photos WHERE id = $1 AND vehicle_id = $2 RETURNING id', [req.params.photoId, v.id]);
+    if (!row) throw new HttpError(404, 'Foto no encontrada');
+    await audit(req, 'vehiculo.foto_borrar', { entity: 'vehicle', entityId: v.id, details: { codigo: v.code } });
+    res.json({ deleted: true });
   })
 );
 

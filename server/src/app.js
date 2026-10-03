@@ -16,15 +16,16 @@ function createApp() {
   app.set('trust proxy', 1);
 
   app.use(securityHeaders);
-  app.use(
-    express.json({
-      limit: '200kb',
-      // Guardamos el cuerpo original para comprobar la firma del webhook de WhatsApp.
-      verify: (req, res, buf) => {
-        if (req.originalUrl.startsWith('/api/whatsapp')) req.rawBody = buf;
-      },
-    })
-  );
+  const jsonSmall = express.json({
+    limit: '200kb',
+    // Guardamos el cuerpo original para comprobar la firma del webhook de WhatsApp.
+    verify: (req, res, buf) => {
+      if (req.originalUrl.startsWith('/api/whatsapp')) req.rawBody = buf;
+    },
+  });
+  // Las fotos de vehículos llegan reducidas por el panel (base64): necesitan algo más de margen.
+  const jsonPhotos = express.json({ limit: '3mb' });
+  app.use((req, res, next) => (req.method === 'POST' && /^\/api\/vehicles\/[^/]+\/photos$/.test(req.path) ? jsonPhotos : jsonSmall)(req, res, next));
 
   // ---- API -----------------------------------------------------------------------------------
   const api = express.Router();
@@ -131,6 +132,8 @@ function createApp() {
   app.use(
     express.static(PUBLIC_DIR, {
       dotfiles: 'deny',
+      // /construccion sirve construccion.html (direcciones limpias para compartir)
+      extensions: ['html'],
       index: 'index.html',
       setHeaders: (res, file) => {
         // HTML siempre fresco; CSS, JS e imágenes con caché corta.

@@ -3,31 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Epikaizo Services · Construcción, gestión y envíos en Guinea Ecuatorial</title>
-  <meta name="description" content="Nos especializamos en construcción de cualquier vivienda, mantenimiento y reparación de electrónica, envíos de paquetes y venta de vehículos en Guinea Ecuatorial. Pide tu cita.">
+  <title>Epikaizo Services S.L. · Construcción, mantenimiento, envíos y vehículos</title>
+  <meta name="description" content="EPIKAIZO SERVICES S.L.: construcción en general y mantenimiento integral de inmuebles para los sectores residencial, comercial, industrial e institucional. También envíos de paquetes y venta de vehículos. Pide tu cita.">
   <meta name="theme-color" content="#070594">
   <link rel="canonical" href="https://epikaizo.com/">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="/manifest.json">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Epikaizo Services">
+  <meta property="og:site_name" content="Epikaizo Services S.L.">
   <meta property="og:locale" content="es_ES">
-  <meta property="og:title" content="Epikaizo Services · Construcción, gestión y envíos">
-  <meta property="og:description" content="Obras y mantenimiento, gestiones y envíos de paquetes y dinero con guía de seguimiento.">
+  <meta property="og:title" content="Epikaizo Services S.L. · Construcción, mantenimiento, envíos y vehículos">
+  <meta property="og:description" content="EPIKAIZO SERVICES S.L.: construcción en general y mantenimiento integral de inmuebles para los sectores residencial, comercial, industrial e institucional. También envíos de paquetes y venta de vehículos. Pide tu cita.">
   <meta property="og:image" content="https://epikaizo.com/img/og.jpg">
   <meta property="og:url" content="https://epikaizo.com/">
   <meta name="twitter:card" content="summary_large_image">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Epikaizo Services",
+    "@type": "GeneralContractor",
+    "name": "Epikaizo Services S.L.",
+    "slogan": "Construimos confianza, transformamos espacios y creamos valor para el futuro.",
     "url": "https://epikaizo.com",
     "logo": "https://epikaizo.com/img/logo.png",
     "image": "https://epikaizo.com/img/og.jpg",
     "telephone": "+240 222 580 828",
     "email": "epikaizoservices123@gmail.com",
-    "address": { "@type": "PostalAddress", "streetAddress": "Av. del Puerto s/n", "addressLocality": "Malabo", "addressCountry": "GQ" },
+    "address": { "@type": "PostalAddress", "streetAddress": "Barrio Ngolo-Puente Sialo", "addressCountry": "GQ" },
     "openingHours": "Mo-Sa 08:00-18:00",
     "areaServed": "Guinea Ecuatorial"
   }
@@ -37,17 +38,17 @@
   <link rel="stylesheet" href="/css/site.css">
   <script src="/js/site.js" defer></script>
 </head>
-<body>
+<body data-page="inicio">
 <a class="skip" href="#main">Saltar al contenido</a>
 
 <header class="header" id="header">
   <div class="container header__row">
-    <a class="brand" href="/" aria-label="Epikaizo Services, inicio"><img src="/img/logo.png" alt="Epikaizo Services" width="130" height="36"></a>
+    <a class="brand" href="/" aria-label="Epikaizo Services, inicio"><img src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36"></a>
     <nav class="nav" id="nav" aria-label="Principal">
-      <a href="#especialidades">Especialidades</a>
-      <a href="#envios">Envíos</a>
-      <a href="#rastreo">Rastrear</a>
-      <a href="#empresas">Empresas</a>
+      <a href="/" aria-current="page">Inicio</a>
+      <a href="/construccion">Construcción</a>
+      <a href="/envios">Envíos</a>
+      <a href="/vehiculos">Vehículos</a>
       <a href="#contacto">Contacto</a>
       <a class="btn btn--primary nav__cta" href="#contacto" data-topic="construccion">Pide tu cita</a>
     </nav>
@@ -57,274 +58,128 @@
 
 <main id="main">
 
-  <!-- Portada -->
-  <section class="hero">
+  <section class="hero hero--page">
     <div class="container hero__grid">
       <div class="hero__copy">
-        <p class="eyebrow">Malabo · Bata · toda Guinea Ecuatorial</p>
-        <h1>Construimos, reparamos y enviamos <span class="hl">por ti</span>.</h1>
-        <p class="lead">Nos especializamos en la <strong>construcción de cualquier tipo de vivienda</strong>, el <strong>mantenimiento y la reparación de electrónica</strong>, los <strong>envíos de paquetes</strong> y la <strong>venta de vehículos</strong>. Un solo equipo, un solo número.</p>
-        <div class="hero__cta">
-          <a class="btn btn--primary btn--lg" href="#contacto" data-topic="construccion">Pide tu cita</a>
-          <a class="btn btn--ghost btn--lg" href="#envios">Calcula tu envío</a>
-        </div>
-        <form class="quicktrack" id="quickTrack" role="search" aria-label="Rastrear un envío">
-          <label for="quickTrackInput">¿Ya enviaste algo?</label>
-          <div class="quicktrack__row">
-            <input id="quickTrackInput" class="input" placeholder="EPZ-000000" autocomplete="off" maxlength="10">
-            <button class="btn btn--dark" type="submit">Rastrear</button>
-          </div>
-        </form>
+        <p class="eyebrow">Bienvenidos</p>
+        <h1>Construimos confianza, transformamos espacios y creamos <span class="hl">valor</span>.</h1>
+        <p class="lead">En <strong>EPIKAIZO SERVICES S.L.</strong> creemos que cada proyecto representa una oportunidad para construir confianza, impulsar el desarrollo y generar valor duradero.</p>
+        <div class="hero__cta"><a class="btn btn--primary btn--lg" href="#contacto" data-topic="construccion">Pide tu cita</a><a class="btn btn--ghost btn--lg" href="/construccion">Nuestros servicios</a></div>
+        
       </div>
       <div class="hero__media">
-        <img src="/img/hero-oficina.webp" alt="Mostrador de Epikaizo atendiendo envíos de paquetes" width="900" height="900" fetchpriority="high">
-        <div class="hero__badge"><strong>+8 años</strong><span>moviendo lo que importa</span></div>
-      </div>
-    </div>
-    <div class="container">
-      <dl class="metrics">
-        <div><dt>+32.000</dt><dd>envíos entregados</dd></div>
-        <div><dt>18</dt><dd>ciudades con servicio</dd></div>
-        <div><dt>96%</dt><dd>entregas a tiempo</dd></div>
-        <div><dt>Lun–Sáb</dt><dd>atención de 8:00 a 18:00</dd></div>
-      </dl>
-    </div>
-  </section>
-
-  <!-- Especialidades -->
-  <section class="section section--tight" id="especialidades" aria-labelledby="especialidades-title">
-    <div class="container">
-      <div class="specialties">
-        <div class="specialties__intro">
-          <p class="eyebrow">Nuestras especialidades</p>
-          <h2 id="especialidades-title">Nos especializamos en lo que tu casa, tu negocio y tu familia necesitan.</h2>
-          <p class="lead">Elige el servicio, dinos qué día te viene bien y te confirmamos la cita por teléfono o WhatsApp.</p>
-          <a class="btn btn--primary btn--lg" href="#contacto" data-topic="construccion">Pide tu cita</a>
-        </div>
-        <ul class="specialties__list">
-          <li>
-            <span class="specialties__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></span>
-            <div><h3>Construcción de viviendas</h3><p>Cualquier vivienda, de la cimentación a la entrega de llaves. También ampliaciones y reformas.</p></div>
-            <a class="link" href="#contacto" data-topic="construccion">Pide tu cita →</a>
-          </li>
-          <li>
-            <span class="specialties__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z"/></svg></span>
-            <div><h3>Mantenimiento</h3><p>Fontanería, electricidad, climatización y revisiones periódicas de casas y oficinas.</p></div>
-            <a class="link" href="#contacto" data-topic="mantenimiento">Pide tu cita →</a>
-          </li>
-          <li>
-            <span class="specialties__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span>
-            <div><h3>Electrónica</h3><p>Mantenimiento y reparación de televisores, ordenadores, móviles y electrodomésticos.</p></div>
-            <a class="link" href="#contacto" data-topic="electronica">Pide tu cita →</a>
-          </li>
-          <li>
-            <span class="specialties__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 8 12 3 3 8l9 5 9-5ZM3 8v8l9 5 9-5V8M12 13v8"/></svg></span>
-            <div><h3>Envíos de paquetes</h3><p>Locales, nacionales e internacionales, con guía para seguirlos desde esta web.</p></div>
-            <a class="link" href="#envios">Calcular precio →</a>
-          </li>
-          <li>
-            <span class="specialties__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-3l2-5h14l2 5v3a2 2 0 0 1-2 2M5 17v2M19 17v2M3 12h18"/><circle cx="7.5" cy="14.5" r=".5"/><circle cx="16.5" cy="14.5" r=".5"/></svg></span>
-            <div><h3>Venta de vehículos</h3><p>Te ayudamos a encontrar tu coche o vehículo de trabajo. Ven a verlos con cita previa.</p></div>
-            <a class="link" href="#contacto" data-topic="vehiculos">Pide tu cita →</a>
-          </li>
-        </ul>
+        <img src="/img/sede.webp" alt="Sede de Epikaizo Services" width="900" height="900" fetchpriority="high">
       </div>
     </div>
   </section>
 
-  <!-- Servicios -->
-  <section class="section" id="servicios">
+  <!-- Bienvenidos -->
+  <section class="section section--tight">
+    <div class="container welcome">
+      <p>Somos una empresa especializada en <strong>construcción en general y mantenimiento integral de inmuebles</strong>, comprometida con la excelencia técnica, la seguridad y la satisfacción de nuestros clientes. Desde nuestra sede en el <strong>Barrio Ngolo-Puente Sialo</strong>, ofrecemos soluciones profesionales adaptadas a las necesidades del sector residencial, comercial, industrial e institucional.</p>
+      <p>Nuestra filosofía combina <strong>experiencia, planificación, innovación</strong> y un firme compromiso con la calidad para entregar obras sólidas y servicios de mantenimiento eficientes.</p>
+    </div>
+  </section>
+
+  <!-- Áreas -->
+  <section class="section" id="areas">
     <div class="container">
       <header class="section__head">
-        <p class="eyebrow">Lo que hacemos</p>
-        <h2>Tres áreas, un mismo compromiso: hacerlo bien y a tiempo.</h2>
+        <p class="eyebrow">Qué hacemos</p>
+        <h2>Elige lo que necesitas.</h2>
       </header>
-      <div class="services">
-        <article class="service">
+      <div class="areas">
+        <a class="area" href="/construccion">
           <img src="/img/obra.webp" alt="Obra de construcción de Epikaizo" width="900" height="900" loading="lazy">
-          <div class="service__body">
-            <h3>Construcción y mantenimiento</h3>
-            <p>Obra nueva, reformas integrales y mantenimiento preventivo de viviendas, oficinas y locales.</p>
-            <a class="link" href="#contacto" data-topic="construccion">Pedir presupuesto →</a>
-          </div>
-        </article>
-        <article class="service">
-          <img src="/img/gestion.webp" alt="Oficina de gestión administrativa de Epikaizo" width="900" height="900" loading="lazy">
-          <div class="service__body">
-            <h3>Gestión administrativa</h3>
-            <p>Trámites, asesoría corporativa y gestión de personal para que tu negocio se dedique a lo suyo.</p>
-            <a class="link" href="#contacto" data-topic="gestion">Consultar →</a>
-          </div>
-        </article>
-        <article class="service">
-          <img src="/img/furgoneta.webp" alt="Furgoneta de reparto de Epikaizo" width="900" height="900" loading="lazy">
-          <div class="service__body">
-            <h3>Logística y envíos</h3>
-            <p>Paquetería y envíos de dinero locales, nacionales e internacionales, con guía para seguirlos.</p>
-            <a class="link" href="#envios">Calcular precio →</a>
-          </div>
-        </article>
+          <div class="area__body"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V10l7-5 7 5v11M9 21v-6h6v6"/></svg></span><h3>Construcción y mantenimiento</h3><p>Viviendas, edificios, oficinas, locales, obras civiles, remodelaciones y mantenimiento integral de inmuebles.</p><span class="link">Ver servicios →</span></div>
+        </a>
+        <a class="area" href="/envios">
+          <img src="/img/furgoneta-epikaizo.webp" alt="Furgoneta de reparto de Epikaizo" width="900" height="900" loading="lazy">
+          <div class="area__body"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 8 12 3 3 8l9 5 9-5ZM3 8v8l9 5 9-5V8M12 13v8"/></svg></span><h3>Envíos de paquetes</h3><p>Locales, nacionales e internacionales, con guía para seguirlos desde la web. Calcula el precio al momento.</p><span class="link">Calcular y rastrear →</span></div>
+        </a>
+        <a class="area" href="/vehiculos">
+          <div class="area__art" aria-hidden="true"><span class="area__car" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-3l2-5h14l2 5v3a2 2 0 0 1-2 2M5 17v2M19 17v2M3 12h18"/></svg></span></div>
+          <div class="area__body"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 17h14M5 17a2 2 0 0 1-2-2v-3l2-5h14l2 5v3a2 2 0 0 1-2 2M5 17v2M19 17v2M3 12h18"/></svg></span><h3>Venta de vehículos</h3><p>Vehículos nuevos y de ocasión con factura y contrato de compraventa. Pide cita para verlos.</p><span class="link">Ver vehículos →</span></div>
+        </a>
       </div>
-
-      <div class="trades">
-        <h3>Servicios para tu casa u oficina</h3>
-        <ul class="trades__list">
-          <li><strong>Fontanería</strong><span>Tuberías, grifos, sanitarios y fugas.</span></li>
-          <li><strong>Electricidad</strong><span>Instalaciones, cuadros, iluminación y averías.</span></li>
-          <li><strong>Climatización</strong><span>Montaje y reparación de aire acondicionado.</span></li>
-          <li><strong>Carpintería y reformas</strong><span>Armarios, puertas y muebles a medida.</span></li>
-          <li><strong>Mudanzas</strong><span>Traslados locales y nacionales con personal.</span></li>
-          <li><strong>Mantenimiento</strong><span>Revisiones periódicas para evitar averías.</span></li>
-        </ul>
-        <p class="trades__more">¿No ves lo que necesitas? <a href="#contacto" data-topic="mantenimiento">Cuéntanoslo</a> y buscamos al profesional adecuado.</p>
-      </div>
+      <p class="areas__more"><span class="ico ico--sm" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span> También reparamos y mantenemos <strong>electrónica</strong>: televisores, ordenadores, móviles y electrodomésticos. <a href="#contacto" data-topic="electronica">Pide tu cita</a>.</p>
     </div>
   </section>
 
-  <!-- Envíos: cotizador y rastreo -->
-  <section class="section section--tint" id="envios">
-    <div class="container">
-      <header class="section__head">
-        <p class="eyebrow">Envíos de paquetes y dinero</p>
-        <h2>Sabes el precio antes de venir.</h2>
-        <p class="section__sub">Tarifas claras, sin cargos ocultos. Paga en cualquiera de nuestras oficinas.</p>
-      </header>
-      <div class="ship-grid">
-        <div class="panel" id="cotizador">
-          <div class="segmented" role="tablist" aria-label="Tipo de envío">
-            <button type="button" role="tab" aria-selected="true" class="is-active" data-kind="paquete">Paquete</button>
-            <button type="button" role="tab" aria-selected="false" data-kind="dinero">Dinero</button>
-          </div>
-          <form class="quote" id="quoteForm" novalidate>
-            <div class="field">
-              <label for="quoteValue" id="quoteValueLabel">Peso del paquete (kg)</label>
-              <input class="input" id="quoteValue" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="Ej. 3" required>
-            </div>
-            <div class="field">
-              <label for="quoteScope">Destino</label>
-              <select class="input" id="quoteScope">
-                <option value="local">Dentro de la misma ciudad</option>
-                <option value="nacional" selected>Otra ciudad del país</option>
-                <option value="internacional">Internacional</option>
-              </select>
-            </div>
-            <button class="btn btn--primary" type="submit">Calcular</button>
-            <p class="form-error" id="quoteError" role="alert" hidden></p>
-            <div class="quote__result" id="quoteResult" hidden aria-live="polite">
-              <div><span id="quoteFeeLabel">Precio del envío</span><strong id="quoteFee">—</strong></div>
-              <div class="quote__total"><span>Total a pagar</span><strong id="quoteTotal">—</strong></div>
-              <p class="small muted">Precio orientativo. Paquetes de hasta 30 kg por bulto; para más peso, pide presupuesto.</p>
-            </div>
-          </form>
-        </div>
-
-        <div class="panel" id="rastreo">
-          <h3>Rastrea tu envío</h3>
-          <p class="muted">Escribe la guía que te dimos en la oficina (EPZ-000000).</p>
-          <form class="track" id="trackForm" novalidate>
-            <input class="input" id="trackInput" placeholder="EPZ-000000" autocomplete="off" maxlength="10" aria-label="Número de guía">
-            <button class="btn btn--dark" type="submit">Rastrear</button>
-          </form>
-          <p class="form-error" id="trackError" role="alert" hidden></p>
-          <div class="track-result" id="trackResult" hidden aria-live="polite">
-            <div class="track-result__head">
-              <div><span class="mono" id="trackCode"></span> <strong id="trackStatus"></strong></div>
-              <span class="muted small" id="trackRoute"></span>
-            </div>
-            <ol class="steps" id="trackSteps"></ol>
-            <ul class="track-events" id="trackEvents"></ul>
-          </div>
+  <!-- Quiénes somos, misión y visión -->
+  <section class="section section--tint" id="nosotros">
+    <div class="container split split--top">
+      <div>
+        <p class="eyebrow">Quiénes somos</p>
+        <h2>Un aliado estratégico para construir y mantener.</h2>
+        <div class="prose">
+          <p>EPIKAIZO SERVICES S.L. nace con la visión de convertirse en un aliado estratégico para personas, empresas e instituciones que buscan servicios de construcción y mantenimiento ejecutados con profesionalismo y responsabilidad.</p>
+          <p>Cada proyecto que asumimos es desarrollado bajo estrictos criterios técnicos, utilizando materiales de calidad, personal cualificado y procesos orientados a la mejora continua.</p>
+          <p>Nuestro objetivo no es únicamente construir edificios, sino <strong>crear espacios seguros, funcionales y duraderos</strong> que contribuyan al crecimiento de nuestros clientes y de nuestra comunidad.</p>
         </div>
       </div>
+      <div class="mv">
+        <article class="mv__card"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></span><h3>Nuestra misión</h3><p>Brindar soluciones integrales en construcción y mantenimiento de inmuebles mediante un servicio eficiente, seguro y de alta calidad, superando las expectativas de nuestros clientes y contribuyendo al desarrollo sostenible de la infraestructura.</p></article>
+        <article class="mv__card mv__card--dark"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></span><h3>Nuestra visión</h3><p>Consolidarnos como una empresa líder en el sector de la construcción y mantenimiento de inmuebles, reconocida por la excelencia de nuestros servicios, la innovación, la transparencia y la confianza que depositan nuestros clientes en cada proyecto.</p></article>
+      </div>
     </div>
   </section>
 
-  <!-- Cómo funciona -->
-  <section class="section">
+  <!-- Valores -->
+  <section class="section section--tight" id="valores">
     <div class="container">
-      <header class="section__head">
-        <p class="eyebrow">Cómo funciona</p>
-        <h2>Tu envío en camino en tres pasos.</h2>
-      </header>
-      <ol class="how">
-        <li><span>1</span><h3>Calcula o pregunta</h3><p>Usa el calculador o escríbenos por WhatsApp para envíos especiales.</p></li>
-        <li><span>2</span><h3>Trae tu paquete</h3><p>En la oficina te damos la guía EPZ y el recibo. También recogemos a domicilio.</p></li>
-        <li><span>3</span><h3>Síguelo hasta destino</h3><p>Rastréalo aquí y te avisamos por WhatsApp cuando se entrega.</p></li>
-      </ol>
+      <header class="section__head"><p class="eyebrow">Nuestros valores</p><h2>Lo que guía cada obra.</h2></header>
+      <ul class="chips"><li>Integridad</li><li>Responsabilidad</li><li>Profesionalismo</li><li>Calidad</li><li>Compromiso</li><li>Innovación</li><li>Trabajo en equipo</li><li>Seguridad</li><li>Puntualidad</li><li>Orientación al cliente</li></ul>
     </div>
   </section>
 
-  <!-- Empresas -->
-  <section class="section section--dark" id="empresas">
+  <!-- Por qué elegirnos -->
+  <section class="section" id="por-que">
+    <div class="container">
+      <header class="section__head"><p class="eyebrow">¿Por qué elegir EPIKAIZO SERVICES S.L.?</p><h2>Seis razones para confiarnos tu proyecto.</h2></header>
+      <ul class="reasons"><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span><h3>Experiencia profesional</h3><p>Contamos con personal técnico preparado para ejecutar proyectos de distintas dimensiones.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><h3>Compromiso</h3><p>Trabajamos con responsabilidad y transparencia desde el inicio hasta la entrega final.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span><h3>Calidad garantizada</h3><p>Utilizamos materiales adecuados y procedimientos técnicos reconocidos.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><h3>Puntualidad</h3><p>Respetamos los tiempos acordados para cada proyecto.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span><h3>Seguridad</h3><p>Promovemos una cultura preventiva que protege a nuestros trabajadores, clientes e instalaciones.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1M16 4a3.5 3.5 0 0 1 0 7M22 21v-1a6 6 0 0 0-4-5.7"/></svg></span><h3>Atención personalizada</h3><p>Cada cliente recibe soluciones adaptadas a sus necesidades específicas.</p></li></ul>
+    </div>
+  </section>
+
+  <!-- Clientes -->
+  <section class="section section--dark" id="clientes">
     <div class="container split">
       <div>
-        <p class="eyebrow eyebrow--light">Empresas y tiendas online</p>
-        <h2>Un socio para tu logística y tus gestiones.</h2>
-        <p class="lead">Planes a medida para envíos frecuentes, recogidas programadas, mantenimiento de instalaciones y gestión administrativa.</p>
-        <ul class="checks">
-          <li>Un responsable de cuenta que conoce tu negocio</li>
-          <li>Facturación mensual con factura verificable por QR</li>
-          <li>Tarifas preferentes y entregas prioritarias</li>
-        </ul>
-        <a class="btn btn--light btn--lg" href="#contacto" data-topic="empresa">Hablar con nosotros</a>
+        <p class="eyebrow eyebrow--light">Nuestros clientes</p>
+        <h2>Trabajamos para quien construye el país.</h2>
+        <p class="lead">Prestamos servicios a personas, empresas e instituciones de todos los tamaños.</p>
       </div>
-      <img class="split__img" src="/img/atencion.webp" alt="Equipo de atención al cliente de Epikaizo" width="900" height="900" loading="lazy">
+      <ul class="client-types"><li>Empresas privadas</li><li>Instituciones públicas</li><li>Organizaciones</li><li>Constructoras</li><li>Comercios</li><li>Comunidades</li><li>Propietarios de viviendas</li><li>Inversionistas inmobiliarios</li></ul>
     </div>
   </section>
 
-  <!-- Confianza: por qué, opiniones y preguntas -->
-  <section class="section" id="nosotros">
-    <div class="container">
-      <header class="section__head">
-        <p class="eyebrow">Por qué Epikaizo</p>
-        <h2>Lo que nos piden nuestros clientes, y lo que cumplimos.</h2>
-      </header>
-      <ul class="values">
-        <li><h3>Precio claro</h3><p>Ves el precio o la comisión antes de pagar. Sin sorpresas.</p></li>
-        <li><h3>Seguimiento real</h3><p>Cada envío tiene su guía e historial, y cada factura su código QR.</p></li>
-        <li><h3>Gente que responde</h3><p>Teléfono y WhatsApp atendidos por personas, no solo un formulario.</p></li>
-        <li><h3>Trabajo cuidado</h3><p>Equipos formados y procesos revisados en obra, oficina y reparto.</p></li>
-      </ul>
-
-      <div class="split split--top">
-        <div class="quotes">
-          <figure><blockquote>“Envié un paquete a Bata y llegó en menos de 24 horas. El seguimiento es excelente.”</blockquote><figcaption>María N. · Malabo</figcaption></figure>
-          <figure><blockquote>“Con los envíos de dinero sabes la comisión desde el principio. Sin sorpresas.”</blockquote><figcaption>Juan E. · Bata</figcaption></figure>
-          <figure><blockquote>“Como empresa necesitábamos un socio logístico de confianza. Cumplieron desde el primer día.”</blockquote><figcaption>Roberto M. · Ebebiyín</figcaption></figure>
-        </div>
-        <div class="faq" id="ayuda">
-          <h3>Preguntas frecuentes</h3>
-          <details><summary>¿Cuánto tarda un envío nacional?</summary><p>Entre 24 y 72 horas según el destino. Los envíos dentro de la misma ciudad suelen entregarse el mismo día.</p></details>
-          <details><summary>¿Qué necesito para enviar dinero?</summary><p>Tu documento de identidad (DIP o pasaporte) y el nombre y teléfono de quien lo recibe.</p></details>
-          <details><summary>¿Cómo pago?</summary><p>En efectivo en cualquiera de nuestras oficinas. Pregúntanos por otros medios en tu ciudad.</p></details>
-          <details><summary>He perdido mi número de guía</summary><p>Escríbenos por WhatsApp con tu nombre y la fecha del envío y lo localizamos.</p></details>
-          <details><summary>¿Hay límite de peso?</summary><p>Hasta 30 kg por bulto en envío normal. Para más peso, pide presupuesto.</p></details>
-          <details><summary>¿Hacéis presupuestos de obra sin compromiso?</summary><p>Sí. Cuéntanos qué necesitas en el formulario o por WhatsApp y pasamos a verlo.</p></details>
-        </div>
-      </div>
+  <!-- Compromiso y seguridad -->
+  <section class="section">
+    <div class="container commit">
+      <article><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><h3>Nuestro compromiso</h3><p>Nos comprometemos a ofrecer resultados que reflejen excelencia, confianza y durabilidad.</p><p>Creemos que la mejor publicidad es un cliente satisfecho y una obra bien ejecutada. Por ello trabajamos con disciplina, ética profesional y una mejora continua que nos permite responder eficazmente a los desafíos de cada proyecto.</p></article>
+      <article><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 4 13c0-6 7-10 16-10 0 9-4 16-10 16Z"/><path d="M4 21c4-4 7-7 11-10"/></svg></span><h3>Seguridad y responsabilidad</h3><p>En EPIKAIZO SERVICES S.L. promovemos buenas prácticas de seguridad laboral y protección del medio ambiente durante la ejecución de nuestros trabajos, procurando minimizar riesgos y garantizar un entorno seguro para nuestros colaboradores y clientes.</p><p class="commit__motto">Nuestro compromiso es construir con excelencia y mantener con responsabilidad.</p></article>
     </div>
   </section>
 
-  <!-- Contacto -->
+  <!-- Contacto y cita -->
   <section class="section section--tint" id="contacto">
     <div class="container split split--top">
       <div>
         <p class="eyebrow">Pide tu cita</p>
         <h2>Cuéntanos qué necesitas y cuándo te viene bien.</h2>
-        <p class="lead">Te confirmamos la cita por teléfono o WhatsApp en horario laboral, normalmente el mismo día.</p>
+        <p class="lead">Te confirmamos la cita por teléfono o WhatsApp en horario laboral, normalmente el mismo día. Los presupuestos son sin compromiso.</p>
         <ul class="contact-list">
           <li><span>Teléfono y WhatsApp</span><a href="tel:+240222580828">+240 222 580 828</a></li>
           <li><span>Correo</span><a href="mailto:epikaizoservices123@gmail.com">epikaizoservices123@gmail.com</a></li>
-          <li><span>Oficina</span>Av. del Puerto s/n, Malabo</li>
+          <li><span>Sede</span>Barrio Ngolo-Puente Sialo</li>
           <li><span>Horario</span>Lunes a sábado, 8:00 a 18:00</li>
         </ul>
         <a class="btn btn--whatsapp" href="https://wa.me/240222580828" target="_blank" rel="noopener" data-track="whatsapp_click">Escribir por WhatsApp</a>
-        <p class="cities"><strong>Ciudades:</strong> Malabo, Bata, Ebebiyín, Mongomo, Luba, Evinayong, Aconibe, Micomeseng, Añisoc, Rebola, Riaba y Nsork.</p>
       </div>
 
       <form class="panel contact" id="contactForm" novalidate>
         <div class="field">
-          <label for="cName">Nombre</label>
+          <label for="cName">Nombre o empresa</label>
           <input class="input" id="cName" name="name" autocomplete="name" required maxlength="120">
         </div>
         <div class="field-row">
@@ -340,14 +195,14 @@
         <div class="field">
           <label for="cTopic">¿Sobre qué es?</label>
           <select class="input" id="cTopic" name="topic">
-            <option value="construccion">Construcción de vivienda, reforma u obra</option>
-            <option value="mantenimiento">Mantenimiento: fontanería, electricidad, aire…</option>
+            <option value="construccion" selected>Construcción, reforma o rehabilitación</option>
+            <option value="mantenimiento">Mantenimiento: pintura, electricidad, fontanería…</option>
+            <option value="gestion">Gestión o dirección de obra</option>
             <option value="electronica">Reparación de electrónica</option>
             <option value="paquete">Envío de paquete</option>
             <option value="dinero">Envío de dinero</option>
             <option value="vehiculos">Compra de vehículo</option>
-            <option value="gestion">Gestión administrativa</option>
-            <option value="empresa">Soy una empresa</option>
+            <option value="empresa">Soy una empresa o institución</option>
             <option value="otro">Otra cosa</option>
           </select>
         </div>
@@ -369,24 +224,31 @@
   </section>
 </main>
 
+<section class="slogan" aria-label="Lema">
+  <div class="container">
+    <p>«Construimos confianza, transformamos espacios y creamos valor para el futuro.»</p>
+    <span>EPIKAIZO SERVICES S.L.</span>
+  </div>
+</section>
+
 <footer class="footer">
   <div class="container footer__grid">
     <div>
-      <img class="footer__logo" src="/img/logo.png" alt="Epikaizo Services" width="130" height="36" loading="lazy">
-      <p>Construcción de viviendas, mantenimiento, electrónica, envíos de paquetes y venta de vehículos en Guinea Ecuatorial.</p>
+      <img class="footer__logo" src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36" loading="lazy">
+      <p>Construcción en general y mantenimiento integral de inmuebles, envíos de paquetes y venta de vehículos. Sede en el Barrio Ngolo-Puente Sialo.</p>
     </div>
     <nav aria-label="Pie de página">
-      <a href="#servicios">Servicios</a>
-      <a href="#envios">Calcular envío</a>
-      <a href="#rastreo">Rastrear</a>
-      <a href="#empresas">Empresas</a>
-      <a href="#ayuda">Preguntas frecuentes</a>
-      <a href="#contacto">Contacto</a>
+      <a href="/">Inicio</a>
+      <a href="/construccion">Construcción y mantenimiento</a>
+      <a href="/envios">Envíos de paquetes</a>
+      <a href="/envios#rastreo">Rastrear un envío</a>
+      <a href="/vehiculos">Vehículos en venta</a>
+      <a href="#contacto">Pide tu cita</a>
     </nav>
     <div class="footer__legal">
       <a href="/privacidad.html">Privacidad</a>
       <a href="/login.html">Acceso equipo</a>
-      <p>© <span id="year">2026</span> Epikaizo Services</p>
+      <p>© <span id="year">2026</span> Epikaizo Services S.L.</p>
     </div>
   </div>
 </footer>
@@ -398,7 +260,7 @@
 <div class="chat" id="chat" hidden>
   <div class="chat__head"><strong>Asistente de Epikaizo</strong><button type="button" class="chat__close" id="chatClose" aria-label="Cerrar">×</button></div>
   <div class="chat__log" id="chatLog" aria-live="polite">
-    <p class="chat__msg chat__msg--bot">Hola, soy el asistente de Epikaizo. Pregúntame por precios, plazos, rastreo o nuestros servicios.</p>
+    <p class="chat__msg chat__msg--bot">Hola, soy el asistente de Epikaizo. Pregúntame por obras, mantenimiento, envíos, vehículos o cómo pedir cita.</p>
   </div>
   <form class="chat__form" id="chatForm"><input class="input" id="chatInput" maxlength="600" placeholder="Escribe tu pregunta" aria-label="Tu pregunta" autocomplete="off"><button class="btn btn--primary" type="submit">Enviar</button></form>
   <p class="chat__note">Respuestas automáticas. No compartas contraseñas ni datos bancarios.</p>

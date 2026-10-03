@@ -57,7 +57,7 @@ router.put(
 );
 
 // Exportar todo (JSON). La importación masiva se quitó: permitía borrar datos e inyectar SQL.
-const EXPORT_TABLES = ['clients', 'shipments', 'shipment_events', 'jobs', 'messages', 'invoices', 'invoice_payments', 'vehicles', 'cash_movements', 'employees', 'providers'];
+const EXPORT_TABLES = ['clients', 'shipments', 'shipment_events', 'jobs', 'messages', 'invoices', 'invoice_payments', 'vehicles', 'vehicle_photos', 'cash_movements', 'employees', 'providers'];
 
 router.get(
   '/export',
@@ -66,6 +66,7 @@ router.get(
     const data = {};
     for (const table of EXPORT_TABLES) {
       if (table === 'shipment_events') data[table] = await db.many('SELECT e.* FROM shipment_events e JOIN shipments s ON s.id = e.shipment_id WHERE s.tenant_id = $1', [req.tenantId]);
+      else if (table === 'vehicle_photos') data[table] = await db.many('SELECT id, vehicle_id, mime, size, position, created_at FROM vehicle_photos WHERE tenant_id = $1', [req.tenantId]);
       else if (table === 'invoice_payments') data[table] = await db.many('SELECT p.* FROM invoice_payments p JOIN invoices i ON i.id = p.invoice_id WHERE i.tenant_id = $1', [req.tenantId]);
       else data[table] = await db.many(`SELECT * FROM ${table} WHERE tenant_id = $1`, [req.tenantId]);
     }

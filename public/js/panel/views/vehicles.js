@@ -1,9 +1,60 @@
 // Vehículos en venta: inventario, reservas y venta con factura y contrato de compraventa.
 import { api } from '../api.js';
-import { h, icon, pageHead, badge, button, primary, empty, drawer, formDrawer, formDialog, field, section, toast } from '../ui.js';
+import { h, icon, pageHead, badge, button, primary, empty, drawer, formDrawer, formDialog, confirmDialog, field, section, toast } from '../ui.js';
 import { date, today, FUEL, TRANSMISSION, PAYMENT, number } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 import { openDocDetail, printDocument } from './_billing.js';
+
+/** Reduce la foto en el navegador (máx. 1600 px, WebP) antes de subirla: menos datos y subida rápida. */
+async function shrink(file) {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error(`${file.name}: usa fotos JPEG, PNG o WebP`);
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  for (const quality of [0.82, 0.7, 0.55]) {
+    const data = canvas.toDataURL('image/webp', quality);
+    if (data.length < 1.9e6) return data.startsWith('data:image/webp') ? data : canvas.toDataURL('image/jpeg', quality);
+  }
+  throw new Error(`${file.name}: la foto es demasiado grande`);
+}
+
+function gallery(ctx, v, photos, reload) {
+  const grid = h('div', { class: 'photos' },
+    photos.map((p, i) => h('figure', { class: 'photos__item' },
+      h('img', { src: `/api/vehicles/${v.id}/photos/${p.id}`, alt: `Foto ${i + 1} de ${title(v)}`, loading: 'lazy' }),
+      i === 0 ? h('span', { class: 'photos__cover' }, 'Portada') : null,
+      ctx.can('gestor') ? h('figcaption', null,
+        i > 0 ? button('', { size: 'sm', iconName: 'check', title: 'Usar como portada', onClick: async () => { await api.post(`/vehicles/${v.id}/photos/${p.id}/cover`); reload(); } }) : null,
+        button('', { size: 'sm', variant: 'danger', iconName: 'trash', title: 'Borrar foto', onClick: async () => {
+          if (!(await confirmDialog({ title: 'Borrar foto', text: 'La foto dejará de verse en la web.', confirm: 'Borrar', danger: true }))) return;
+          await api.del(`/vehicles/${v.id}/photos/${p.id}`);
+          reload();
+        } })) : null)));
+  if (ctx.can('gestor') && v.status !== 'vendido' && photos.length < 8) {
+    const input = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp', multiple: true, hidden: true });
+    const add = h('button', { type: 'button', class: 'photos__add', onClick: () => input.click() }, icon('plus'), h('span', null, photos.length ? 'Añadir fotos' : 'Sube fotos del vehículo'), h('small', null, `Hasta ${8 - photos.length} más · se ven en la web`));
+    input.addEventListener('change', async () => {
+      const files = [...input.files].slice(0, 8 - photos.length);
+      add.classList.add('is-loading');
+      let done = 0;
+      for (const file of files) {
+        try {
+          await api.post(`/vehicles/${v.id}/photos`, { data: await shrink(file) });
+          done += 1;
+        } catch (err) {
+          toast(err.message, 'bad');
+        }
+      }
+      if (done) toast(done === 1 ? 'Foto subida' : `${done} fotos subidas`);
+      reload();
+    });
+    grid.append(add, input);
+  }
+  return h('div', { class: 'stack' }, h('h3', { class: 'small-title' }, `Fotos (${photos.length})`), grid);
+}
 
 const title = (v) => `${v.brand} ${v.model}${v.year ? ` (${v.year})` : ''}`;
 
@@ -30,6 +81,7 @@ export default async function vehicles(root, ctx) {
     ],
     emptyState: () => empty({ iconName: 'truck', title: 'No hay vehículos', text: 'Añade los coches que tenéis a la venta para reservarlos y facturarlos desde aquí.', action: ctx.can('gestor') ? button('Añadir vehículo', { variant: 'primary', iconName: 'plus', onClick: () => edit(ctx, list) }) : null }),
     columns: [
+      { label: '', render: (v) => (v.cover_id ? h('img', { class: 'thumb', src: `/api/vehicles/${v.id}/photos/${v.cover_id}`, alt: '', loading: 'lazy' }) : h('span', { class: 'thumb thumb--empty' }, icon('truck'))) },
       { label: 'Vehículo', render: (v) => primary(title(v), h('span', null, h('span', { class: 'mono' }, v.code), [v.color, v.mileage_km != null ? `${number(v.mileage_km)} km` : null, v.condition === 'nuevo' ? 'Nuevo' : null].filter(Boolean).map((x) => ` · ${x}`).join(''))) },
       { label: 'Matrícula / bastidor', hideSm: true, render: (v) => primary(v.plate || '—', v.vin || '') },
       { label: 'Estado', render: (v) => [badge('vehicle', v.status), v.status === 'reservado' && v.reserved_for ? h('div', { class: 'sub' }, `Para ${v.reserved_for}`) : null] },
@@ -103,6 +155,7 @@ async function openVehicle(ctx, id, list) {
       row('Reservado para', v.reserved_for ? `${v.reserved_for} · ${v.reserved_phone}${v.reserved_until ? ` · hasta ${date(v.reserved_until)}` : ''}` : null),
       row('Vendido', v.sold_at ? date(v.sold_at, true) : null),
       row('Notas', v.notes)),
+    gallery(ctx, v, data.photos || [], reload),
     data.invoice ? h('div', { class: 'alert alert--info' }, icon('invoice'), h('span', null, 'Factura de venta ', h('strong', { class: 'mono' }, data.invoice.number), ` · ${ctx.money(data.invoice.amount)} · cobrado ${ctx.money(data.invoice.paid_amount)}`)) : null));
 
   const actions = [];

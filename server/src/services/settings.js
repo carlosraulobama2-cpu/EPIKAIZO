@@ -3,11 +3,11 @@ const db = require('../db');
 
 const DEFAULTS = {
   company: {
-    name: 'Epikaizo Services',
+    name: 'Epikaizo Services S.L.',
     phone: '+240 222 580 828',
     whatsapp: '240222580828',
     email: 'epikaizoservices123@gmail.com',
-    address: 'Av. del Puerto s/n, Malabo',
+    address: 'Barrio Ngolo-Puente Sialo',
     hours: 'Lunes a sábado, 8:00 a 18:00',
     city: 'Malabo',
   },

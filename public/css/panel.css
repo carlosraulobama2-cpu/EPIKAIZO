@@ -378,3 +378,21 @@ table.table { width: 100%; border-collapse: collapse; }
   /* El menú lateral es fijo; el fondo blanco continúa aunque la página sea larga */
   body { background: linear-gradient(to right, var(--surface) calc(var(--sidebar) - 1px), var(--line) calc(var(--sidebar) - 1px), var(--line) var(--sidebar), var(--bg) var(--sidebar)); }
 }
+
+/* ---------- Fotos de vehículos ---------- */
+.small-title { font-size: 14px; }
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.photos__item { position: relative; margin: 0; border-radius: var(--r-sm); overflow: hidden; border: 1px solid var(--line); aspect-ratio: 4 / 3; background: var(--bg); }
+.photos__item img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photos__item figcaption { position: absolute; right: 6px; bottom: 6px; display: flex; gap: 4px; }
+.photos__item figcaption .btn { background: rgba(255, 255, 255, .95); }
+.photos__cover { position: absolute; left: 6px; top: 6px; padding: 2px 8px; border-radius: 99px; background: var(--brand); color: #fff; font-size: 11.5px; font-weight: 600; }
+.photos__add { aspect-ratio: 4 / 3; border: 2px dashed var(--line-strong); border-radius: var(--r-sm); background: var(--surface); display: grid; place-content: center; justify-items: center; gap: 4px; color: var(--muted); cursor: pointer; text-align: center; padding: 8px; }
+.photos__add:hover { border-color: var(--brand); color: var(--brand); }
+.photos__add svg { width: 22px; height: 22px; }
+.photos__add span { font-weight: 600; }
+.photos__add small { font-size: 11.5px; }
+.photos__add.is-loading { opacity: .6; pointer-events: none; }
+.thumb { width: 64px; height: 48px; border-radius: 8px; object-fit: cover; display: block; }
+.thumb--empty { display: grid; place-items: center; background: var(--brand-50); color: var(--brand); }
+.thumb--empty svg { width: 20px; height: 20px; }
