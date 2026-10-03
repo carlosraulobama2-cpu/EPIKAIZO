@@ -128,6 +128,18 @@ test('ajustes: el admin cambia tarifas y la web pública las usa', async () => {
   assert.equal(quote.data.total, 3000);
 });
 
+test('pedir cita desde la web: la fecha llega a la bandeja y no se admite una pasada', async () => {
+  const a = agent(server.base);
+  const day = new Date(Date.now() + 3 * 86400000).toISOString().slice(0, 10);
+  const ok = await a.post('/api/public/contact', { name: 'Pedro Ndong', phone: '222606060', topic: 'vehiculos', appointment: day, message: 'Quiero ver una furgoneta', privacy: true });
+  assert.equal(ok.status, 201);
+  const row = await db.one("SELECT topic, body FROM messages WHERE phone = '222606060'");
+  assert.equal(row.topic, 'vehiculos');
+  assert.match(row.body, /^📅 Cita solicitada para el /);
+  const past = await a.post('/api/public/contact', { name: 'Pedro Ndong', phone: '222606061', topic: 'electronica', appointment: '2020-01-01', message: 'Reparar televisor', privacy: true });
+  assert.equal(past.status, 422);
+});
+
 test('verificación pública de factura y QR', async () => {
   const { data } = await admin.post('/api/invoices', { client_name: 'Rosa Mba Ondo', client_phone: '222111000', concept: 'Mudanza', amount: 250 });
   const pub = await agent(server.base).get(`/api/public/invoices/${data.invoice.id}`);

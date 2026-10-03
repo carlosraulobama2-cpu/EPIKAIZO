@@ -57,7 +57,7 @@ function open(ctx, m, list, whatsappEnabled) {
     iconName: 'tool',
     onClick: async () => {
       const { categories } = await api.get('/jobs/categories');
-      const guess = { construccion: 'construccion', mantenimiento: 'mantenimiento', gestion: 'gestion' }[m.topic] || 'otro';
+      const guess = { construccion: 'construccion', mantenimiento: 'mantenimiento', electronica: 'electronica', vehiculos: 'vehiculos', gestion: 'gestion' }[m.topic] || 'otro';
       const values = await formDialog({
         title: 'Crear trabajo desde el mensaje',
         text: 'Se crea con los datos de contacto del mensaje. El presupuesto lo añades después.',

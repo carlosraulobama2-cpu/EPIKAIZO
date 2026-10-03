@@ -129,6 +129,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .trades__list span { color: var(--muted); font-size: 14.5px; }
 .trades__more { margin-top: 18px; color: var(--muted); }
 
+/* ---------- Especialidades ---------- */
+.section--tight { padding: 72px 0 24px; }
+.specialties { display: grid; grid-template-columns: .9fr 1.1fr; gap: 48px; align-items: start; }
+.specialties__intro { position: sticky; top: 100px; }
+.specialties__intro .btn { margin-top: 26px; }
+.specialties__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.specialties__list li { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; padding: 18px 20px; border: 1px solid var(--line); border-radius: var(--r-lg); background: #fff; transition: border-color .15s, box-shadow .15s; }
+.specialties__list li:hover { border-color: #C9CDF7; box-shadow: var(--shadow); }
+.specialties__list p { color: var(--muted); font-size: 15px; margin-top: 4px; }
+.specialties__list .link { white-space: nowrap; font-size: 15px; }
+.specialties__icon { width: 48px; height: 48px; border-radius: 14px; background: var(--brand-50); color: var(--brand); display: grid; place-items: center; }
+.specialties__icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
 /* ---------- Envíos ---------- */
 .ship-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
 .panel { background: #fff; border: 1px solid var(--line); border-radius: var(--r-lg); padding: 28px; box-shadow: var(--shadow); }
@@ -251,7 +264,8 @@ select.input { appearance: none; padding-right: 36px; background: #fff url("data
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1000px) {
-  .hero__grid, .split, .ship-grid { grid-template-columns: 1fr; gap: 36px; }
+  .hero__grid, .split, .ship-grid, .specialties { grid-template-columns: 1fr; gap: 36px; }
+  .specialties__intro { position: static; }
   .hero__media { max-width: 560px; }
   .hero__badge { left: 16px; }
   .services, .how { grid-template-columns: 1fr 1fr; }
@@ -275,6 +289,8 @@ select.input { appearance: none; padding-right: 36px; background: #fff url("data
   .panel { padding: 20px; }
   .trades { padding: 20px; }
   .steps li { font-size: 12px; }
+  .specialties__list li { grid-template-columns: auto 1fr; }
+  .specialties__list .link { grid-column: 2; }
   .chat-open { display: none; }
   .verify dl { grid-template-columns: 1fr; gap: 2px; }
   .verify dd { margin-bottom: 10px; }

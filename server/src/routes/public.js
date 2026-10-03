@@ -3,7 +3,7 @@ const crypto = require('crypto');
 const express = require('express');
 const config = require('../config');
 const db = require('../db');
-const { route, validate, text, phone, email, oneOf, bool, HttpError } = require('../lib/http');
+const { route, validate, text, phone, email, oneOf, bool, date, HttpError } = require('../lib/http');
 const { rateLimit } = require('../lib/security');
 const { getSettings, quote } = require('../services/settings');
 const { qrPng } = require('../services/invoices');
@@ -75,7 +75,7 @@ router.get(
   })
 );
 
-const TOPICS = ['paquete', 'dinero', 'construccion', 'mantenimiento', 'gestion', 'empresa', 'otro'];
+const TOPICS = ['construccion', 'mantenimiento', 'electronica', 'paquete', 'dinero', 'vehiculos', 'gestion', 'empresa', 'otro'];
 
 router.post(
   '/contact',
@@ -87,14 +87,22 @@ router.post(
       email: email({ optional: true }),
       topic: oneOf(TOPICS, { optional: true }),
       message: text({ min: 5, max: 2000 }),
+      appointment: date({ optional: true }),
       privacy: bool(),
       website: text({ max: 200, optional: true }), // campo trampa invisible para bots
     });
     if (!input.privacy) throw new HttpError(422, 'Acepta la política de privacidad para enviar el mensaje');
     if (input.website) return res.status(201).json({ ok: true }); // bot: respondemos bien pero no guardamos
+    // "Pide tu cita": la fecha preferida va al principio del mensaje para que el equipo la vea en la Bandeja.
+    let body = input.message;
+    if (input.appointment) {
+      if (input.appointment < new Date().toISOString().slice(0, 10)) throw new HttpError(422, 'Elige una fecha de cita a partir de hoy');
+      const day = new Date(`${input.appointment}T12:00:00Z`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
+      body = `📅 Cita solicitada para el ${day}\n\n${input.message}`;
+    }
     await db.query(
       `INSERT INTO messages (id, tenant_id, channel, name, phone, email, topic, body) VALUES ($1, $2, 'web', $3, $4, $5, $6, $7)`,
-      [crypto.randomUUID(), tenantId, input.name, input.phone, input.email, input.topic || 'otro', input.message]
+      [crypto.randomUUID(), tenantId, input.name, input.phone, input.email, input.topic || 'otro', body]
     );
     res.status(201).json({ ok: true });
   })

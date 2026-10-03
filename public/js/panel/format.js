@@ -97,6 +97,8 @@ export const TOPIC = {
   dinero: 'Envío de dinero',
   construccion: 'Construcción',
   mantenimiento: 'Mantenimiento',
+  electronica: 'Electrónica',
+  vehiculos: 'Venta de vehículos',
   gestion: 'Gestión administrativa',
   empresa: 'Empresas',
   otro: 'Otro',

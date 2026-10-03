@@ -179,12 +179,16 @@ function initContact() {
   const form = $('#contactForm');
   const error = $('#contactError');
   const ok = $('#contactOk');
+  // La cita no puede ser en el pasado.
+  const dateInput = $('#cDate');
+  if (dateInput) dateInput.min = new Date().toISOString().slice(0, 10);
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     error.hidden = true;
     ok.hidden = true;
     const data = Object.fromEntries(new FormData(form));
     data.privacy = form.privacy.checked;
+    if (!data.appointment) delete data.appointment;
     const missing = !data.name ? 'Escribe tu nombre.' : !data.phone ? 'Escribe un teléfono para poder llamarte.' : !data.message ? 'Cuéntanos qué necesitas.' : !data.privacy ? 'Marca la casilla de privacidad para poder contactarte.' : '';
     if (missing) {
       error.textContent = missing;
@@ -204,7 +208,7 @@ function initContact() {
       error.hidden = false;
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Enviar mensaje';
+      btn.textContent = 'Pedir cita';
     }
   });
 }

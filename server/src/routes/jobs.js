@@ -16,12 +16,14 @@ const router = express.Router();
 const CATEGORIES = {
   construccion: 'Construcción',
   mantenimiento: 'Mantenimiento general',
+  electronica: 'Reparación de electrónica',
   fontaneria: 'Fontanería',
   electricidad: 'Electricidad',
   climatizacion: 'Climatización',
   carpinteria: 'Carpintería y reformas',
   mudanza: 'Mudanzas y transporte',
   gestion: 'Gestión administrativa',
+  vehiculos: 'Venta de vehículos',
   otro: 'Otro',
 };
 const STATUSES = ['nuevo', 'presupuestado', 'en_curso', 'terminado', 'cancelado'];
