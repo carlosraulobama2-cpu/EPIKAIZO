@@ -1,20 +1,24 @@
 {
   "name": "epikaizo-server",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
+  "description": "Servidor de Epikaizo: web pública, API y panel de gestión",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "start": "node src/index.js",
-    "dev": "node src/index.js"
+    "dev": "node --watch src/index.js",
+    "test": "node --test --test-concurrency=1 \"test/**/*.test.js\"",
+    "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "googleapis": "^174.0.1",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.0",
-    "qrcode": "^1.5.4",
-    "uuid": "^9.0.1"
+    "qrcode": "^1.5.4"
   }
 }

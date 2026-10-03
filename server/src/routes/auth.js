@@ -1,97 +1,100 @@
+// Inicio y cierre de sesión. No hay registro público: las cuentas las crea un administrador.
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { prepare, saveDb, getDb } = require('../config/database');
+const db = require('../db');
+const { route, validate, text, email, HttpError } = require('../lib/http');
+const { rateLimit, setSessionCookie, clearSessionCookie } = require('../lib/security');
+const { authenticate, signSession } = require('../middleware/auth');
+const { audit } = require('../services/audit');
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'epikaizo-super-secret-key-2026';
-const JWT_EXPIRES = process.env.JWT_EXPIRES || '7d';
+const MAX_FAILED = 5;
+const LOCK_MINUTES = 15;
+// Hash de relleno: si el correo no existe comparamos igual, para no delatar qué correos hay.
+const DUMMY_HASH = bcrypt.hashSync('epikaizo-no-user', 10);
 
-function signToken(user) {
-  return jwt.sign(
-    { id: user.id, email: user.email, role: user.role, tenantId: user.tenant_id },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES }
-  );
-}
-
-router.post('/login', (req, res) => {
-  try {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email y contraseña son requeridos' });
-    }
-    const user = prepare('SELECT * FROM users WHERE email = ?').get(email);
-    if (!user) {
-      return res.status(401).json({ error: 'Usuario no encontrado' });
-    }
-    const isValid = bcrypt.compareSync(password, user.password);
-    if (!isValid) {
-      return res.status(401).json({ error: 'Contraseña incorrecta' });
-    }
-    const token = signToken(user);
-    res.json({
-      token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        tenantId: user.tenant_id,
-      },
-    });
-  } catch (err) {
-    console.error('Error en /api/auth/login:', err);
-    res.status(500).json({ error: 'Error al autenticar' });
-  }
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60_000,
+  max: 10,
+  key: (req) => `${req.ip}:${String((req.body || {}).email || '').toLowerCase()}`,
+  message: 'Demasiados intentos. Espera 15 minutos e inténtalo de nuevo.',
 });
 
-router.post('/register', (req, res) => {
-  try {
-    const { name, email, password, role, tenantId } = req.body || {};
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Nombre, email y contraseña son requeridos' });
-    }
-    const exists = prepare('SELECT id FROM users WHERE email = ?').get(email);
-    if (exists) {
-      return res.status(400).json({ error: 'Email ya existe' });
-    }
-    const hashed = bcrypt.hashSync(password, 10);
-    const id = require('uuid').v4();
-    const now = new Date().toISOString();
-    const tId = tenantId || 'public';
-    prepare(
-      'INSERT INTO users (id, tenant_id, name, email, password, role, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?)'
-    ).run(id, tId, name, email, hashed, role || 'user', 'active', now, now);
-    saveDb();
-    const token = signToken({ id, email, role: role || 'user', tenant_id: tId });
-    res.status(201).json({
-      token,
-      user: { id, name, email, role: role || 'user', tenantId: tId },
-    });
-  } catch (err) {
-    console.error('Error en /api/auth/register:', err);
-    res.status(500).json({ error: 'Error al registrar usuario' });
-  }
+const publicUser = (u) => ({
+  id: u.id,
+  name: u.name,
+  email: u.email,
+  role: u.role,
+  must_change_password: u.must_change_password,
 });
 
-router.get('/me', (req, res) => {
-  try {
-    const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-    if (!token) {
-      return res.status(401).json({ error: 'Token requerido' });
+router.post(
+  '/login',
+  loginLimiter,
+  route(async (req, res) => {
+    const input = validate(req.body, { email: email(), password: text({ min: 1, max: 200 }) });
+    const user = await db.one('SELECT * FROM users WHERE lower(email) = $1', [input.email]);
+    const ok = await bcrypt.compare(input.password, user ? user.password_hash : DUMMY_HASH);
+    const invalid = new HttpError(401, 'Correo o contraseña incorrectos');
+
+    if (!user) throw invalid;
+    if (user.locked_until && new Date(user.locked_until) > new Date()) {
+      throw new HttpError(423, 'Cuenta bloqueada temporalmente por intentos fallidos. Inténtalo en 15 minutos.');
     }
-    const decoded = jwt.verify(token, JWT_SECRET);
-    const user = prepare('SELECT id, name, email, role, tenant_id, status FROM users WHERE id = ?').get(decoded.id);
-    if (!user) {
-      return res.status(401).json({ error: 'Usuario no encontrado' });
+    if (!ok) {
+      const failed = user.failed_logins + 1;
+      const lock = failed >= MAX_FAILED;
+      await db.query(
+        `UPDATE users SET failed_logins = $2, locked_until = CASE WHEN $3 THEN now() + interval '${LOCK_MINUTES} minutes' ELSE NULL END WHERE id = $1`,
+        [user.id, lock ? 0 : failed, lock]
+      );
+      if (lock) {
+        await audit({ ...req, user, tenantId: user.tenant_id }, 'auth.bloqueo', { entity: 'user', entityId: user.id });
+      }
+      throw invalid;
     }
-    res.json({ user });
-  } catch (err) {
-    res.status(401).json({ error: 'Token inválido o expirado' });
-  }
+    if (user.status !== 'activo') throw new HttpError(403, 'Tu cuenta está desactivada. Habla con el administrador.');
+
+    await db.query('UPDATE users SET failed_logins = 0, locked_until = NULL, last_login_at = now() WHERE id = $1', [user.id]);
+    setSessionCookie(res, signSession(user));
+    await audit({ ...req, user, tenantId: user.tenant_id }, 'auth.login', { entity: 'user', entityId: user.id });
+    res.json({ user: publicUser(user) });
+  })
+);
+
+router.post('/logout', (req, res) => {
+  clearSessionCookie(res);
+  res.json({ ok: true });
 });
+
+router.get(
+  '/me',
+  authenticate,
+  route(async (req, res) => {
+    const tenant = await db.one('SELECT id, name FROM tenants WHERE id = $1', [req.tenantId]);
+    res.json({ user: publicUser(req.user), tenant });
+  })
+);
+
+router.post(
+  '/password',
+  authenticate,
+  route(async (req, res) => {
+    const input = validate(req.body, { current: text({ max: 200 }), password: text({ min: 10, max: 200 }) });
+    const user = await db.one('SELECT * FROM users WHERE id = $1', [req.user.id]);
+    if (!(await bcrypt.compare(input.current, user.password_hash))) throw new HttpError(400, 'La contraseña actual no es correcta');
+    if (input.current === input.password) throw new HttpError(400, 'La nueva contraseña debe ser distinta');
+    const hash = await bcrypt.hash(input.password, 12);
+    // Subir token_version cierra las demás sesiones abiertas con la contraseña anterior.
+    const updated = await db.one(
+      'UPDATE users SET password_hash = $2, must_change_password = false, token_version = token_version + 1, updated_at = now() WHERE id = $1 RETURNING *',
+      [user.id, hash]
+    );
+    setSessionCookie(res, signSession(updated));
+    await audit(req, 'auth.cambio_contrasena', { entity: 'user', entityId: user.id });
+    res.json({ user: publicUser(updated) });
+  })
+);
 
 module.exports = router;

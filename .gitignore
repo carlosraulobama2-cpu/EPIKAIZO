@@ -1,0 +1,21 @@
+# Secretos: nunca en git
+.env
+.env.*
+!.env.example
+
+# Dependencias y artefactos
+node_modules/
+*.log
+npm-debug.log*
+
+# Datos locales
+*.db
+*.sqlite
+data/
+uploads/
+
+# Sistema
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

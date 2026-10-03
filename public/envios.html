@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Envíos de paquetes y dinero · Epikaizo Services S.L.</title>
+  <meta name="description" content="Envíos de paquetes y dinero locales, nacionales e internacionales. Calcula el precio, rastrea tu guía EPZ y paga en nuestras oficinas.">
+  <meta name="theme-color" content="#070594">
+  <link rel="canonical" href="https://epikaizo.com/envios">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/manifest.json">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Epikaizo Services S.L.">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:title" content="Envíos de paquetes y dinero · Epikaizo Services S.L.">
+  <meta property="og:description" content="Envíos de paquetes y dinero locales, nacionales e internacionales. Calcula el precio, rastrea tu guía EPZ y paga en nuestras oficinas.">
+  <meta property="og:image" content="https://epikaizo.com/img/furgoneta-epikaizo.webp">
+  <meta property="og:url" content="https://epikaizo.com/envios">
+  <meta name="twitter:card" content="summary_large_image">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "GeneralContractor",
+    "name": "Epikaizo Services S.L.",
+    "slogan": "Construimos confianza, transformamos espacios y creamos valor para el futuro.",
+    "url": "https://epikaizo.com",
+    "logo": "https://epikaizo.com/img/logo.png",
+    "image": "https://epikaizo.com/img/og.jpg",
+    "telephone": "+240 222 580 828",
+    "email": "epikaizoservices123@gmail.com",
+    "address": { "@type": "PostalAddress", "streetAddress": "Barrio Ngolo-Puente Sialo", "addressCountry": "GQ" },
+    "openingHours": "Mo-Sa 08:00-18:00",
+    "areaServed": "Guinea Ecuatorial"
+  }
+  </script>
+  <link rel="preload" href="/fonts/space-grotesk-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/site.css">
+  <script src="/js/site.js" defer></script>
+</head>
+<body data-page="envios">
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<header class="header" id="header">
+  <div class="container header__row">
+    <a class="brand" href="/" aria-label="Epikaizo Services, inicio"><img src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36"></a>
+    <nav class="nav" id="nav" aria-label="Principal">
+      <a href="/">Inicio</a>
+      <a href="/construccion">Construcción</a>
+      <a href="/envios" aria-current="page">Envíos</a>
+      <a href="/vehiculos">Vehículos</a>
+      <a href="#contacto">Contacto</a>
+      <a class="btn btn--primary nav__cta" href="#contacto" data-topic="paquete">Pide tu cita</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="hero hero--page">
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <p class="eyebrow">Envíos de paquetes y dinero</p>
+        <h1>Tu envío, en camino y <span class="hl">a la vista</span>.</h1>
+        <p class="lead">Paquetería y envíos de dinero locales, nacionales e internacionales. Sabes el precio antes de venir y sigues tu envío con la guía EPZ desde esta web.</p>
+        <div class="hero__cta"><a class="btn btn--primary btn--lg" href="#cotizador">Calcular precio</a><a class="btn btn--ghost btn--lg" href="#rastreo">Rastrear</a></div>
+        <form class="quicktrack" id="quickTrack" role="search" aria-label="Rastrear un envío">
+          <label for="quickTrackInput">¿Ya enviaste algo?</label>
+          <div class="quicktrack__row">
+            <input id="quickTrackInput" class="input" placeholder="EPZ-000000" autocomplete="off" maxlength="10">
+            <button class="btn btn--dark" type="submit">Rastrear</button>
+          </div>
+        </form>
+      </div>
+      <div class="hero__media">
+        <img src="/img/furgoneta-epikaizo.webp" alt="Furgoneta de reparto de Epikaizo" width="900" height="900" fetchpriority="high">
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <div class="container">
+      <dl class="metrics">
+        <div><dt>3 alcances</dt><dd>local, nacional e internacional</dd></div>
+        <div><dt>Malabo y Bata</dt><dd>jefaturas de logística</dd></div>
+        <div><dt>Guía EPZ</dt><dd>seguimiento desde esta web</dd></div>
+        <div><dt>Lun–Sáb</dt><dd>atención de 8:00 a 18:00</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- Cotizador y rastreo -->
+  <section class="section section--tint" id="calcular">
+    <div class="container">
+      <header class="section__head">
+        <p class="eyebrow">Calcula y rastrea</p>
+        <h2>Sabes el precio antes de venir.</h2>
+        <p class="section__sub">Tarifas claras, sin cargos ocultos. Paga en cualquiera de nuestras oficinas.</p>
+      </header>
+      <div class="ship-grid">
+        <div class="panel" id="cotizador">
+          <div class="segmented" role="tablist" aria-label="Tipo de envío">
+            <button type="button" role="tab" aria-selected="true" class="is-active" data-kind="paquete">Paquete</button>
+            <button type="button" role="tab" aria-selected="false" data-kind="dinero">Dinero</button>
+          </div>
+          <form class="quote" id="quoteForm" novalidate>
+            <div class="field">
+              <label for="quoteValue" id="quoteValueLabel">Peso del paquete (kg)</label>
+              <input class="input" id="quoteValue" type="number" min="0.1" step="0.1" inputmode="decimal" placeholder="Ej. 3" required>
+            </div>
+            <div class="field">
+              <label for="quoteScope">Destino</label>
+              <select class="input" id="quoteScope">
+                <option value="local">Dentro de la misma ciudad</option>
+                <option value="nacional" selected>Otra ciudad del país</option>
+                <option value="internacional">Internacional</option>
+              </select>
+            </div>
+            <button class="btn btn--primary" type="submit">Calcular</button>
+            <p class="form-error" id="quoteError" role="alert" hidden></p>
+            <div class="quote__result" id="quoteResult" hidden aria-live="polite">
+              <div><span id="quoteFeeLabel">Precio del envío</span><strong id="quoteFee">—</strong></div>
+              <div class="quote__total"><span>Total a pagar</span><strong id="quoteTotal">—</strong></div>
+              <p class="small muted">Precio orientativo. Paquetes de hasta 30 kg por bulto; para más peso, pide presupuesto.</p>
+            </div>
+          </form>
+        </div>
+
+        <div class="panel" id="rastreo">
+          <h3>Rastrea tu envío</h3>
+          <p class="muted">Escribe la guía que te dimos en la oficina (EPZ-000000).</p>
+          <form class="track" id="trackForm" novalidate>
+            <input class="input" id="trackInput" placeholder="EPZ-000000" autocomplete="off" maxlength="10" aria-label="Número de guía">
+            <button class="btn btn--dark" type="submit">Rastrear</button>
+          </form>
+          <p class="form-error" id="trackError" role="alert" hidden></p>
+          <div class="track-result" id="trackResult" hidden aria-live="polite">
+            <div class="track-result__head">
+              <div><span class="mono" id="trackCode"></span> <strong id="trackStatus"></strong></div>
+              <span class="muted small" id="trackRoute"></span>
+            </div>
+            <ol class="steps" id="trackSteps"></ol>
+            <ul class="track-events" id="trackEvents"></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Epikaizo Exprés -->
+  <section class="section" id="expres">
+    <div class="container">
+      <div class="expres__intro">
+        <img class="expres__logo" src="/img/epikaizo-expres.webp" alt="Epikaizo Services · Envío y recepción de paquetes y bultos" width="430" height="91" loading="lazy">
+        <div>
+          <p class="eyebrow">Epikaizo Exprés · Logística</p>
+          <h2>Su aliado estratégico para mover mercancías.</h2>
+          <p class="lead">Somos una empresa especializada en soluciones logísticas integrales, comprometida con ofrecer un servicio seguro, rápido y eficiente. Facilitamos el movimiento de mercancías con procesos innovadores y un equipo altamente capacitado.</p>
+          <p class="expres__vision"><strong>Nuestra visión:</strong> ser la empresa logística líder en Guinea Ecuatorial y en toda África, conectada con otros continentes y reconocida por la excelencia de nuestros servicios y la satisfacción de nuestros clientes.</p>
+          <p class="expres__offices"><span class="ico ico--sm" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><span>Jefaturas de logística en <strong>Malabo</strong> y <strong>Bata</strong>.</span></p>
+        </div>
+      </div>
+      <ul class="xsvc"><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg></span><h3>Seguimiento en tiempo real</h3><p>Sigue cada envío con su guía EPZ desde esta web y recibe avisos por WhatsApp.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 6h11v10H3zM14 9h4l3 3v4h-7M7.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM17.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg></span><h3>Distribución de mercancías</h3><p>Recogida, reparto y entrega de paquetes y bultos a particulares y empresas.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13M7 21v-8h10v8M7 17h10"/></svg></span><h3>Gestión de almacenes</h3><p>Almacenaje, control de inventario y preparación de pedidos.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg></span><h3>Transporte nacional e internacional</h3><p>Entre ciudades del país y hacia el extranjero, con una amplia red de socios.</p></li><li><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 21l1.9-5.4A8 8 0 1 1 21 12Z"/></svg></span><h3>Consultoría logística</h3><p>Analizamos tu cadena de suministro para reducir costes y tiempos de entrega.</p></li></ul>
+      <div class="commit expres__why">
+        <article><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><h3>¿Por qué elegirnos?</h3><ul class="ticks"><li>Entregas rápidas y seguras</li><li>Optimización de costes logísticos</li><li>Personal altamente cualificado</li><li>Atención personalizada</li><li>Tecnología moderna para el seguimiento de la carga</li><li>Amplia red de socios y colaboradores</li></ul></article>
+        <article><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span><h3>Nuestra propuesta de valor</h3><p>Con nosotros, su empresa o negocio obtiene:</p><ul class="ticks"><li>Mayor eficiencia operativa</li><li>Reducción de costes</li><li>Menores tiempos de entrega</li><li>Mayor seguridad para sus mercancías</li><li>Información constante sobre el estado de sus envíos</li></ul></article>
+      </div>
+      <div class="expres__values">
+        <p class="eyebrow">Nuestros valores</p>
+        <ul class="chips"><li>Compromiso</li><li>Responsabilidad</li><li>Puntualidad</li><li>Transparencia</li><li>Innovación</li><li>Seguridad</li></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo funciona -->
+  <section class="section section--tint">
+    <div class="container">
+      <header class="section__head"><p class="eyebrow">Cómo funciona</p><h2>Tu envío en camino en tres pasos.</h2></header>
+      <ol class="how">
+        <li><span>1</span><h3>Calcula o pregunta</h3><p>Usa el calculador o escríbenos por WhatsApp para envíos especiales.</p></li>
+        <li><span>2</span><h3>Trae tu paquete</h3><p>En la oficina te damos la guía EPZ y la factura. También recogemos a domicilio.</p></li>
+        <li><span>3</span><h3>Síguelo hasta destino</h3><p>Rastréalo aquí y te avisamos por WhatsApp cuando se entrega.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Empresas -->
+  <section class="section section--dark" id="empresas">
+    <div class="container split">
+      <div>
+        <p class="eyebrow eyebrow--light">Empresas y tiendas online</p>
+        <h2>¡Estamos listos para mover el futuro de su empresa!</h2>
+        <p class="lead">En un mercado cada vez más competitivo, contar con un socio logístico confiable marca la diferencia. Trabajamos para que cada envío llegue al lugar correcto, en el momento adecuado y en las mejores condiciones.</p>
+        <ul class="checks">
+          <li>Un responsable de cuenta que conoce tu negocio</li>
+          <li>Facturación mensual con factura verificable por QR</li>
+          <li>Tarifas preferentes y entregas prioritarias</li>
+        </ul>
+        <a class="btn btn--light btn--lg" href="#contacto" data-topic="empresa">Hablar con nosotros</a>
+      </div>
+      <img class="split__img" src="/img/hero-oficina.webp" alt="Mostrador de envíos de Epikaizo" width="900" height="900" loading="lazy">
+    </div>
+  </section>
+
+  <!-- Preguntas -->
+  <section class="section" id="ayuda">
+    <div class="container narrow">
+      <div class="faq">
+        <h2>Preguntas frecuentes sobre envíos</h2>
+        <details><summary>¿Cuánto tarda un envío nacional?</summary><p>Entre 24 y 72 horas según el destino. Los envíos dentro de la misma ciudad suelen entregarse el mismo día.</p></details>
+        <details><summary>¿Qué necesito para enviar dinero?</summary><p>Tu documento de identidad (DIP o pasaporte) y el nombre y teléfono de quien lo recibe.</p></details>
+        <details><summary>¿Cómo pago?</summary><p>En efectivo en cualquiera de nuestras oficinas. Pregúntanos por otros medios en tu ciudad.</p></details>
+        <details><summary>He perdido mi número de guía</summary><p>Escríbenos por WhatsApp con tu nombre y la fecha del envío y lo localizamos.</p></details>
+        <details><summary>¿Hay límite de peso?</summary><p>Hasta 30 kg por bulto en envío normal. Para más peso, pide presupuesto.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contacto y cita -->
+  <section class="section section--tint" id="contacto">
+    <div class="container split split--top">
+      <div>
+        <p class="eyebrow">Pide tu cita</p>
+        <h2>¿Envío especial o para tu empresa? Escríbenos.</h2>
+        <p class="lead">Te confirmamos la cita por teléfono o WhatsApp en horario laboral, normalmente el mismo día. Los presupuestos son sin compromiso.</p>
+        <ul class="contact-list">
+          <li><span>Teléfono y WhatsApp</span><a href="tel:+240222580828">+240 222 580 828</a></li>
+          <li><span>Correo</span><a href="mailto:epikaizoservices123@gmail.com">epikaizoservices123@gmail.com</a></li>
+          <li><span>Sede</span>Barrio Ngolo-Puente Sialo</li>
+          <li><span>Horario</span>Lunes a sábado, 8:00 a 18:00</li>
+        </ul>
+        <a class="btn btn--whatsapp" href="https://wa.me/240222580828" target="_blank" rel="noopener" data-track="whatsapp_click">Escribir por WhatsApp</a>
+      </div>
+
+      <form class="panel contact" id="contactForm" novalidate>
+        <div class="field">
+          <label for="cName">Nombre o empresa</label>
+          <input class="input" id="cName" name="name" autocomplete="name" required maxlength="120">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="cPhone">Teléfono</label>
+            <input class="input" id="cPhone" name="phone" type="tel" autocomplete="tel" placeholder="+240 222 000 000" required>
+          </div>
+          <div class="field">
+            <label for="cEmail">Correo <span class="opt">(opcional)</span></label>
+            <input class="input" id="cEmail" name="email" type="email" autocomplete="email">
+          </div>
+        </div>
+        <div class="field">
+          <label for="cTopic">¿Sobre qué es?</label>
+          <select class="input" id="cTopic" name="topic">
+            <option value="construccion">Construcción, reforma o rehabilitación</option>
+            <option value="mantenimiento">Mantenimiento: pintura, electricidad, fontanería…</option>
+            <option value="gestion">Gestión o dirección de obra</option>
+            <option value="electronica">Reparación de electrónica</option>
+            <option value="paquete" selected>Envío de paquete</option>
+            <option value="dinero">Envío de dinero</option>
+            <option value="vehiculos">Compra de vehículo</option>
+            <option value="empresa">Soy una empresa o institución</option>
+            <option value="otro">Otra cosa</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="cDate">¿Qué día te viene bien? <span class="opt">(opcional)</span></label>
+          <input class="input" id="cDate" name="appointment" type="date">
+        </div>
+        <div class="field">
+          <label for="cMessage">Mensaje</label>
+          <textarea class="input" id="cMessage" name="message" rows="4" required maxlength="2000" placeholder="Qué necesitas, dónde y para cuándo"></textarea>
+        </div>
+        <div class="hp" aria-hidden="true"><label for="cWebsite">No rellenar</label><input id="cWebsite" name="website" tabindex="-1" autocomplete="off"></div>
+        <label class="check"><input type="checkbox" name="privacy" required> <span>He leído la <a href="/privacidad.html" target="_blank">política de privacidad</a> y acepto que me contactéis.</span></label>
+        <button class="btn btn--primary btn--lg" type="submit">Pedir cita</button>
+        <p class="form-error" id="contactError" role="alert" hidden></p>
+        <p class="form-ok" id="contactOk" role="status" hidden>¡Gracias! Hemos recibido tu petición y te llamaremos para confirmar la cita.</p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<section class="slogan" aria-label="Lema">
+  <div class="container">
+    <p>«Construimos confianza, transformamos espacios y creamos valor para el futuro.»</p>
+    <span>EPIKAIZO SERVICES S.L.</span>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div>
+      <img class="footer__logo" src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36" loading="lazy">
+      <p>Construcción en general y mantenimiento integral de inmuebles, envíos de paquetes y venta de vehículos. Sede en el Barrio Ngolo-Puente Sialo.</p>
+    </div>
+    <nav aria-label="Pie de página">
+      <a href="/">Inicio</a>
+      <a href="/construccion">Construcción y mantenimiento</a>
+      <a href="/envios">Envíos de paquetes</a>
+      <a href="/envios#rastreo">Rastrear un envío</a>
+      <a href="/vehiculos">Vehículos en venta</a>
+      <a href="#contacto">Pide tu cita</a>
+    </nav>
+    <div class="footer__legal">
+      <a href="/privacidad.html">Privacidad</a>
+      <a href="/login.html">Acceso equipo</a>
+      <p>© <span id="year">2026</span> Epikaizo Services S.L.</p>
+    </div>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/240222580828" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp" data-track="whatsapp_click">
+  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+</a>
+
+<div class="chat" id="chat" hidden>
+  <div class="chat__head"><strong>Asistente de Epikaizo</strong><button type="button" class="chat__close" id="chatClose" aria-label="Cerrar">×</button></div>
+  <div class="chat__log" id="chatLog" aria-live="polite">
+    <p class="chat__msg chat__msg--bot">Hola, soy el asistente de Epikaizo. Pregúntame por obras, mantenimiento, envíos, vehículos o cómo pedir cita.</p>
+  </div>
+  <form class="chat__form" id="chatForm"><input class="input" id="chatInput" maxlength="600" placeholder="Escribe tu pregunta" aria-label="Tu pregunta" autocomplete="off"><button class="btn btn--primary" type="submit">Enviar</button></form>
+  <p class="chat__note">Respuestas automáticas. No compartas contraseñas ni datos bancarios.</p>
+</div>
+<button class="chat-open" id="chatOpen" type="button" aria-controls="chat" aria-expanded="false">¿Dudas? Pregunta</button>
+</body>
+</html>
