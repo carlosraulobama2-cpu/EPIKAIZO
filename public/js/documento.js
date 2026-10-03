@@ -147,7 +147,7 @@ function contractPage(d) {
     }
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'No se pudo cargar el documento');
     const d = await res.json();
-    const currency = d.invoice.currency || 'USD';
+    const currency = d.invoice.currency || 'XAF';
     const digits = currency === 'XAF' ? 0 : 2;
     const fmt = new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits });
     const whole = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 });

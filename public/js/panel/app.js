@@ -37,7 +37,7 @@ const ctx = {
   go: (path) => {
     location.hash = `#/${path}`;
   },
-  money: (v, currency) => money(v, currency || (state.settings ? state.settings.rates.currency : 'USD')),
+  money: (v, currency) => money(v, currency || (state.settings ? state.settings.rates.currency : 'XAF')),
   refreshCounts: () => loadCounts(),
   reloadSettings: async () => {
     state.settings = await api.get('/settings');

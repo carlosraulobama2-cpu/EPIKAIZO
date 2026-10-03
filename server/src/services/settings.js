@@ -11,13 +11,13 @@ const DEFAULTS = {
     hours: 'Lunes a sábado, 8:00 a 18:00',
     city: 'Malabo',
   },
-  // Tarifas del cotizador: las mismas que tenía la web.
+  // Tarifas del cotizador en francos CFA (FCFA). Se cambian en Ajustes → Tarifas.
   rates: {
-    currency: 'USD',
-    package_base_fee: 5,
-    package_per_kg: { local: 4, nacional: 9, internacional: 22 },
+    currency: 'XAF',
+    package_base_fee: 3000,
+    package_per_kg: { local: 2500, nacional: 5500, internacional: 13000 },
     money_commission_pct: { local: 2, nacional: 3.5, internacional: 6 },
-    money_min_commission: 2,
+    money_min_commission: 1000,
   },
   // Facturación. El IVA general de Guinea Ecuatorial es del 15 %: confírmalo con tu asesor fiscal.
   billing: {
@@ -59,6 +59,8 @@ async function saveSetting(tenantId, key, value, client) {
 
 /** Precio de un envío con las tarifas de la empresa. */
 function quote(rates, { kind, scope, weightKg, amount }) {
+  // El franco CFA no tiene céntimos: se redondea al franco.
+  const round = rates.currency === 'XAF' ? Math.round : round2;
   if (kind === 'paquete') {
     const perKg = rates.package_per_kg[scope] || 0;
     const fee = Number(rates.package_base_fee) + Number(weightKg || 0) * perKg;
@@ -69,6 +71,6 @@ function quote(rates, { kind, scope, weightKg, amount }) {
   return { fee: round(fee), total: round(Number(amount || 0) + fee) };
 }
 
-const round = (n) => Math.round(n * 100) / 100;
+const round2 = (n) => Math.round(n * 100) / 100;
 
 module.exports = { DEFAULTS, getSettings, saveSetting, quote };

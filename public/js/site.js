@@ -78,7 +78,7 @@ function initQuote() {
       b.classList.toggle('is-active', b === btn);
       b.setAttribute('aria-selected', String(b === btn));
     });
-    const currency = config ? config.rates.currency : '';
+    const currency = config ? (config.rates.currency === 'XAF' ? 'FCFA' : config.rates.currency) : '';
     label.textContent = kind === 'paquete' ? 'Peso del paquete (kg)' : `Importe que quieres enviar${currency ? ` (${currency})` : ''}`;
     value.placeholder = kind === 'paquete' ? 'Ej. 3' : 'Ej. 200';
     value.step = kind === 'paquete' ? '0.1' : '1';

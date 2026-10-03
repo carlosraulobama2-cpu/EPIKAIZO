@@ -21,9 +21,10 @@ test('envío de paquete: guía, precio según tarifas, cliente, factura y rastre
   assert.equal(res.status, 201);
   const { shipment, invoice } = res.data;
   assert.match(shipment.tracking_code, /^EPZ-\d{6}$/);
-  // Tarifa por defecto: 5 de base + 9 por kg nacional
-  assert.equal(Number(shipment.fee), 5 + 3 * 9);
-  assert.equal(Number(shipment.total), 32);
+  // Tarifa por defecto en FCFA: 3.000 de base + 5.500 por kg nacional
+  assert.equal(shipment.currency, 'XAF');
+  assert.equal(Number(shipment.fee), 3000 + 3 * 5500);
+  assert.equal(Number(shipment.total), 19500);
   assert.match(invoice.number, /^FAC-\d{4}-00001$/);
 
   const client = await db.one('SELECT * FROM clients WHERE phone = $1', ['+240222111222']);
@@ -44,10 +45,14 @@ test('envío de paquete: guía, precio según tarifas, cliente, factura y rastre
 });
 
 test('envío de dinero: la comisión es el ingreso, el total incluye lo enviado', async () => {
-  const res = await admin.post('/api/shipments', { ...PACKAGE, kind: 'dinero', scope: 'internacional', weight_kg: undefined, amount: 1000 });
+  const res = await admin.post('/api/shipments', { ...PACKAGE, kind: 'dinero', scope: 'internacional', weight_kg: undefined, amount: 100000 });
   assert.equal(res.status, 201);
-  assert.equal(Number(res.data.shipment.fee), 60);
-  assert.equal(Number(res.data.shipment.total), 1060);
+  assert.equal(Number(res.data.shipment.fee), 6000);
+  assert.equal(Number(res.data.shipment.total), 106000);
+  // El franco CFA no tiene céntimos: 3,5 % de 123.456 = 4.320,96 → 4.321
+  const quote = await agent(server.base).get('/api/public/quote?kind=dinero&scope=nacional&value=123456');
+  assert.equal(quote.data.fee, 4321);
+  assert.equal(quote.data.total, 127777);
 });
 
 test('los estados siguen un orden: un envío entregado no vuelve atrás', async () => {
@@ -105,7 +110,7 @@ test('resumen e informes: ingresos = comisiones + trabajos + caja; gastos de caj
   assert.equal(dash.data.chart.length, 6);
   assert.equal(Number(dash.data.month.expense), 40);
   // 32 + 60 (dinero) + 32 (entregado) + 1500 (trabajo) + 8 facturas manuales de 100; el cancelado no cuenta
-  assert.equal(Number(dash.data.month.income), 32 + 60 + 32 + 1500 + 800);
+  assert.equal(Number(dash.data.month.income), 19500 + 6000 + 19500 + 1500 + 800);
 
   const summary = await admin.get('/api/reports/summary');
   assert.equal(summary.status, 200);

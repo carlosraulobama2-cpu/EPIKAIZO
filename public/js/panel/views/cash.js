@@ -62,7 +62,7 @@ function edit(ctx, list, row, type = row?.type) {
       h('input', { type: 'hidden', name: 'type', value: type }),
       field({ name: 'concept', label: 'Concepto', value: row?.concept, required: true, full: true, placeholder: type === 'gasto' ? 'Ej. Gasoil de la furgoneta' : 'Ej. Gestión de visado' }),
       field({ name: 'category', label: 'Categoría', type: 'select', options: CATEGORIES[type].map((c) => [c, c]), value: row?.category, required: true }),
-      field({ name: 'amount', label: `Importe (${ctx.settings.rates.currency})`, type: 'number', step: '0.01', min: '0.01', value: row?.amount, required: true }),
+      field({ name: 'amount', label: `Importe (${ctx.settings.rates.currency === 'XAF' ? 'FCFA' : ctx.settings.rates.currency})`, type: 'number', step: '0.01', min: '0.01', value: row?.amount, required: true }),
       field({ name: 'date', label: 'Fecha', type: 'date', value: row ? String(row.date).slice(0, 10) : today(), required: true }),
       field({ name: 'method', label: 'Forma de pago', type: 'select', options: Object.entries(PAYMENT), value: row?.method || 'efectivo' }),
       field({ name: 'reference', label: 'Referencia / nº de ticket', value: row?.reference, full: true }),

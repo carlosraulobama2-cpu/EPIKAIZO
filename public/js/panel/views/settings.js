@@ -16,7 +16,7 @@ export default async function settings(root, ctx) {
       field({ name: 'hours', label: 'Horario', value: c.hours, required: true }),
       field({ name: 'address', label: 'Dirección', value: c.address, required: true, full: true })) }),
     card({ title: 'Tarifas', subtitle: 'Las usa el cotizador de la web y el alta de envíos del panel.', body: h('div', { class: 'form' },
-      field({ name: 'currency', label: 'Moneda', type: 'select', options: [['USD', 'Dólar (USD)'], ['EUR', 'Euro (EUR)'], ['XAF', 'Franco CFA (XAF)']], value: r.currency, required: true }),
+      field({ name: 'currency', label: 'Moneda', type: 'select', options: [['XAF', 'Franco CFA (FCFA)'], ['USD', 'Dólar (USD)'], ['EUR', 'Euro (EUR)']], value: r.currency, required: true }),
       field({ name: 'package_base_fee', label: 'Paquetes: tarifa base', type: 'number', step: '0.01', min: '0', value: r.package_base_fee, required: true }),
       section('Paquetes: precio por kg'),
       field({ name: 'kg_local', label: 'Local', type: 'number', step: '0.01', min: '0', value: r.package_per_kg.local, required: true }),

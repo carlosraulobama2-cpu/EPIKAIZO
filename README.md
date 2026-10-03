@@ -49,6 +49,10 @@ Las pruebas borran y recrean la base de datos de pruebas: no apuntes `TEST_DATAB
 
 La empresa y el rol salen siempre de la sesión del usuario, nunca de lo que envía el navegador.
 
+## Moneda
+
+Todo va en **francos CFA** (código `XAF`, se muestra como «FCFA», sin céntimos). Tarifas de envío por defecto: 3.000 FCFA de base más 2.500 / 5.500 / 13.000 FCFA por kg (local / nacional / internacional) y comisión mínima de 1.000 FCFA en envíos de dinero. Se cambian en Ajustes → Tarifas. Los documentos emitidos antes en otra moneda la conservan.
+
 ## Catálogo de vehículos
 
 `server/catalog/autos-epikaizo-2026/` trae el catálogo de autos usados de Autos Epikaizo: 44 vehículos con sus fotos (WebP) y su precio en FCFA. Al arrancar, el servidor lo carga **una sola vez** en el inventario (queda apuntado en Ajustes como `catalog_imports`). Desde ahí se gestiona en el panel como cualquier otro vehículo: editar, reservar, vender o **Quitar** (solo si no tiene facturas). Lo que se quita o se vende no vuelve a aparecer en el siguiente despliegue.

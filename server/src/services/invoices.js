@@ -39,7 +39,7 @@ function qrPng(invoice) {
 
 function money(value, currency) {
   if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(Number(value))} FCFA`;
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'USD' }).format(Number(value));
+  return new Intl.NumberFormat('es-ES', { style: 'currency', currency: currency || 'XAF' }).format(Number(value));
 }
 
 const DOC_NAME = { factura: 'la factura', presupuesto: 'el presupuesto', rectificativa: 'la factura rectificativa' };
