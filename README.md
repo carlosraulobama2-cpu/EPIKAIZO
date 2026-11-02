@@ -10,6 +10,7 @@ Web pública y panel de gestión de Epikaizo: construcción y mantenimiento, ges
 | Panel | `public/panel.html`, `public/js/panel/` | Resumen, envíos, servicios y obras, clientes, bandeja, facturas, caja, informes, equipo, proveedores, actividad y ajustes |
 | Servidor | `server/src/` | API Express + Postgres. Solo publica la carpeta `public/` |
 | Pruebas | `server/test/` | Seguridad y flujos completos contra una base de datos de pruebas |
+| Diseño | `DESIGN.md` | Colores, tipografía, radios, tono y componentes de la web y el panel. Léelo antes de tocar una página |
 
 ## Arrancar en local
 
