@@ -13,9 +13,7 @@
     const res = await fetch(`/api/public/invoices/${encodeURIComponent(id)}`);
     if (!res.ok) throw new Error('not found');
     const { invoice, company } = await res.json();
-    const money = invoice.currency === 'XAF'
-      ? `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(invoice.amount)} FCFA`
-      : new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency: invoice.currency, currencyDisplay: 'narrowSymbol' }).format(invoice.amount);
+    const money = `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(Number(invoice.amount || 0))} FCFA`;
     const status = { emitida: 'Emitida, pendiente de pago', enviada: 'Enviada, pendiente de pago', parcial: 'Pagada en parte', pagada: 'Pagada', anulada: 'ANULADA: no es válida', pendiente: 'Presupuesto pendiente de aceptar', aceptado: 'Presupuesto aceptado', rechazado: 'Presupuesto rechazado', facturado: 'Presupuesto ya facturado' }[invoice.status] || invoice.status;
     const dl = document.createElement('dl');
     const kind = { factura: 'Factura', presupuesto: 'Presupuesto', rectificativa: 'Factura rectificativa' }[invoice.kind] || 'Factura';

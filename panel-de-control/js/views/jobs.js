@@ -112,8 +112,8 @@ function openForm(ctx, list, categories, employees, job) {
       section('Planificación y dinero'),
       field({ name: 'scheduled_for', label: 'Fecha prevista', type: 'date', value: job?.scheduled_for ? String(job.scheduled_for).slice(0, 10) : '' }),
       field({ name: 'assigned_to', label: 'Responsable', type: 'select', options: employees.map((e) => [e.id, `${e.name} · ${e.position}`]), value: job?.assigned_to }),
-      field({ name: 'budget', label: 'Presupuesto', type: 'number', step: '0.01', min: '0', value: job?.budget }),
-      field({ name: 'price', label: 'Precio final', type: 'number', step: '0.01', min: '0', value: job?.price, hint: 'Cuenta como ingreso cuando el trabajo está terminado.' }),
+      field({ name: 'budget', label: 'Presupuesto (FCFA)', type: 'number', step: '1', min: '0', value: job?.budget }),
+      field({ name: 'price', label: 'Precio final (FCFA)', type: 'number', step: '1', min: '0', value: job?.price, hint: 'Cuenta como ingreso cuando el trabajo está terminado.' }),
       field({ name: 'paid', label: 'Cobrado', type: 'checkbox', value: job?.paid }),
     ],
     onSubmit: async (values) => {

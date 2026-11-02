@@ -60,7 +60,6 @@ function gallery(ctx, v, photos, reload) {
 
 const title = (v) => `${v.brand} ${v.model}${v.year ? ` (${v.year})` : ''}`;
 
-const CURRENCIES = [['XAF', 'Francos CFA (FCFA)'], ['USD', 'Dólares (USD)'], ['EUR', 'Euros (EUR)']];
 
 export default async function vehicles(root, ctx) {
   const f = { status: 'stock', q: '' };
@@ -121,9 +120,8 @@ function edit(ctx, list, v) {
       field({ name: 'fuel', label: 'Combustible', type: 'select', options: Object.entries(FUEL), value: v?.fuel }),
       field({ name: 'transmission', label: 'Cambio', type: 'select', options: Object.entries(TRANSMISSION), value: v?.transmission }),
       section('Precio'),
-      field({ name: 'sale_price', label: 'Precio de venta', type: 'number', min: '1', step: '0.01', value: v?.sale_price, required: true }),
-      field({ name: 'currency', label: 'Moneda', type: 'select', options: CURRENCIES, value: v?.currency || ctx.settings.rates.currency, required: true }),
-      field({ name: 'purchase_price', label: 'Precio de compra (coste)', type: 'number', min: '0', step: '0.01', value: v?.purchase_price, hint: 'Solo lo ven gestores y administradores.' }),
+      field({ name: 'sale_price', label: 'Precio de venta (FCFA)', type: 'number', min: '1', step: '1', value: v?.sale_price, required: true }),
+      field({ name: 'purchase_price', label: 'Precio de compra, coste (FCFA)', type: 'number', min: '0', step: '1', value: v?.purchase_price, hint: 'Solo lo ven gestores y administradores.' }),
       v ? null : field({ name: 'register_purchase', label: 'Apuntar la compra como gasto en Caja', type: 'checkbox', full: true }),
       field({ name: 'notes', label: 'Notas (extras, revisiones, estado de la carrocería…)', type: 'textarea', value: v?.notes, full: true }),
     ],
@@ -225,10 +223,10 @@ function sell(ctx, v, list) {
       field({ name: 'client_email', label: 'Correo', type: 'email' }),
       field({ name: 'client_address', label: 'Dirección', required: true, full: true }),
       section('Precio y pago'),
-      field({ name: 'price', label: `Precio (base, ${v.currency})`, type: 'number', step: '0.01', min: '1', value: v.sale_price, required: true }),
+      field({ name: 'price', label: 'Precio (base, FCFA)', type: 'number', step: '1', min: '1', value: v.sale_price, required: true }),
       field({ name: 'tax_rate', label: `${ctx.settings.billing.tax_name || 'IVA'} %`, type: 'number', step: '0.01', min: '0', max: '50', value: tax, required: true, hint: 'Confirma con tu asesor el impuesto aplicable a la venta de vehículos.' }),
       h('div', { class: 'quote-box', 'aria-live': 'polite' }, h('span', null, 'Total de la factura'), h('strong', { 'data-total': '' }, '—')),
-      field({ name: 'paid_now', label: 'Cobrado ahora', type: 'number', step: '0.01', min: '0', hint: 'Todo, una señal o nada.' }),
+      field({ name: 'paid_now', label: 'Cobrado ahora (FCFA)', type: 'number', step: '1', min: '0', hint: 'Todo, una señal o nada.' }),
       field({ name: 'method', label: 'Forma de pago', type: 'select', options: Object.entries(PAYMENT), value: 'transferencia' }),
       field({ name: 'notes', label: 'Condiciones (garantía, entrega, documentación…)', type: 'textarea', full: true, value: `Entrega del vehículo el ${date(today())} con su documentación. El vehículo se vende en el estado en que se encuentra, conocido y aceptado por el comprador.` }),
     ],

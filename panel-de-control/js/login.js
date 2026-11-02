@@ -3,6 +3,22 @@ const form = document.getElementById('loginForm');
 const error = document.getElementById('loginError');
 const btn = document.getElementById('loginBtn');
 
+// Ver u ocultar la contraseña mientras se escribe.
+const EYE = 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6';
+const EYE_OFF = 'M9.9 4.2A10.4 10.4 0 0 1 12 4c6.5 0 10 8 10 8a17.6 17.6 0 0 1-2.2 3.2M6.6 6.6A17.4 17.4 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6M2 2l20 20M9.9 9.9a3 3 0 0 0 4.2 4.2';
+const toggle = document.getElementById('showPassword');
+toggle.addEventListener('click', () => {
+  const input = form.password;
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  const label = show ? 'Ocultar contraseña' : 'Mostrar contraseña';
+  toggle.setAttribute('aria-label', label);
+  toggle.setAttribute('aria-pressed', String(show));
+  toggle.title = label;
+  toggle.querySelector('path').setAttribute('d', show ? EYE_OFF : EYE);
+  input.focus();
+});
+
 function showError(message) {
   error.textContent = message;
   error.hidden = false;

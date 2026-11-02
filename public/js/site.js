@@ -12,10 +12,10 @@ async function getJSON(url, options) {
   return data;
 }
 
-function money(value, currency) {
-  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(value)} FCFA`;
-  const digits = 2;
-  return new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+// Todos los precios en francos CFA, sin decimales y con punto de miles ("12.500 FCFA").
+// eslint-disable-next-line no-unused-vars
+function money(value, _currency) {
+  return `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(Number(value || 0))} FCFA`;
 }
 
 function track(event, data) {
@@ -78,7 +78,7 @@ function initQuote() {
       b.classList.toggle('is-active', b === btn);
       b.setAttribute('aria-selected', String(b === btn));
     });
-    const currency = config ? (config.rates.currency === 'XAF' ? 'FCFA' : config.rates.currency) : '';
+    const currency = 'FCFA';
     label.textContent = kind === 'paquete' ? 'Peso del paquete (kg)' : `Importe que quieres enviar${currency ? ` (${currency})` : ''}`;
     value.placeholder = kind === 'paquete' ? 'Ej. 3' : 'Ej. 200';
     value.step = kind === 'paquete' ? '0.1' : '1';

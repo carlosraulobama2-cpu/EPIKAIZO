@@ -15,7 +15,8 @@ const { vehicleCode } = require('../services/codes');
 const router = express.Router();
 const STATUSES = ['disponible', 'reservado', 'vendido'];
 const METHODS = ['efectivo', 'transferencia', 'movil', 'tarjeta'];
-const CURRENCIES = ['USD', 'EUR', 'XAF'];
+// La empresa trabaja solo en francos CFA (FCFA).
+const CURRENCIES = ['XAF'];
 
 const fields = {
   brand: text({ min: 2, max: 40 }),

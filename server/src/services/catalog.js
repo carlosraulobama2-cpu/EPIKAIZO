@@ -11,7 +11,8 @@ const DEFAULT_DIR = path.join(__dirname, '../../catalog');
 const DONE_KEY = 'catalog_imports';
 const FUELS = ['gasolina', 'diesel', 'hibrido', 'electrico'];
 const TRANSMISSIONS = ['manual', 'automatico'];
-const CURRENCIES = ['USD', 'EUR', 'XAF'];
+// La empresa trabaja solo en francos CFA (FCFA).
+const CURRENCIES = ['XAF'];
 const MAX_PHOTOS = 8;
 
 function isWebp(buf) {

@@ -24,13 +24,10 @@ const MONEY_STATUS = { registrado: 'Registrado', en_transito: 'En proceso', en_r
 
 const when = (v) => new Date(v).toLocaleString('es-ES', { day: '2-digit', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-function moneyFormatter(currency) {
-  if (currency === 'XAF') {
-    const whole = new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 });
-    return (v) => `${whole.format(Number(v || 0))} FCFA`;
-  }
-  const fmt = new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol' });
-  return (v) => fmt.format(Number(v || 0));
+// Todos los importes en francos CFA, sin decimales y con punto de miles.
+function moneyFormatter() {
+  const whole = new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 });
+  return (v) => `${whole.format(Number(v || 0))} FCFA`;
 }
 
 function receiptPage({ shipment: s, invoice }, settings) {

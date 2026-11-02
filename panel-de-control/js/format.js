@@ -6,16 +6,13 @@ export function moneyMix(rows, key, fallback = 'XAF') {
   return parts.length ? parts.join(' · ') : money(0, fallback);
 }
 
-export function money(value, currency = 'XAF') {
-  const n = Number(value || 0);
-  // En Guinea Ecuatorial se escribe «FCFA», no «XAF».
-  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(n)} FCFA`;
-  const digits = 2;
-  try {
-    return new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
-  } catch {
-    return `${n.toFixed(digits)} ${currency}`;
-  }
+// La empresa trabaja solo en francos CFA: todo importe se muestra en FCFA, sin decimales
+// y con punto de miles ("12.500 FCFA"). En Guinea Ecuatorial se escribe «FCFA», no «XAF».
+// El parámetro de moneda se mantiene para no cambiar las llamadas, pero ya no se usa.
+const FCFA = new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 });
+// eslint-disable-next-line no-unused-vars
+export function money(value, _currency) {
+  return `${FCFA.format(Number(value || 0))} FCFA`;
 }
 
 export function number(value) {

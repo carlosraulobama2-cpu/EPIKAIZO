@@ -38,7 +38,7 @@ function linesEditor(ctx, initial, defaultTax) {
     const r = {
       d: h('input', { class: 'input', value: line.description || '', placeholder: 'Descripción del trabajo, pieza o servicio', 'aria-label': 'Descripción', maxlength: '300' }),
       q: h('input', { class: 'input', type: 'number', min: '0.01', step: '0.01', value: line.quantity ?? 1, 'aria-label': 'Cantidad' }),
-      p: h('input', { class: 'input', type: 'number', min: '0', step: '0.01', value: line.unit_price ?? '', placeholder: '0,00', 'aria-label': 'Precio unitario' }),
+      p: h('input', { class: 'input', type: 'number', min: '0', step: '1', value: line.unit_price ?? '', placeholder: '0', 'aria-label': 'Precio unitario (FCFA)' }),
       t: h('input', { class: 'input', type: 'number', min: '0', max: '50', step: '0.01', value: line.tax_rate ?? defaultTax, 'aria-label': 'Impuesto %' }),
       amount: h('span', { class: 'mono' }),
     };
@@ -302,7 +302,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
         text: `Pendiente: ${m(pending)}. Puedes cobrar una parte (anticipo) o todo.`,
         confirm: 'Registrar',
         fields: [
-          field({ name: 'amount', label: 'Importe', type: 'number', step: '0.01', min: '0.01', value: pending, required: true }),
+          field({ name: 'amount', label: 'Importe (FCFA)', type: 'number', step: '1', min: '1', value: pending, required: true }),
           field({ name: 'method', label: 'Forma de pago', type: 'select', options: Object.entries(PAYMENT), value: 'efectivo', required: true }),
           field({ name: 'paid_on', label: 'Fecha', type: 'date', value: today(), required: true }),
           field({ name: 'reference', label: 'Referencia (nº de transferencia, recibo…)' }),

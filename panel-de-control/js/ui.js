@@ -66,6 +66,8 @@ const PATHS = {
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M12 6v6l4 2',
   mail: 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2M22 6l-10 7L2 6',
   bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
+  eye: 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12ZM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6',
+  'eye-off': 'M9.9 4.2A10.4 10.4 0 0 1 12 4c6.5 0 10 8 10 8a17.6 17.6 0 0 1-2.2 3.2M6.6 6.6A17.4 17.4 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6M2 2l20 20M9.9 9.9a3 3 0 0 0 4.2 4.2',
   edit: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z',
   trash: 'M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2',
   pin: 'M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5',
@@ -314,11 +316,28 @@ export function field({ name, label, type = 'text', options = [], value, require
       hint ? h('span', { class: 'field__hint' }, hint) : null);
   } else {
     control = h('input', { id, name, type, class: 'input', value: value ?? '', required, placeholder, step, min, max, autocomplete, inputmode: type === 'number' ? 'decimal' : null });
+    if (type === 'password') control = passwordToggle(control);
   }
   return h('div', { class: `field${full ? ' full' : ''}`, dataset: { field: name } },
     h('label', { for: id }, label, required ? null : h('span', { class: 'opt' }, ' (opcional)')),
     control,
     hint ? h('span', { class: 'field__hint' }, hint) : null);
+}
+
+/** Campo de contraseña con botón para verla u ocultarla mientras se escribe. */
+export function passwordToggle(input) {
+  const btn = h('button', { type: 'button', class: 'password__toggle', 'aria-label': 'Mostrar contraseña', 'aria-pressed': 'false', title: 'Mostrar contraseña' }, icon('eye'));
+  btn.addEventListener('click', () => {
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    const label = show ? 'Ocultar contraseña' : 'Mostrar contraseña';
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('aria-pressed', String(show));
+    btn.title = label;
+    btn.replaceChildren(icon(show ? 'eye-off' : 'eye'));
+    input.focus();
+  });
+  return h('div', { class: 'password' }, input, btn);
 }
 
 export function section(title) {

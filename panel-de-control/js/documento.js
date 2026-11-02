@@ -147,11 +147,9 @@ function contractPage(d) {
     }
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'No se pudo cargar el documento');
     const d = await res.json();
-    const currency = d.invoice.currency || 'XAF';
-    const digits = currency === 'XAF' ? 0 : 2;
-    const fmt = new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits });
+    // Todos los documentos van en francos CFA, sin decimales y con punto de miles.
     const whole = new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 });
-    money = currency === 'XAF' ? (v) => `${whole.format(Number(v || 0))} FCFA` : (v) => fmt.format(Number(v || 0));
+    money = (v) => `${whole.format(Number(v || 0))} FCFA`;
     document.title = `${TITLES[d.invoice.kind]} ${d.invoice.number} · ${d.company.name}`;
     const pages = [invoicePage(d)];
     if (d.vehicle && d.invoice.kind === 'factura') pages.push(contractPage(d));

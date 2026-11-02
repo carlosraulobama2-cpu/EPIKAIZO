@@ -37,7 +37,8 @@ router.put(
     const scopes = (obj, max) => validate(obj, { local: number({ min: 0, max }), nacional: number({ min: 0, max }), internacional: number({ min: 0, max }) });
     const r = body.rates || {};
     const rates = {
-      ...validate(r, { currency: oneOf(['USD', 'EUR', 'XAF']), package_base_fee: number({ min: 0, max: 1e7 }), money_min_commission: number({ min: 0, max: 1e7 }) }),
+      ...validate(r, { currency: oneOf(['XAF'], { optional: true }), package_base_fee: number({ min: 0, max: 1e7 }), money_min_commission: number({ min: 0, max: 1e7 }) }),
+      currency: 'XAF', // Siempre francos CFA.
       package_per_kg: scopes(r.package_per_kg, 1e7),
       money_commission_pct: scopes(r.money_commission_pct, 50),
     };
