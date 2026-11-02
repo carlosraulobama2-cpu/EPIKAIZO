@@ -96,13 +96,23 @@ async function registerPayment(invoice, { amount, method, paid_on, reference }, 
     [crypto.randomUUID(), invoice.id, round(amount), method, paid_on || new Date().toISOString().slice(0, 10), reference || null, userId],
     client
   );
-  return db.one(
+  const updated = await db.one(
     `UPDATE invoices SET paid_amount = paid_amount + $2,
             status = CASE WHEN paid_amount + $2 >= amount THEN 'pagada' ELSE 'parcial' END
       WHERE id = $1 RETURNING *`,
     [invoice.id, round(amount)],
     client
   );
+  // La factura de un envío cobrada del todo deja el envío como pagado (la lista de Envíos lo muestra),
+  // con la forma de pago real del cobro, no la que se previó al registrarlo.
+  if (updated.shipment_id && updated.status === 'pagada') {
+    await db.query(
+      'UPDATE shipments SET paid = true, payment_method = $2, updated_at = now() WHERE id = $1',
+      [updated.shipment_id, method],
+      client
+    );
+  }
+  return updated;
 }
 
 /**

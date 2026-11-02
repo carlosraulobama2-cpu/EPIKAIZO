@@ -102,8 +102,12 @@ router.delete(
   '/:id',
   requireRole('gestor'),
   route(async (req, res) => {
-    const used = await db.one('SELECT (SELECT count(*) FROM shipments WHERE client_id = $1) + (SELECT count(*) FROM jobs WHERE client_id = $1) AS n', [req.params.id]);
-    if (used && used.n > 0) throw new HttpError(409, 'Este cliente tiene envíos o trabajos: no se puede borrar');
+    const used = await db.one(
+      `SELECT (SELECT count(*) FROM shipments WHERE client_id = $1) + (SELECT count(*) FROM jobs WHERE client_id = $1)
+            + (SELECT count(*) FROM invoices WHERE client_id = $1) AS n`,
+      [req.params.id]
+    );
+    if (used && used.n > 0) throw new HttpError(409, 'Este cliente tiene envíos, trabajos o facturas: no se puede borrar');
     const row = await db.one('DELETE FROM clients WHERE id = $1 AND tenant_id = $2 RETURNING id', [req.params.id, req.tenantId]);
     if (!row) throw new HttpError(404, 'Cliente no encontrado');
     await audit(req, 'cliente.borrar', { entity: 'client', entityId: row.id });

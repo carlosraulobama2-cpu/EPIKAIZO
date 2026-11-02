@@ -1,6 +1,6 @@
 // Clientes: se crean solos con cada envío o trabajo. Aquí se consultan y se completan.
 import { api } from '../api.js';
-import { h, pageHead, badge, button, primary, empty, drawer, formDrawer, field, toast, table, card } from '../ui.js';
+import { h, pageHead, badge, button, primary, empty, drawer, formDrawer, field, toast, table, card, confirmDialog, busy } from '../ui.js';
 import { date, ago } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 
@@ -89,6 +89,26 @@ async function openDetail(ctx, id, list) {
         ],
       }) })));
     d.panel.querySelector('.drawer__head').append(button('Editar', { iconName: 'edit', size: 'sm', onClick: () => { d.close(); edit(ctx, list, c); } }));
+    // Solo se borran clientes sin historial (el servidor también comprueba que no tengan facturas).
+    if (ctx.can('gestor') && !Number(c.shipments) && !Number(c.jobs)) {
+      d.panel.querySelector('.drawer__head').append(button('', {
+        iconName: 'trash',
+        size: 'sm',
+        variant: 'danger',
+        title: 'Borrar cliente',
+        onClick: async (e) => {
+          if (!(await confirmDialog({ title: `Borrar a ${c.name}`, text: 'Solo se puede borrar un cliente sin envíos, trabajos ni facturas. No se puede deshacer.', confirm: 'Borrar', danger: true }))) return;
+          try {
+            await busy(e.currentTarget, api.del(`/clients/${c.id}`));
+            toast('Cliente borrado');
+            d.close();
+            await list.reload(true);
+          } catch (err) {
+            toast(err.message, 'bad');
+          }
+        },
+      }));
+    }
   } catch (err) {
     d.setBody(h('p', { class: 'error-box' }, err.message));
   }

@@ -65,9 +65,21 @@ export default async function settings(root, ctx) {
 
   const backup = card({ title: 'Copia de seguridad', subtitle: 'Descarga todos los datos en un archivo. Guárdalo en un lugar seguro: contiene datos personales.', body: h('div', { class: 'page-head__actions' },
     button('Descargar copia', { iconName: 'download', onClick: () => { window.location.href = '/api/settings/export'; } }),
-    h('span', { class: 'small muted', style: 'align-self:center' }, 'La base de datos de producción debe tener además copias automáticas (Neon/Render).')) });
+    h('span', { class: 'small muted self-center' }, 'La base de datos de producción debe tener además copias automáticas (Neon/Render).')) });
+
+  // Qué servicios externos están conectados. Las claves se ponen en Render (Environment), nunca aquí.
+  const it = s.integrations || {};
+  const INTEGRATIONS = [
+    ['whatsapp', 'WhatsApp', 'Responder desde la Bandeja y enviar facturas al entregar.', 'WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOKEN y WHATSAPP_APP_SECRET'],
+    ['gmail', 'Correo (Gmail)', 'Leer el correo de la empresa en la sección Correo.', 'GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET y GMAIL_REFRESH_TOKEN'],
+    ['ai', 'Asistente con IA', 'Respuestas del asistente de la web. Sin IA responde con textos fijos.', 'GOOGLE_AI_API_KEY'],
+  ];
+  const connections = card({ title: 'Conexiones', subtitle: 'Servicios externos. Se configuran en las variables de entorno del servidor (Render), no en esta pantalla.', flush: true,
+    body: h('div', { class: 'connections' }, INTEGRATIONS.map(([key, name, what, vars]) => h('div', { class: 'connections__row' },
+      h('div', null, h('strong', null, name), h('div', { class: 'small muted' }, it[key] ? what : `Falta configurar: ${vars}.`)),
+      it[key] ? h('span', { class: 'badge badge--ok' }, 'Conectado') : h('span', { class: 'badge badge--warn' }, 'Sin configurar')))) });
 
   root.append(pageHead('Ajustes', 'Solo los administradores pueden cambiarlos.', [save]),
-    h('div', { class: 'alert alert--info', style: 'margin-bottom:16px' }, icon('info'), h('span', null, 'Los cambios de tarifas se aplican a los envíos nuevos. Los ya registrados conservan su precio.')),
-    form, h('div', { style: 'margin-top:16px' }, backup));
+    h('div', { class: 'alert alert--info mb-16' }, icon('info'), h('span', null, 'Los cambios de tarifas se aplican a los envíos nuevos. Los ya registrados conservan su precio.')),
+    form, h('div', { class: 'mt-16' }, connections), h('div', { class: 'mt-16' }, backup));
 }

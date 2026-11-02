@@ -1,6 +1,8 @@
 // Ajustes de la empresa y copia de seguridad (exportar). Leer: cualquier usuario; cambiar: admin.
 const express = require('express');
+const config = require('../config');
 const db = require('../db');
+const whatsapp = require('../services/whatsapp');
 const { route, validate, text, phone, email, number, oneOf } = require('../lib/http');
 const { requireRole } = require('../middleware/auth');
 const { audit } = require('../services/audit');
@@ -8,7 +10,14 @@ const { getSettings, saveSetting } = require('../services/settings');
 
 const router = express.Router();
 
-router.get('/', route(async (req, res) => res.json(await getSettings(req.tenantId))));
+// integrations: qué servicios externos tiene configurados el servidor (solo sí/no, nunca las claves).
+const integrations = () => ({
+  whatsapp: whatsapp.enabled(),
+  gmail: Boolean(config.gmail.clientId && config.gmail.clientSecret && config.gmail.refreshToken),
+  ai: Boolean(config.ai.key),
+});
+
+router.get('/', route(async (req, res) => res.json({ ...(await getSettings(req.tenantId)), integrations: integrations() })));
 
 router.put(
   '/',

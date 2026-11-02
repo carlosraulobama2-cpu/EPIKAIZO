@@ -22,7 +22,7 @@ export default async function reports(root, ctx) {
       const r = await api.get('/reports/summary', range);
       const kpi = (label, value, tone) => h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, label), h('div', { class: 'kpi__value', style: tone ? `color:var(${tone})` : null }, value));
       clear(body,
-        h('div', { class: 'grid grid--kpi', style: 'grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:16px' },
+        h('div', { class: 'grid grid--kpi grid--kpi-3 mb-16' },
           kpi('Ingresos', ctx.money(r.totals.income)),
           kpi('Gastos', ctx.money(r.totals.expense)),
           kpi('Beneficio', ctx.money(r.totals.profit), r.totals.profit >= 0 ? '--ok' : '--bad')),
@@ -77,7 +77,7 @@ export default async function reports(root, ctx) {
       dateInput('from', 'Desde'), dateInput('to', 'Hasta'),
     ]),
     body,
-    h('div', { class: 'card card__body', style: 'margin-top:16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap' },
+    h('div', { class: 'card card__body mt-16 row-wrap' },
       icon('download'), h('strong', null, 'Descargar para Excel:'),
       exportBtn('envios', 'Envíos'), exportBtn('trabajos', 'Trabajos'), exportBtn('facturas', 'Facturas'), exportBtn('caja', 'Caja')));
   await load();

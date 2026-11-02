@@ -1,6 +1,6 @@
 // Proveedores: transportistas, materiales, talleres… con sus datos de contacto a mano.
 import { api } from '../api.js';
-import { h, pageHead, button, primary, empty, formDrawer, field, toast, confirmDialog } from '../ui.js';
+import { h, pageHead, button, primary, empty, formDrawer, field, toast, confirmDialog, attempt } from '../ui.js';
 import { listCard, searchInput } from './_list.js';
 
 export default async function providers(root, ctx) {
@@ -34,10 +34,12 @@ function edit(ctx, list, row) {
         variant: 'danger', iconName: 'trash', title: 'Borrar',
         onClick: async () => {
           if (!(await confirmDialog({ title: 'Borrar proveedor', text: `Se borrará ${row.name}.`, confirm: 'Borrar', danger: true }))) return;
-          await api.del(`/providers/${row.id}`);
-          toast('Proveedor borrado');
-          d.close();
-          list.reload();
+          await attempt(async () => {
+            await api.del(`/providers/${row.id}`);
+            toast('Proveedor borrado');
+            d.close();
+            list.reload();
+          });
         },
       }));
     },

@@ -7,7 +7,7 @@ Web pública y panel de gestión de Epikaizo: construcción y mantenimiento, ges
 | Parte | Dónde | Qué hace |
 |---|---|---|
 | Web pública | `public/index.html`, `construccion.html`, `envios.html`, `vehiculos.html` + `css/site.css`, `js/site.js` | Inicio (presentación, organigrama), Construcción y mantenimiento, Envíos (Epikaizo Exprés, cotizador y rastreo) y Vehículos (catálogo de Autos Epikaizo con buscador y filtros, desde el inventario del panel); formulario «Pide tu cita», asistente y WhatsApp |
-| Panel | `panel-de-control/` (servido en `/panel/`) | Resumen, envíos, servicios y obras, clientes, bandeja, facturas, caja, informes, equipo, proveedores, actividad y ajustes |
+| Panel | `panel-de-control/` (servido en `/panel/`) | Resumen, envíos (con recibo imprimible), servicios y obras, clientes, bandeja, facturas, caja, informes, equipo, proveedores, correo (Gmail), actividad y ajustes (con el estado de WhatsApp, Gmail e IA) |
 | Servidor | `server/src/` | API Express + Postgres. Solo publica la carpeta `public/` |
 | Pruebas | `server/test/` | Seguridad y flujos completos contra una base de datos de pruebas |
 | Diseño | `DESIGN.md` | Colores, tipografía, radios, tono y componentes de la web y el panel. Léelo antes de tocar una página |
@@ -126,8 +126,9 @@ panel-de-control/       panel de gestión (se publica en /panel/)
   index.html            panel: carga js/app.js y cada vista de js/views/ bajo demanda
   login.html            acceso del equipo (/panel/login)
   documento.html        factura o presupuesto imprimible en A4 / PDF (/panel/documento)
+  recibo.html           recibo del envío con QR de rastreo (/panel/recibo)
   css/panel.css         estilos del panel (tokens en DESIGN.md)
-  js/                   app.js, api.js, ui.js, format.js, login.js, documento.js y views/
+  js/                   app.js, api.js, ui.js, format.js, login.js, documento.js, recibo.js y views/
 server/
   catalog/              catálogos de vehículos que se cargan una vez en el inventario
   src/app.js            rutas y permisos por rol, a la vista en un solo sitio

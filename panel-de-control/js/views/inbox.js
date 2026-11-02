@@ -30,9 +30,20 @@ export default async function inbox(root, ctx) {
   await list.reload();
 }
 
+// wa.me necesita el número internacional sin "+": los móviles de Guinea Ecuatorial (9 cifras) llevan 240 delante.
+function waNumber(phone) {
+  const digits = String(phone).replace(/\D/g, '').replace(/^00/, '');
+  return digits.length === 9 ? `240${digits}` : digits;
+}
+
 function open(ctx, m, list, whatsappEnabled) {
   const setStatus = async (status) => {
-    await api.patch(`/inbox/${m.id}`, { status });
+    try {
+      await api.patch(`/inbox/${m.id}`, { status });
+    } catch (err) {
+      toast(err.message, 'bad');
+      return;
+    }
     toast('Mensaje actualizado');
     d.close();
     list.reload();
@@ -56,7 +67,13 @@ function open(ctx, m, list, whatsappEnabled) {
   const toJob = button('Crear trabajo', {
     iconName: 'tool',
     onClick: async () => {
-      const { categories } = await api.get('/jobs/categories');
+      let categories;
+      try {
+        ({ categories } = await api.get('/jobs/categories'));
+      } catch (err) {
+        toast(err.message, 'bad');
+        return;
+      }
       const guess = { construccion: 'construccion', mantenimiento: 'mantenimiento', electronica: 'electronica', vehiculos: 'vehiculos', gestion: 'gestion' }[m.topic] || 'otro';
       const values = await formDialog({
         title: 'Crear trabajo desde el mensaje',
@@ -88,12 +105,12 @@ function open(ctx, m, list, whatsappEnabled) {
         m.email ? [h('dt', null, 'Correo'), h('dd', null, h('a', { href: `mailto:${m.email}` }, m.email))] : null,
         m.topic ? [h('dt', null, 'Motivo'), h('dd', null, TOPIC[m.topic] || m.topic)] : null,
         [h('dt', null, 'Estado'), h('dd', null, badge('message', m.status))]),
-      h('div', { class: 'card card__body', style: 'white-space:pre-wrap' }, m.body),
+      h('div', { class: 'card card__body pre-wrap' }, m.body),
       m.job_id ? h('a', { class: 'alert alert--info', href: `#/servicios/${m.job_id}` }, icon('tool'), 'Este mensaje ya tiene un trabajo creado. Ver trabajo') : null,
       m.direction === 'entrante' && m.phone
         ? whatsappEnabled
           ? h('div', { class: 'stack' }, reply, h('div', null, sendBtn))
-          : h('div', { class: 'alert' }, icon('info'), h('span', null, 'WhatsApp no está configurado en el servidor. Responde llamando o desde ', h('a', { href: `https://wa.me/${m.phone.replace(/\D/g, '')}`, target: '_blank', rel: 'noopener' }, 'WhatsApp Web'), '.'))
+          : h('div', { class: 'alert' }, icon('info'), h('span', null, 'WhatsApp no está configurado en el servidor. Responde llamando o desde ', h('a', { href: `https://wa.me/${waNumber(m.phone)}`, target: '_blank', rel: 'noopener' }, 'WhatsApp Web'), '.'))
         : null),
     actions: m.direction === 'entrante' ? [
       m.job_id ? null : toJob,

@@ -64,6 +64,8 @@ const PATHS = {
   whatsapp: 'M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 20.5l1.6-5.4A8.4 8.4 0 1 1 21 11.5z',
   globe: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10',
   clock: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20M12 6v6l4 2',
+  mail: 'M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2M22 6l-10 7L2 6',
+  bell: 'M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0',
   edit: 'M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z',
   trash: 'M3 6h18M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2',
   pin: 'M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5',
@@ -99,6 +101,16 @@ export function badge(group, status) {
 export function button(label, { variant = '', iconName, onClick, type = 'button', size = '', title, disabled } = {}) {
   const cls = ['btn', variant && `btn--${variant}`, size && `btn--${size}`, !label && 'btn--icon'].filter(Boolean).join(' ');
   return h('button', { type, class: cls, onClick, title, 'aria-label': title || label, disabled }, iconName ? icon(iconName) : null, label || null);
+}
+
+/** Ejecuta una acción del usuario y, si falla, lo dice con un aviso en vez de fallar en silencio. */
+export async function attempt(fn) {
+  try {
+    return await fn();
+  } catch (err) {
+    toast(err.message, 'bad');
+    return undefined;
+  }
 }
 
 /** Pone un botón en modo "cargando" mientras dura la promesa. */
@@ -228,7 +240,7 @@ export function formDialog({ title, text, fields, confirm = 'Guardar', danger = 
     });
     const box = h('div', { class: 'dialog', role: 'dialog', 'aria-modal': 'true' },
       h('h2', null, title), text ? h('p', null, text) : null, form,
-      h('div', { class: 'dialog__actions', style: 'margin-top:18px' },
+      h('div', { class: 'dialog__actions' },
         button('Cancelar', { onClick: () => done(null) }),
         button(confirm, { variant: danger ? 'danger' : 'primary', onClick: () => done(readForm(form)) })));
     overlay.addEventListener('click', () => done(null));

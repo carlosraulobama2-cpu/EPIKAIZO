@@ -117,11 +117,50 @@ function openForm(ctx, list) {
     },
     onSubmit: async (values) => {
       const res = await api.post('/shipments', values);
-      toast(`Envío ${res.shipment.tracking_code} registrado`);
+      toast(`Envío ${res.shipment.tracking_code} registrado. Imprime el recibo desde su ficha.`);
       await list.reload(true);
       ctx.go(`envios/${res.shipment.id}`);
     },
   });
+}
+
+// ---------- Editar ----------
+// Solo datos de contacto, ruta y notas. El precio y el cobro no se tocan aquí: van por su factura.
+function openEdit(ctx, s, list) {
+  const cancelled = s.status === 'cancelado';
+  // La ficha se cerró sin tocar la dirección: se deja en #/envios para que volver a ella sea un cambio de ruta.
+  history.replaceState(null, '', '#/envios');
+  const back = () => ctx.go(`envios/${s.id}`);
+  const d = formDrawer({
+    title: `Editar ${s.tracking_code}`,
+    subtitle: cancelled
+      ? 'Envío cancelado: solo se pueden cambiar las notas.'
+      : 'Corrige datos de contacto o de ruta. El precio y el cobro se gestionan en su factura.',
+    submitLabel: 'Guardar cambios',
+    fields: cancelled
+      ? [field({ name: 'notes', label: 'Notas internas', type: 'textarea', full: true, value: s.notes })]
+      : [
+        section('Quién envía'),
+        field({ name: 'sender_name', label: 'Nombre y apellidos', required: true, value: s.sender_name }),
+        field({ name: 'sender_phone', label: 'Teléfono', type: 'tel', required: true, value: s.sender_phone }),
+        field({ name: 'sender_document', label: 'Documento (DIP o pasaporte)', value: s.sender_document }),
+        field({ name: 'origin', label: 'Ciudad de origen', required: true, value: s.origin }),
+        section('Quién recibe'),
+        field({ name: 'receiver_name', label: 'Nombre y apellidos', required: true, value: s.receiver_name }),
+        field({ name: 'receiver_phone', label: 'Teléfono', type: 'tel', required: true, value: s.receiver_phone }),
+        field({ name: 'destination', label: 'Ciudad de destino', required: true, value: s.destination }),
+        field({ name: 'description', label: 'Contenido o descripción', full: true, value: s.description }),
+        field({ name: 'notes', label: 'Notas internas', type: 'textarea', full: true, value: s.notes }),
+      ],
+    onSubmit: async (values) => {
+      await api.patch(`/shipments/${s.id}`, values);
+      toast('Envío actualizado');
+      await list.reload();
+      back();
+    },
+  });
+  // Al cancelar se vuelve a la ficha.
+  d.panel.querySelector('.drawer__foot .btn:not(.btn--primary)').addEventListener('click', back);
 }
 
 // ---------- Ficha ----------
@@ -176,9 +215,34 @@ async function openDetail(ctx, id, list) {
     },
   }));
 
+  // Recibo, editar y borrar. Borrar solo lo ve el administrador y solo si no hay factura vigente
+  // (un envío con factura se cancela: así la factura queda rectificada y no se pierde).
+  const canDelete = ctx.can('admin') && (!data.invoice || data.invoice.status === 'anulada');
+  const tools = [
+    button('Recibo', { size: 'sm', iconName: 'invoice', onClick: () => window.open(`/panel/recibo?id=${encodeURIComponent(s.id)}`, '_blank', 'noopener') }),
+    button('Editar', { size: 'sm', iconName: 'edit', onClick: () => { d.close({ silent: true }); openEdit(ctx, s, list); } }),
+    canDelete ? button('Borrar', {
+      size: 'sm',
+      variant: 'danger',
+      iconName: 'trash',
+      onClick: async (e) => {
+        if (!(await confirmDialog({ title: `Borrar el envío ${s.tracking_code}`, text: 'Se borra con todo su seguimiento y queda anotado en Actividad. No se puede deshacer.', confirm: 'Borrar', danger: true }))) return;
+        try {
+          await busy(e.currentTarget, api.del(`/shipments/${s.id}`));
+          toast(`Envío ${s.tracking_code} borrado`);
+          d.close();
+          await list.reload(true);
+        } catch (err) {
+          toast(err.message, 'bad');
+        }
+      },
+    }) : null,
+  ];
+
   const dl = (rows) => h('dl', { class: 'dl' }, rows.filter(Boolean).map(([k, v]) => [h('dt', null, k), h('dd', null, v ?? '—')]));
   d.setBody(h('div', { class: 'stack' },
-    nextButtons.length ? h('div', { class: 'card card__body' }, h('div', { class: 'small muted', style: 'margin-bottom:8px' }, 'Cambiar estado'), h('div', { class: 'page-head__actions' }, nextButtons)) : null,
+    h('div', { class: 'page-head__actions' }, tools),
+    nextButtons.length ? h('div', { class: 'card card__body' }, h('div', { class: 'small muted card__label' }, 'Cambiar estado'), h('div', { class: 'page-head__actions' }, nextButtons)) : null,
     dl([
       ['Tipo', s.kind === 'dinero' ? 'Envío de dinero' : 'Paquete'],
       ['Ruta', `${s.origin} → ${s.destination} (${SCOPE[s.scope]})`],
@@ -194,7 +258,7 @@ async function openDetail(ctx, id, list) {
       s.notes && ['Notas', s.notes],
       ['Registrado', date(s.created_at, true)],
     ]),
-    h('div', null, h('h3', { style: 'font-size:14px;margin-bottom:12px' }, 'Seguimiento'),
+    h('div', null, h('h3', { class: 'subhead' }, 'Seguimiento'),
       h('ol', { class: 'timeline' }, data.events.map((e) => h('li', null,
         h('strong', null, labels[e.status][0]),
         h('span', { class: 'small muted' }, [date(e.created_at, true), e.location, e.user_name].filter(Boolean).join(' · ')),

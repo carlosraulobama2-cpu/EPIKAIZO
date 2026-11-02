@@ -186,3 +186,61 @@ test('actividad: queda registro de las acciones', async () => {
   const actions = new Set(log.data.items.map((i) => i.action));
   for (const a of ['auth.login', 'envio.crear', 'envio.estado', 'usuario.crear', 'ajustes.guardar']) assert.ok(actions.has(a), a);
 });
+
+// ---------- Al final: estas pruebas crean envíos y facturas que cambiarían los totales de los informes ----------
+
+test('editar un envío: datos sí, cobro no; cancelado solo notas', async () => {
+  const { data } = await admin.post('/api/shipments', { ...PACKAGE, paid: false });
+  const id = data.shipment.id;
+  const edited = await admin.patch(`/api/shipments/${id}`, { receiver_phone: '+240 222 999 888', notes: 'Llamar antes' });
+  assert.equal(edited.status, 200);
+  assert.equal(edited.data.shipment.receiver_phone, '+240222999888', 'el teléfono se guarda normalizado');
+  // "paid" ya no se edita aquí: el cobro va por su factura.
+  const paid = await admin.patch(`/api/shipments/${id}`, { paid: true });
+  assert.equal(paid.status, 200);
+  assert.equal(paid.data.shipment.paid, false);
+  await admin.post(`/api/shipments/${id}/status`, { status: 'cancelado' });
+  assert.equal((await admin.patch(`/api/shipments/${id}`, { receiver_name: 'Otra Persona' })).status, 409);
+  assert.equal((await admin.patch(`/api/shipments/${id}`, { notes: 'Cancelado por el cliente' })).status, 200);
+});
+
+test('cobrar la factura de un envío lo marca como pagado', async () => {
+  const { data } = await admin.post('/api/shipments', { ...PACKAGE, paid: false });
+  assert.equal(data.shipment.paid, false);
+  const pay = await admin.post(`/api/invoices/${data.invoice.id}/payments`, { amount: Number(data.invoice.amount), method: 'movil' });
+  assert.equal(pay.status, 201);
+  const row = await db.one('SELECT paid, payment_method FROM shipments WHERE id = $1', [data.shipment.id]);
+  assert.equal(row.paid, true);
+  assert.equal(row.payment_method, 'movil');
+});
+
+test('borrar: un envío con factura vigente no se borra; uno cancelado sí', async () => {
+  const { data } = await admin.post('/api/shipments', PACKAGE);
+  const blocked = await admin.del(`/api/shipments/${data.shipment.id}`);
+  assert.equal(blocked.status, 409);
+  assert.match(blocked.data.error, /Cancélalo/);
+  await admin.post(`/api/shipments/${data.shipment.id}/status`, { status: 'cancelado' });
+  assert.equal((await admin.del(`/api/shipments/${data.shipment.id}`)).status, 200);
+  // La factura anulada y su rectificativa se conservan.
+  assert.equal((await db.many("SELECT id FROM invoices WHERE number LIKE 'FAC-%' AND shipment_id IS NULL AND status = 'anulada'")).length >= 1, true);
+});
+
+test('recibo: el QR del envío lleva al rastreo', async () => {
+  const { data } = await admin.post('/api/shipments', PACKAGE);
+  const qr = await admin.get(`/api/shipments/${data.shipment.id}/qr.png`);
+  assert.equal(qr.status, 200);
+  assert.equal(qr.headers.get('content-type'), 'image/png');
+  assert.equal((await agent(server.base).get(`/api/shipments/${data.shipment.id}/qr.png`)).status, 401, 'el QR del recibo exige sesión');
+});
+
+test('borrar cliente: no si tiene envíos, trabajos o facturas', async () => {
+  const withShipments = await db.one('SELECT id FROM clients WHERE phone = $1', ['+240222111222']);
+  assert.equal((await admin.del(`/api/clients/${withShipments.id}`)).status, 409);
+  const onlyInvoice = await admin.post('/api/clients', { name: 'Cliente Con Factura', phone: '+240 555 000 111' });
+  // La factura se asocia al cliente por su teléfono.
+  const inv = await admin.post('/api/invoices', { client_name: 'Cliente Con Factura', client_phone: '+240 555 000 111', concept: 'Revisión', amount: 100 });
+  assert.equal(inv.data.invoice.client_id, onlyInvoice.data.item.id);
+  assert.equal((await admin.del(`/api/clients/${onlyInvoice.data.item.id}`)).status, 409);
+  const empty = await admin.post('/api/clients', { name: 'Cliente Sin Nada', phone: '+240 555 000 222' });
+  assert.equal((await admin.del(`/api/clients/${empty.data.item.id}`)).status, 200);
+});

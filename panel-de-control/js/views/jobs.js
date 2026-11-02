@@ -1,9 +1,9 @@
 // Servicios y obras: construcción, mantenimiento, oficios y gestión administrativa.
 import { api } from '../api.js';
-import { h, pageHead, badge, button, primary, empty, formDrawer, field, section, toast, confirmDialog } from '../ui.js';
+import { h, pageHead, badge, button, primary, empty, formDrawer, field, section, toast, confirmDialog, attempt, busy } from '../ui.js';
 import { date, STATUS } from '../format.js';
 import { listCard, searchInput, selectFilter, tabs } from './_list.js';
-import { openDocEditor } from './_billing.js';
+import { openDocEditor, openDocDetail } from './_billing.js';
 
 export default async function jobs(root, ctx) {
   const [{ categories }, employees] = await Promise.all([
@@ -63,7 +63,17 @@ function openForm(ctx, list, categories, employees, job) {
       };
       foot.prepend(button('Facturar', {
         iconName: 'invoice',
-        onClick: () => { d.close(); openDocEditor(ctx, { kind: 'factura', prefill, onSaved: () => list.reload() }); },
+        // Un trabajo se factura una vez: si ya tiene factura vigente se abre esa en vez de crear otra.
+        onClick: (e) => attempt(async () => {
+          const { invoice } = await busy(e.currentTarget, api.get(`/jobs/${job.id}`));
+          d.close();
+          if (invoice) {
+            toast(`Este trabajo ya tiene la factura ${invoice.number}`);
+            openDocDetail(ctx, invoice.id, { onChange: () => list.reload() });
+          } else {
+            openDocEditor(ctx, { kind: 'factura', prefill, onSaved: () => list.reload() });
+          }
+        }),
       }));
       foot.prepend(button('Presupuestar', {
         iconName: 'edit',
@@ -73,10 +83,12 @@ function openForm(ctx, list, categories, employees, job) {
         variant: 'danger', iconName: 'trash', title: 'Borrar trabajo',
         onClick: async () => {
           if (!(await confirmDialog({ title: 'Borrar trabajo', text: `Se borrará ${job.code} definitivamente.`, confirm: 'Borrar', danger: true }))) return;
-          await api.del(`/jobs/${job.id}`);
-          toast('Trabajo borrado');
-          d.close();
-          list.reload();
+          await attempt(async () => {
+            await api.del(`/jobs/${job.id}`);
+            toast('Trabajo borrado');
+            d.close();
+            list.reload();
+          });
         },
       }));
     }

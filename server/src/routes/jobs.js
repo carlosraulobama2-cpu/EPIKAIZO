@@ -76,7 +76,12 @@ router.get(
       [req.params.id, req.tenantId]
     );
     if (!job) throw new HttpError(404, 'Trabajo no encontrado');
-    res.json({ item: job });
+    // Factura vigente del trabajo (si la hay): el panel la muestra en vez de dejar facturarlo otra vez.
+    const invoice = await db.one(
+      "SELECT id, number, status FROM invoices WHERE job_id = $1 AND kind = 'factura' AND status <> 'anulada' ORDER BY created_at LIMIT 1",
+      [job.id]
+    );
+    res.json({ item: job, invoice });
   })
 );
 

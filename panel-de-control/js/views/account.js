@@ -23,5 +23,5 @@ export default async function account(root, ctx) {
 
   root.append(
     pageHead('Mi cuenta', `${ctx.user.name} · ${ctx.user.email} · ${ROLES[ctx.user.role]}`),
-    h('div', { style: 'max-width:560px' }, card({ title: 'Contraseña', body: h('div', { class: 'stack' }, form, h('div', null, save)) })));
+    h('div', { class: 'narrow' }, card({ title: 'Contraseña', body: h('div', { class: 'stack' }, form, h('div', null, save)) })));
 }

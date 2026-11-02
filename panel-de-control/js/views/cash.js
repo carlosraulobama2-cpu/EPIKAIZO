@@ -1,6 +1,6 @@
 // Caja: ingresos y gastos que no salen de un envío o de un trabajo (alquiler, combustible, sueldos…).
 import { api } from '../api.js';
-import { h, pageHead, button, primary, empty, formDrawer, field, toast, confirmDialog } from '../ui.js';
+import { h, pageHead, button, primary, empty, formDrawer, field, toast, confirmDialog, attempt } from '../ui.js';
 import { date, today, PAYMENT } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 
@@ -51,10 +51,12 @@ function edit(ctx, list, row, type = row?.type) {
         variant: 'danger', iconName: 'trash', title: 'Borrar',
         onClick: async () => {
           if (!(await confirmDialog({ title: 'Borrar movimiento', text: 'Se quitará de la caja y de los informes.', confirm: 'Borrar', danger: true }))) return;
-          await api.del(`/cash/${row.id}`);
-          toast('Movimiento borrado');
-          d.close();
-          list.reload();
+          await attempt(async () => {
+            await api.del(`/cash/${row.id}`);
+            toast('Movimiento borrado');
+            d.close();
+            list.reload();
+          });
         },
       }));
     },

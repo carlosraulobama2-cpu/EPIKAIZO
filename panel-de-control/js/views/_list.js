@@ -11,17 +11,26 @@ export function listCard({ endpoint, filters = () => ({}), toolbar = [], columns
   const body = h('div');
   const node = card({ title, subtitle, actions, flush: true, body: h('div', null, toolbar.length ? h('div', { class: 'toolbar' }, toolbar) : null, body) });
 
+  let requestId = 0;
   async function reload(resetPage = false) {
     if (resetPage) page = 1;
+    // Al escribir rápido en el buscador, una respuesta lenta no debe pisar a la más reciente.
+    const current = ++requestId;
     clear(body, skeleton(4));
     try {
       const data = await api.get(endpoint, { ...filters(), page, limit });
+      if (current !== requestId) return;
+      // Si se borró lo último de una página, se vuelve a la anterior.
+      if (!data.items.length && page > 1) {
+        page -= 1;
+        return reload();
+      }
       if (onData) onData(data);
       clear(body,
         table({ columns, rows: data.items, onRowClick, emptyState: emptyState && emptyState(data) }),
         data.total > limit ? pager({ page, limit, total: data.total, onChange: (p) => { page = p; reload(); } }) : null);
     } catch (err) {
-      clear(body, errorBox(err, () => reload()));
+      if (current === requestId) clear(body, errorBox(err, () => reload()));
     }
   }
   return { node, reload, reloadDebounced: debounce(() => reload(true), 300) };

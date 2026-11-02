@@ -145,6 +145,8 @@ svg { flex: none; }
 .card__head h2 { font-size: 15px; }
 .card__head p { margin: 2px 0 0; color: var(--muted); font-size: 12.5px; }
 .card__body { padding: 16px 18px; }
+.card__label { margin-bottom: 8px; }
+.subhead { font-size: 14px; margin-bottom: 12px; }
 .grid { display: grid; gap: 16px; }
 .grid--kpi { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -219,6 +221,8 @@ table.table { width: 100%; border-collapse: collapse; }
 .chart__label { font-size: 12px; color: var(--muted); }
 .legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--muted); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.legend__swatch { background: var(--brand); }
+.legend__swatch--exp { background: var(--chart-expense); }
 .bar-list { display: flex; flex-direction: column; gap: 10px; }
 .bar-list__row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 13px; }
 .bar-list__track { grid-column: 1 / -1; height: 6px; border-radius: 99px; background: var(--bg); overflow: hidden; }
@@ -277,7 +281,7 @@ table.table { width: 100%; border-collapse: collapse; }
 }
 .dialog h2 { font-size: 17px; margin-bottom: 6px; }
 .dialog p { margin: 0 0 18px; color: var(--muted); }
-.dialog__actions { display: flex; justify-content: flex-end; gap: 8px; }
+.dialog__actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
 .secret { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg); border: 1px dashed var(--line-strong); font: 600 15px var(--mono); margin-bottom: 18px; }
 @keyframes fade { from { opacity: 0; } }
 @keyframes slide { from { transform: translateX(30px); opacity: 0; } }
@@ -409,3 +413,23 @@ table.table { width: 100%; border-collapse: collapse; }
 .thumb { width: 64px; height: 48px; border-radius: 8px; object-fit: cover; display: block; }
 .thumb--empty { display: grid; place-items: center; background: var(--brand-50); color: var(--brand); }
 .thumb--empty svg { width: 20px; height: 20px; }
+
+/* ---------- Utilidades (en lugar de style="" en el JavaScript; ver DESIGN.md) ---------- */
+.mt-4 { margin-top: 4px; }
+.mt-12 { margin-top: 12px; }
+.mt-16 { margin-top: 16px; }
+.mb-16 { margin-bottom: 16px; }
+.ml-6 { margin-left: 6px; }
+.pre-wrap { white-space: pre-wrap; }
+.text-ok { color: var(--ok); }
+.text-bad { color: var(--bad); }
+.self-center { align-self: center; }
+.narrow { max-width: 560px; }
+.row-wrap { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.grid--kpi-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.menu__email { padding: 6px 10px; }
+@media (max-width: 520px) { .grid--kpi-3 { grid-template-columns: 1fr; } }
+
+/* ---------- Ajustes: conexiones ---------- */
+.connections__row { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 18px; border-top: 1px solid var(--line); }
+.connections__row:first-child { border-top: 0; }

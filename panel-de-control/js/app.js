@@ -18,6 +18,7 @@ const ROUTES = [
   { path: 'informes', label: 'Informes', icon: 'chart', group: 'Finanzas', role: 'gestor', load: () => import('./views/reports.js') },
   { path: 'equipo', label: 'Equipo', icon: 'team', group: 'Empresa', role: 'gestor', load: () => import('./views/team.js') },
   { path: 'proveedores', label: 'Proveedores', icon: 'briefcase', group: 'Empresa', role: 'gestor', load: () => import('./views/providers.js') },
+  { path: 'correo', label: 'Correo', icon: 'mail', group: 'Empresa', role: 'admin', load: () => import('./views/mail.js') },
   { path: 'actividad', label: 'Actividad', icon: 'activity', group: 'Sistema', role: 'admin', load: () => import('./views/audit.js') },
   { path: 'ajustes', label: 'Ajustes', icon: 'settings', group: 'Sistema', role: 'admin', load: () => import('./views/settings.js') },
   { path: 'cuenta', label: 'Mi cuenta', icon: 'key', role: 'operador', hidden: true, load: () => import('./views/account.js') },
@@ -77,7 +78,7 @@ function userMenu(anchor) {
     return;
   }
   const menu = h('div', { class: 'menu', role: 'menu' },
-    h('div', { class: 'small muted', style: 'padding:6px 10px' }, state.user.email),
+    h('div', { class: 'small muted menu__email' }, state.user.email),
     h('hr'),
     h('a', { href: '#/cuenta', role: 'menuitem' }, icon('key'), 'Cambiar contraseña'),
     h('a', { href: '/', target: '_blank', rel: 'noopener', role: 'menuitem' }, icon('external'), 'Ver la web'),
@@ -135,7 +136,7 @@ async function render() {
     clear(contentEl, errorBox({ message: 'No tienes permiso para ver esta sección.' }));
     return;
   }
-  document.title = `${route.label} · Epikaizo`;
+  setTitle(route.label);
   const token = ++renderToken;
   clear(contentEl, skeleton(6));
   try {
@@ -147,16 +148,32 @@ async function render() {
     clear(contentEl, view);
     contentEl.focus({ preventScroll: true });
     window.scrollTo(0, 0);
+    // Al cambiar de sección se actualiza también el contador de mensajes (además de cada minuto).
+    loadCounts();
   } catch (err) {
     if (token === renderToken) clear(contentEl, errorBox(err, render));
   }
 }
 
+// El número de mensajes sin leer va delante del título de la pestaña: "(3) Envíos · Epikaizo".
+function setTitle(base) {
+  if (base) state.title = base;
+  const n = state.counts.messages || 0;
+  document.title = `${n ? `(${n}) ` : ''}${state.title || 'Panel'} · Epikaizo`;
+}
+
 async function loadCounts() {
   try {
     const inbox = await api.get('/inbox', { status: 'nuevo', limit: 1 });
+    const before = state.counts.messages;
     state.counts.messages = inbox.unread;
     buildNav();
+    setTitle();
+    // Aviso solo cuando llegan mensajes nuevos mientras el panel está abierto (no al entrar).
+    if (before !== undefined && inbox.unread > before) {
+      const n = inbox.unread - before;
+      toast(n === 1 ? 'Ha llegado un mensaje nuevo a la Bandeja' : `Han llegado ${n} mensajes nuevos a la Bandeja`);
+    }
   } catch {
     /* el contador no es crítico */
   }

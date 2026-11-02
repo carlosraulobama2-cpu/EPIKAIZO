@@ -1,6 +1,8 @@
 // Envíos de paquetes y de dinero: alta con guía EPZ, cambios de estado con historial y factura automática.
 const crypto = require('crypto');
 const express = require('express');
+const QRCode = require('qrcode');
+const config = require('../config');
 const db = require('../db');
 const { route, validate, paging, text, phone, number, oneOf, bool, HttpError } = require('../lib/http');
 const { filters } = require('../lib/list');
@@ -44,7 +46,8 @@ const fields = {
   payment_method: oneOf(['efectivo', 'transferencia', 'movil', 'tarjeta'], { optional: true }),
   notes: text({ max: 500, optional: true }),
 };
-const EDITABLE = ['sender_name', 'sender_phone', 'sender_document', 'receiver_name', 'receiver_phone', 'origin', 'destination', 'description', 'paid', 'payment_method', 'notes'];
+// El cobro no se edita aquí: se registra en su factura (Facturación), que marca el envío como pagado.
+const EDITABLE = ['sender_name', 'sender_phone', 'sender_document', 'receiver_name', 'receiver_phone', 'origin', 'destination', 'description', 'notes'];
 
 router.get(
   '/',
@@ -93,6 +96,16 @@ router.get(
       db.one("SELECT id, number, status, amount, currency FROM invoices WHERE shipment_id = $1 AND kind = 'factura' ORDER BY created_at LIMIT 1", [shipment.id]),
     ]);
     res.json({ shipment, events, invoice, next_statuses: NEXT[shipment.status] });
+  })
+);
+
+// QR del recibo: lleva a la página de rastreo con la guía ya puesta.
+router.get(
+  '/:id/qr.png',
+  route(async (req, res) => {
+    const shipment = await loadShipment(req);
+    const url = `${config.publicUrl}/envios?guia=${encodeURIComponent(shipment.tracking_code)}#rastreo`;
+    res.type('png').send(await QRCode.toBuffer(url, { width: 600, margin: 2, color: { dark: '#0B1020', light: '#FFFFFF' } }));
   })
 );
 
@@ -153,6 +166,7 @@ router.patch(
     const input = validate(req.body, Object.fromEntries(EDITABLE.map((k) => [k, fields[k]])), { partial: true });
     const keys = Object.keys(input);
     if (!keys.length) return res.json({ shipment });
+    if (shipment.status === 'cancelado' && keys.some((k) => k !== 'notes')) throw new HttpError(409, 'Un envío cancelado solo admite cambios en las notas');
     const sets = keys.map((k, i) => `${k} = $${i + 3}`);
     const updated = await db.one(
       `UPDATE shipments SET ${sets.join(', ')}, updated_at = now() WHERE id = $1 AND tenant_id = $2 RETURNING *`,
@@ -221,6 +235,9 @@ router.delete(
   requireRole('admin'),
   route(async (req, res) => {
     const shipment = await loadShipment(req);
+    // Las facturas nunca se pierden: un envío con factura vigente se cancela (y su factura se rectifica), no se borra.
+    const invoice = await db.one("SELECT number FROM invoices WHERE shipment_id = $1 AND kind = 'factura' AND status <> 'anulada' LIMIT 1", [shipment.id]);
+    if (invoice) throw new HttpError(409, `Este envío tiene la factura ${invoice.number}. Cancélalo en vez de borrarlo.`);
     await db.tx(async (client) => {
       await db.query('DELETE FROM shipments WHERE id = $1 AND tenant_id = $2', [shipment.id, req.tenantId], client);
       await audit(req, 'envio.borrar', { entity: 'shipment', entityId: shipment.id, details: { guia: shipment.tracking_code } }, client);

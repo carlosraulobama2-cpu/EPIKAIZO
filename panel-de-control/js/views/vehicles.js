@@ -1,6 +1,6 @@
 // Vehículos en venta: inventario, reservas y venta con factura y contrato de compraventa.
 import { api } from '../api.js';
-import { h, icon, pageHead, badge, button, primary, empty, drawer, formDrawer, formDialog, confirmDialog, field, section, toast } from '../ui.js';
+import { h, icon, pageHead, badge, button, primary, empty, drawer, formDrawer, formDialog, confirmDialog, field, section, toast, attempt } from '../ui.js';
 import { date, today, FUEL, TRANSMISSION, PAYMENT, number, moneyMix } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 import { openDocDetail, printDocument } from './_billing.js';
@@ -27,11 +27,13 @@ function gallery(ctx, v, photos, reload) {
       h('img', { src: `/api/vehicles/${v.id}/photos/${p.id}`, alt: `Foto ${i + 1} de ${title(v)}`, loading: 'lazy' }),
       i === 0 ? h('span', { class: 'photos__cover' }, 'Portada') : null,
       ctx.can('gestor') ? h('figcaption', null,
-        i > 0 ? button('', { size: 'sm', iconName: 'check', title: 'Usar como portada', onClick: async () => { await api.post(`/vehicles/${v.id}/photos/${p.id}/cover`); reload(); } }) : null,
+        i > 0 ? button('', { size: 'sm', iconName: 'check', title: 'Usar como portada', onClick: () => attempt(async () => { await api.post(`/vehicles/${v.id}/photos/${p.id}/cover`); reload(); }) }) : null,
         button('', { size: 'sm', variant: 'danger', iconName: 'trash', title: 'Borrar foto', onClick: async () => {
           if (!(await confirmDialog({ title: 'Borrar foto', text: 'La foto dejará de verse en la web.', confirm: 'Borrar', danger: true }))) return;
-          await api.del(`/vehicles/${v.id}/photos/${p.id}`);
-          reload();
+          await attempt(async () => {
+            await api.del(`/vehicles/${v.id}/photos/${p.id}`);
+            reload();
+          });
         } })) : null)));
   if (ctx.can('gestor') && v.status !== 'vendido' && photos.length < 8) {
     const input = h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp', multiple: true, hidden: true });
@@ -62,7 +64,7 @@ const CURRENCIES = [['XAF', 'Francos CFA (FCFA)'], ['USD', 'Dólares (USD)'], ['
 
 export default async function vehicles(root, ctx) {
   const f = { status: 'stock', q: '' };
-  const kpis = h('div', { class: 'grid grid--kpi', style: 'margin-bottom:16px' });
+  const kpis = h('div', { class: 'grid grid--kpi mb-16' });
   const kpi = (iconName, label, value, foot) => h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, icon(iconName), label), h('div', { class: 'kpi__value' }, value), h('div', { class: 'kpi__foot' }, foot));
 
   const list = listCard({
@@ -186,11 +188,11 @@ async function openVehicle(ctx, id, list) {
       toast(err.message, 'bad');
     }
   } }));
-  if (v.status === 'reservado') actions.push(button('Liberar reserva', { onClick: async () => {
+  if (v.status === 'reservado') actions.push(button('Liberar reserva', { onClick: () => attempt(async () => {
     await api.post(`/vehicles/${v.id}/release`);
     toast('Reserva liberada');
     reload();
-  } }));
+  }) }));
   if (v.status !== 'vendido' && ctx.can('gestor')) {
     actions.unshift(button('Editar', { iconName: 'edit', onClick: () => { d.close(); edit(ctx, list, v); } }));
     actions.push(button('Vender', { variant: 'primary', iconName: 'invoice', onClick: () => { d.close(); sell(ctx, v, list); } }));

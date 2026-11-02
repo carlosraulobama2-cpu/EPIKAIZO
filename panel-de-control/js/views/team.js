@@ -1,6 +1,6 @@
 // Equipo: el personal de la empresa y, para administradores, quién puede entrar al panel y con qué rol.
 import { api } from '../api.js';
-import { h, clear, pageHead, badge, button, primary, empty, formDrawer, field, toast, confirmDialog, secretDialog, card, table, skeleton, errorBox } from '../ui.js';
+import { h, clear, pageHead, badge, button, primary, empty, formDrawer, field, toast, confirmDialog, secretDialog, card, table, skeleton, errorBox, attempt } from '../ui.js';
 import { date, ago, ROLES, ROLE_HELP } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 
@@ -42,9 +42,9 @@ export default async function team(root, ctx) {
       flush: true,
       body: accessBody,
     });
-    access.style.marginTop = '16px';
-    root.append(access, h('div', { class: 'card card__body', style: 'margin-top:16px' },
-      h('h3', { style: 'font-size:14px;margin-bottom:8px' }, 'Qué puede hacer cada rol'),
+    access.classList.add('mt-16');
+    root.append(access, h('div', { class: 'card card__body mt-16' },
+      h('h3', { class: 'subhead' }, 'Qué puede hacer cada rol'),
       h('dl', { class: 'dl' }, Object.entries(ROLE_HELP).map(([role, help]) => [h('dt', null, ROLES[role]), h('dd', null, help)]))));
 
     async function loadAccess() {
@@ -79,7 +79,8 @@ function userActions(u, reload) {
       size: 'sm',
       onClick: async () => {
         if (!(await confirmDialog({ title: 'Restablecer contraseña', text: `${u.name} recibirá una contraseña temporal y se cerrarán sus sesiones abiertas.`, confirm: 'Restablecer' }))) return;
-        const res = await api.post(`/users/${u.id}/reset-password`);
+        const res = await attempt(() => api.post(`/users/${u.id}/reset-password`));
+        if (!res) return;
         secretDialog('Contraseña temporal', `Dásela a ${u.name} por un canal seguro (en persona o llamada). Solo se muestra ahora; al entrar tendrá que cambiarla.`, res.temporary_password);
         reload();
       },
@@ -117,10 +118,12 @@ function editEmployee(ctx, list, row) {
         variant: 'danger', iconName: 'trash', title: 'Borrar',
         onClick: async () => {
           if (!(await confirmDialog({ title: 'Borrar persona', text: 'Mejor márcala como inactiva si ya no trabaja aquí: así se conserva su historial.', confirm: 'Borrar igualmente', danger: true }))) return;
-          await api.del(`/employees/${row.id}`);
-          toast('Persona borrada');
-          d.close();
-          list.reload();
+          await attempt(async () => {
+            await api.del(`/employees/${row.id}`);
+            toast('Persona borrada');
+            d.close();
+            list.reload();
+          });
         },
       }));
     },

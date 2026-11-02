@@ -30,9 +30,9 @@ export default async function dashboard(root, ctx) {
           h('div', { class: 'chart__bar', style: `height:${(c.income / max) * 100}%`, title: `Ingresos ${ctx.money(c.income)}` }),
           h('div', { class: 'chart__bar chart__bar--exp', style: `height:${(c.expense / max) * 100}%`, title: `Gastos ${ctx.money(c.expense)}` })),
         h('span', { class: 'chart__label' }, monthLabel(c.month))))),
-    h('div', { class: 'legend', style: 'margin-top:12px' },
-      h('span', null, h('i', { style: 'background:var(--brand)' }), 'Ingresos'),
-      h('span', null, h('i', { style: 'background:#F2A7AB' }), 'Gastos')));
+    h('div', { class: 'legend mt-12' },
+      h('span', null, h('i', { class: 'legend__swatch' }), 'Ingresos'),
+      h('span', null, h('i', { class: 'legend__swatch legend__swatch--exp' }), 'Gastos')));
 
   const pipeline = h('div', { class: 'pipeline' },
     [['registrado', 'Por salir'], ['en_transito', 'En tránsito'], ['en_reparto', 'En reparto']].map(([status, label]) =>
@@ -61,8 +61,8 @@ export default async function dashboard(root, ctx) {
     pageHead(`${hello}, ${ctx.user.name.split(' ')[0]}`, `Así va ${new Date().toLocaleString('es-ES', { month: 'long' })} en Epikaizo.`, [
       button('Nuevo trabajo', { iconName: 'tool', onClick: () => ctx.go('servicios?nuevo=1') }),
     ]),
-    alerts.length ? h('div', { class: 'stack', style: 'margin-bottom:16px' }, alerts) : null,
-    h('div', { class: 'grid grid--kpi', style: 'margin-bottom:16px' },
+    alerts.length ? h('div', { class: 'stack mb-16' }, alerts) : null,
+    h('div', { class: 'grid grid--kpi mb-16' },
       d.finance
         ? [
           kpi('money', 'Ingresos del mes', ctx.money(m.income),

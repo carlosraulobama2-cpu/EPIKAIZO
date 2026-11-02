@@ -186,7 +186,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
 
   const head = d.panel.querySelector('.drawer__head > div');
   clear(head,
-    h('h2', null, h('span', { class: 'mono' }, inv.number), ' ', badge('invoice', inv.status), overdue ? h('span', { class: 'badge badge--bad', style: 'margin-left:6px' }, 'Vencida') : null),
+    h('h2', null, h('span', { class: 'mono' }, inv.number), ' ', badge('invoice', inv.status), overdue ? h('span', { class: 'badge badge--bad ml-6' }, 'Vencida') : null),
     h('p', null, `${DOC_KIND[inv.kind]} · ${date(inv.issue_date)}${inv.due_date ? ` · vence ${date(inv.due_date)}` : ''}${inv.valid_until ? ` · válido hasta ${date(inv.valid_until)}` : ''}`));
 
   const lines = table({
@@ -204,8 +204,8 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
     h('div', null, h('span', null, 'Base imponible'), h('strong', null, m(inv.subtotal))),
     h('div', null, h('span', null, ctx.settings.billing.tax_name || 'IVA'), h('strong', null, m(inv.tax_amount))),
     h('div', { class: 'doc-totals__total' }, h('span', null, inv.kind === 'rectificativa' ? 'Total rectificado' : 'Total'), h('strong', null, `${inv.kind === 'rectificativa' ? '−' : ''}${m(inv.amount)}`)),
-    isInvoice ? h('div', null, h('span', null, 'Cobrado'), h('strong', { style: 'color:var(--ok)' }, m(inv.paid_amount))) : null,
-    isInvoice && pending > 0 && inv.status !== 'anulada' ? h('div', null, h('span', null, 'Pendiente'), h('strong', { style: 'color:var(--bad)' }, m(pending))) : null);
+    isInvoice ? h('div', null, h('span', null, 'Cobrado'), h('strong', { class: 'text-ok' }, m(inv.paid_amount))) : null,
+    isInvoice && pending > 0 && inv.status !== 'anulada' ? h('div', null, h('span', null, 'Pendiente'), h('strong', { class: 'text-bad' }, m(pending))) : null);
 
   const links = [];
   if (data.vehicle) links.push(h('a', { href: `#/vehiculos/${data.vehicle.id}` }, icon('truck'), `Vehículo ${data.vehicle.code}: ${data.vehicle.brand} ${data.vehicle.model}`));
@@ -224,7 +224,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
     links.length ? h('div', { class: 'doc-links' }, links) : null,
     h('div', { class: 'card' }, lines),
     totals,
-    inv.notes ? h('div', { class: 'alert alert--info' }, icon('info'), h('span', { style: 'white-space:pre-wrap' }, inv.notes)) : null,
+    inv.notes ? h('div', { class: 'alert alert--info' }, icon('info'), h('span', { class: 'pre-wrap' }, inv.notes)) : null,
   ];
 
   // Presupuesto: cuánto se ha facturado y con qué facturas.

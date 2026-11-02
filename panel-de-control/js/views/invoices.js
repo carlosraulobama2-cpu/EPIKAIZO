@@ -15,7 +15,7 @@ const VIEWS = [
 export default async function invoices(root, ctx) {
   let view = ctx.query.get('ver') || 'factura';
   const f = { q: ctx.query.get('q') || '', from: '', to: '' };
-  const kpis = h('div', { class: 'grid grid--kpi', style: 'margin-bottom:16px' });
+  const kpis = h('div', { class: 'grid grid--kpi mb-16' });
   const kpi = (iconName, label, value, foot, tone) => h('div', { class: 'card kpi' },
     h('div', { class: 'kpi__label' }, icon(iconName), label),
     h('div', { class: 'kpi__value', style: tone ? `color:var(${tone})` : null }, value),
@@ -49,7 +49,7 @@ export default async function invoices(root, ctx) {
       { label: 'Número', render: (r) => primary(h('span', { class: 'mono' }, r.number), `${DOC_KIND[r.kind]} · ${date(r.issue_date)}`) },
       { label: 'Cliente', render: (r) => primary(r.client_name, r.client_phone) },
       { label: 'Concepto', hideSm: true, render: (r) => h('span', { class: 'clamp' }, r.concept) },
-      { label: 'Estado', render: (r) => [badge('invoice', r.status), r.overdue ? h('div', { class: 'small', style: 'color:var(--bad);margin-top:4px' }, `Vencida el ${date(r.due_date)}`) : null] },
+      { label: 'Estado', render: (r) => [badge('invoice', r.status), r.overdue ? h('div', { class: 'small text-bad mt-4' }, `Vencida el ${date(r.due_date)}`) : null] },
       { label: 'Total', num: true, render: (r) => primary(
         h('strong', null, `${r.kind === 'rectificativa' ? '−' : ''}${ctx.money(r.amount, r.currency)}`),
         r.kind === 'factura' && Number(r.paid_amount) > 0 && r.status !== 'pagada' ? `Cobrado ${ctx.money(r.paid_amount, r.currency)}` : r.kind === 'presupuesto' && r.status === 'pendiente' && r.valid_until ? `Válido hasta ${date(r.valid_until)}` : null) },
@@ -64,7 +64,7 @@ export default async function invoices(root, ctx) {
     ]),
     kpis,
     list.node,
-    h('div', { class: 'card card__body help', style: 'margin-top:16px' },
+    h('div', { class: 'card card__body help mt-16' },
       h('h3', null, '¿Qué documento uso?'),
       h('dl', { class: 'dl' },
         h('dt', null, 'Obra o construcción'), h('dd', null, 'Presupuesto → el cliente acepta → factura de anticipo → certificaciones según avanza la obra → liquidación final.'),
