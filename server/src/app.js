@@ -1,13 +1,14 @@
-// Aplicación Express. Solo se publica la carpeta public/: el código del servidor, .env y datos nunca se sirven.
+// Aplicación Express. Solo se publican public/ (web) y panel-de-control/ (en /panel/): el código del servidor, .env y datos nunca se sirven.
 const path = require('path');
 const express = require('express');
 const db = require('./db');
 const { HttpError, text, phone, email, number, oneOf, date } = require('./lib/http');
 const { securityHeaders, csrfGuard } = require('./lib/security');
 const { crudRouter } = require('./lib/crud');
-const { authenticate, requireRole } = require('./middleware/auth');
+const { authenticate, requirePasswordChanged, requireRole } = require('./middleware/auth');
 
 const PUBLIC_DIR = path.join(__dirname, '../../public');
+const PANEL_DIR = path.join(__dirname, '../../panel-de-control');
 
 function createApp() {
   const app = express();
@@ -45,7 +46,7 @@ function createApp() {
   api.use('/auth', require('./routes/auth'));
 
   // Privados: todo lo de abajo exige sesión. El rol mínimo de cada sección está aquí, a la vista.
-  api.use(authenticate);
+  api.use(authenticate, requirePasswordChanged);
   const operador = requireRole('operador');
   const gestor = requireRole('gestor');
   const admin = requireRole('admin');
@@ -127,20 +128,29 @@ function createApp() {
   app.use('/api', api);
 
   // ---- Web pública y panel ----------------------------------------------------------------------
-  app.get(['/panel', '/panel/'], (req, res) => res.sendFile(path.join(PUBLIC_DIR, 'panel.html')));
-  app.get('/login', (req, res) => res.redirect(301, '/login.html'));
-  app.use(
-    express.static(PUBLIC_DIR, {
-      dotfiles: 'deny',
-      // /construccion sirve construccion.html (direcciones limpias para compartir)
-      extensions: ['html'],
-      index: 'index.html',
-      setHeaders: (res, file) => {
-        // HTML siempre fresco; CSS, JS e imágenes con caché corta.
-        res.setHeader('Cache-Control', file.endsWith('.html') ? 'no-cache' : 'public, max-age=3600');
-      },
-    })
-  );
+  const staticOptions = {
+    dotfiles: 'deny',
+    // /construccion sirve construccion.html y /panel/login sirve login.html (direcciones limpias)
+    extensions: ['html'],
+    index: 'index.html',
+    redirect: false,
+    setHeaders: (res, file) => {
+      // HTML siempre fresco; CSS, JS e imágenes con caché corta.
+      res.setHeader('Cache-Control', file.endsWith('.html') ? 'no-cache' : 'public, max-age=3600');
+    },
+  };
+  // Direcciones antiguas del panel: se redirigen conservando la consulta (?id=, ?volver=).
+  const moved = (to) => (req, res) => {
+    const query = req.originalUrl.indexOf('?');
+    res.redirect(301, to + (query === -1 ? '' : req.originalUrl.slice(query)));
+  };
+  // Express no distingue /panel de /panel/: solo se redirige la forma sin barra.
+  app.get('/panel', (req, res, next) => (req.path === '/panel' ? moved('/panel/')(req, res) : next()));
+  app.get(['/login', '/login.html'], moved('/panel/login'));
+  app.get('/documento.html', moved('/panel/documento'));
+  // Panel de control: carpeta panel-de-control/, servida en /panel/.
+  app.use('/panel', express.static(PANEL_DIR, staticOptions));
+  app.use(express.static(PUBLIC_DIR, staticOptions));
   app.use((req, res) => res.status(404).sendFile(path.join(PUBLIC_DIR, '404.html')));
 
   // ---- Errores --------------------------------------------------------------------------------
@@ -174,4 +184,4 @@ function createApp() {
   return app;
 }
 
-module.exports = { createApp, PUBLIC_DIR };
+module.exports = { createApp, PUBLIC_DIR, PANEL_DIR };

@@ -166,9 +166,19 @@ test('equipo: el admin crea un acceso con contraseña temporal que obliga a camb
   const created = await admin.post('/api/users', { name: 'Nueva Operadora', email: 'nueva@prueba.com', role: 'operador' });
   assert.equal(created.status, 201);
   assert.ok(created.data.temporary_password.length >= 12);
-  const login = await agent(server.base).login('nueva@prueba.com', created.data.temporary_password);
+  const nueva = agent(server.base);
+  const login = await nueva.login('nueva@prueba.com', created.data.temporary_password);
   assert.equal(login.status, 200);
   assert.equal(login.data.user.must_change_password, true);
+  // Con la contraseña temporal solo funciona /api/auth/*: el resto exige cambiarla antes.
+  assert.equal((await nueva.get('/api/auth/me')).status, 200);
+  const blocked = await nueva.get('/api/shipments');
+  assert.equal(blocked.status, 403);
+  assert.equal(blocked.data.code, 'must_change_password');
+  const changed = await nueva.post('/api/auth/password', { current: created.data.temporary_password, password: 'una-frase-nueva-larga' });
+  assert.equal(changed.status, 200);
+  assert.equal(changed.data.user.must_change_password, false);
+  assert.equal((await nueva.get('/api/shipments')).status, 200);
 });
 
 test('actividad: queda registro de las acciones', async () => {

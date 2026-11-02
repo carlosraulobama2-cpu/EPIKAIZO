@@ -33,7 +33,7 @@ jobs:
           cache-dependency-path: server/package-lock.json
       - run: npm ci
       - name: Comprobar sintaxis del panel y la web
-        run: for f in $(find ../public/js -name '*.js'); do node --experimental-default-type=module --check "$f"; done
+        run: for f in $(find ../public/js ../panel-de-control/js -name '*.js'); do node --experimental-default-type=module --check "$f"; done
       - run: npm test
         env:
           TEST_DATABASE_URL: postgresql://epk:epk@localhost:5432/epikaizo_test

@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /panel
-Disallow: /login.html
+Disallow: /login
 Disallow: /verificar.html
 Disallow: /api/
 

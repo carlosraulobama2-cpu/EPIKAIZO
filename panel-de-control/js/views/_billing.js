@@ -7,7 +7,7 @@ import { date, today, DOC_KIND, PAYMENT } from '../format.js';
 const round = (n) => Math.round(Number(n || 0) * 100) / 100;
 
 export function printDocument(id) {
-  window.open(`/documento.html?id=${encodeURIComponent(id)}`, '_blank', 'noopener');
+  window.open(`/panel/documento?id=${encodeURIComponent(id)}`, '_blank', 'noopener');
 }
 
 // ---------- Editor de líneas ----------

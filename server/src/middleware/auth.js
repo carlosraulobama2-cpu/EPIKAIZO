@@ -47,6 +47,17 @@ async function authenticate(req, res, next) {
   }
 }
 
+/**
+ * Con una contraseña temporal (acceso nuevo o restablecido) solo se puede usar /api/auth/*:
+ * el resto de la API exige cambiarla antes. Va después de authenticate.
+ */
+function requirePasswordChanged(req, res, next) {
+  if (req.user && req.user.must_change_password) {
+    return res.status(403).json({ error: 'Cambia tu contraseña temporal para continuar', code: 'must_change_password' });
+  }
+  next();
+}
+
 /** requireRole('gestor') deja pasar a gestor y admin. */
 function requireRole(minimum) {
   return (req, res, next) => {
@@ -58,4 +69,4 @@ function requireRole(minimum) {
   };
 }
 
-module.exports = { authenticate, requireRole, signSession, ROLE_RANK };
+module.exports = { authenticate, requirePasswordChanged, requireRole, signSession, ROLE_RANK };

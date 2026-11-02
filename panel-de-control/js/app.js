@@ -96,7 +96,7 @@ function userMenu(anchor) {
 
 async function logout() {
   await api.post('/auth/logout').catch(() => {});
-  location.replace('/login.html');
+  location.replace('/panel/login');
 }
 
 function buildShell() {
@@ -241,7 +241,9 @@ function forcePasswordChange() {
       field({ name: 'current', label: 'Contraseña temporal', type: 'password', required: true, full: true, autocomplete: 'current-password' }),
       field({ name: 'password', label: 'Nueva contraseña', type: 'password', required: true, full: true, autocomplete: 'new-password', hint: 'Mínimo 10 caracteres. Mejor una frase que solo tú recuerdes.' }));
     const save = button('Guardar y entrar', { variant: 'primary', iconName: 'check' });
-    const d = drawer({ title: 'Crea tu contraseña', body: form, actions: [save], onClose: () => resolve() });
+    // No se puede saltar: el servidor no deja usar nada más con la contraseña temporal.
+    // Cerrar sin guardarla es cerrar sesión.
+    const d = drawer({ title: 'Crea tu contraseña', body: form, actions: [save], onClose: () => (state.user.must_change_password ? logout() : resolve()) });
     const submit = async (e) => {
       e.preventDefault();
       try {
@@ -269,17 +271,31 @@ function clearLegacyStorage() {
   }
 }
 
+function startError(err) {
+  // Sin sesión: /api/auth/* no redirige solo (api.js), así que se hace aquí.
+  if (err.status === 401) {
+    location.replace(`/panel/login?volver=${encodeURIComponent(location.hash || '#/resumen')}`);
+    return;
+  }
+  document.body.replaceChildren(h('main', { class: 'content' }, errorBox(err, () => location.reload())));
+}
+
 async function start() {
   try {
     const me = await api.get('/auth/me');
     state.user = me.user;
-    state.settings = await api.get('/settings');
-  } catch {
-    return; // api.js ya redirige al login
+  } catch (err) {
+    return startError(err);
   }
   buildShell();
-  buildNav();
+  // Con contraseña temporal el resto de la API responde 403: primero se cambia.
   if (state.user.must_change_password) await forcePasswordChange();
+  try {
+    state.settings = await api.get('/settings');
+  } catch (err) {
+    return startError(err);
+  }
+  buildNav();
   window.addEventListener('hashchange', render);
   await render();
   loadCounts();

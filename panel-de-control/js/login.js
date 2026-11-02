@@ -10,7 +10,7 @@ function showError(message) {
 
 // Si ya hay sesión, directo al panel.
 fetch('/api/auth/me', { credentials: 'same-origin' }).then((r) => {
-  if (r.ok) location.replace('/panel');
+  if (r.ok) location.replace('/panel/');
 });
 
 form.addEventListener('submit', async (e) => {
@@ -32,7 +32,7 @@ form.addEventListener('submit', async (e) => {
     if (!res.ok) throw new Error(data.error || 'No se pudo iniciar sesión.');
     const back = new URLSearchParams(location.search).get('volver');
     // Solo rutas internas del panel (#/...): nunca redirigimos a otra web.
-    location.replace(`/panel${back && /^#\/[\w/?=&-]*$/.test(back) ? back : ''}`);
+    location.replace(`/panel/${back && /^#\/[\w/?=&-]*$/.test(back) ? back : ''}`);
   } catch (err) {
     showError(err.message === 'Failed to fetch' ? 'Sin conexión con el servidor.' : err.message);
     form.password.select();

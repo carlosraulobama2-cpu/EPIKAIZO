@@ -37,7 +37,7 @@ Datos de la empresa:
 - Ciudades: ${cities.join(', ')}.
 - Paquetes: tarifa base ${rates.package_base_fee} ${cur} más ${kg.local}/${kg.nacional}/${kg.internacional} ${cur} por kg (local/nacional/internacional).
 - Envíos de dinero: comisión ${pct.local}% / ${pct.nacional}% / ${pct.internacional}% (local/nacional/internacional), mínimo ${rates.money_min_commission} ${cur}. Da siempre los precios en ${cur}.
-- Rastreo con la guía EPZ-000000 en ${config.publicUrl}/#rastreo. Cotizador en ${config.publicUrl}/#envios.
+- Rastreo con la guía EPZ-000000 en ${config.publicUrl}/envios#rastreo. Cotizador en ${config.publicUrl}/envios#cotizador.
 - Especialidades: construcción de cualquier tipo de vivienda (y reformas), mantenimiento (fontanería, electricidad, climatización, carpintería), mantenimiento y reparación de electrónica, envíos de paquetes y dinero, venta de vehículos y gestión administrativa.
 - Para cualquier servicio el cliente puede pedir cita en el formulario de la web (eligiendo el día que le viene bien) o por WhatsApp; el equipo confirma la cita.
 Quiénes somos: empresa especializada en construcción en general y mantenimiento integral de inmuebles para los sectores residencial, comercial, industrial e institucional, con sede en el Barrio Ngolo-Puente Sialo. Lema: «Construimos confianza, transformamos espacios y creamos valor para el futuro».

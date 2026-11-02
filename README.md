@@ -7,7 +7,7 @@ Web pública y panel de gestión de Epikaizo: construcción y mantenimiento, ges
 | Parte | Dónde | Qué hace |
 |---|---|---|
 | Web pública | `public/index.html`, `construccion.html`, `envios.html`, `vehiculos.html` + `css/site.css`, `js/site.js` | Inicio (presentación, organigrama), Construcción y mantenimiento, Envíos (Epikaizo Exprés, cotizador y rastreo) y Vehículos (catálogo de Autos Epikaizo con buscador y filtros, desde el inventario del panel); formulario «Pide tu cita», asistente y WhatsApp |
-| Panel | `public/panel.html`, `public/js/panel/` | Resumen, envíos, servicios y obras, clientes, bandeja, facturas, caja, informes, equipo, proveedores, actividad y ajustes |
+| Panel | `panel-de-control/` (servido en `/panel/`) | Resumen, envíos, servicios y obras, clientes, bandeja, facturas, caja, informes, equipo, proveedores, actividad y ajustes |
 | Servidor | `server/src/` | API Express + Postgres. Solo publica la carpeta `public/` |
 | Pruebas | `server/test/` | Seguridad y flujos completos contra una base de datos de pruebas |
 | Diseño | `DESIGN.md` | Colores, tipografía, radios, tono y componentes de la web y el panel. Léelo antes de tocar una página |
@@ -20,7 +20,7 @@ Necesitas Node 22 y Postgres 16.
 cd server
 cp .env.example .env    # rellena DATABASE_URL, JWT_SECRET, ADMIN_EMAIL y ADMIN_PASSWORD
 npm install
-npm run dev             # http://localhost:3001  ·  panel en /panel
+npm run dev             # http://localhost:3001  ·  panel en /panel/
 ```
 
 En el primer arranque se crean las tablas y el administrador inicial (`ADMIN_EMAIL` / `ADMIN_PASSWORD`). Al entrar por primera vez, el panel obliga a cambiar la contraseña. **No existe ninguna contraseña por defecto.**
@@ -77,7 +77,7 @@ Otras reglas:
 - **Numeración:** cada serie (FAC, PRE, REC) tiene su numeración anual correlativa.
 - **Cálculo:** los importes los calcula el servidor a partir de las líneas.
 - **Cobros:** pueden ser parciales (la factura pasa a *parcial* y luego a *pagada*). Una factura con cobros solo se anula si se confirma la devolución al cliente.
-- **Impresión:** `documento.html` imprime en A4 o guarda en PDF con el QR de verificación.
+- **Impresión:** `panel-de-control/documento.html` (en `/panel/documento`) imprime en A4 o guarda en PDF con el QR de verificación.
 - **Ajustes:** en Ajustes → Facturación se configuran el NIF, la cuenta bancaria, el impuesto por defecto (15 %), los días de pago y la validez de los presupuestos. **Confirma el IVA y los textos legales con tu asesor.**
 - **Informes:** las facturas cuentan por su base imponible (el IVA no es ingreso) y las rectificativas restan.
 
@@ -114,16 +114,20 @@ Las tablas de la versión anterior (con fechas en texto) no se borran: al migrar
 ## Estructura
 
 ```
-public/                 lo único que se publica
+public/                 web pública (se publica en /)
   index.html            inicio: presentación, misión, visión, valores, clientes
   construccion.html     construcción, mantenimiento, gestión de obras y metodología
   envios.html           cotizador, rastreo y empresas
   vehiculos.html        catálogo de Autos Epikaizo (fotos y precios desde el inventario del panel)
-  panel.html            panel (módulos en js/panel/)
-  login.html            acceso del equipo
   verificar.html        verificación del QR de las facturas
   privacidad.html       política de privacidad (borrador, revisar con un abogado)
-  css/ js/ img/ fonts/
+  css/ js/ img/ fonts/  (fonts.css, fuentes, logo y favicon también los usa el panel)
+panel-de-control/       panel de gestión (se publica en /panel/)
+  index.html            panel: carga js/app.js y cada vista de js/views/ bajo demanda
+  login.html            acceso del equipo (/panel/login)
+  documento.html        factura o presupuesto imprimible en A4 / PDF (/panel/documento)
+  css/panel.css         estilos del panel (tokens en DESIGN.md)
+  js/                   app.js, api.js, ui.js, format.js, login.js, documento.js y views/
 server/
   catalog/              catálogos de vehículos que se cargan una vez en el inventario
   src/app.js            rutas y permisos por rol, a la vista en un solo sitio

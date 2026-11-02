@@ -142,7 +142,7 @@ function contractPage(d) {
   try {
     const res = await fetch(`/api/invoices/${encodeURIComponent(id)}/document`, { credentials: 'same-origin' });
     if (res.status === 401) {
-      location.replace('/login.html');
+      location.replace('/panel/login');
       return;
     }
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'No se pudo cargar el documento');

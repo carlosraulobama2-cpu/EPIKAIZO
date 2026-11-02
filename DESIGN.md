@@ -1,8 +1,8 @@
 # Diseño de Epikaizo
 
-Cómo se ve, se siente y habla Epikaizo en la web pública (`public/*.html`) y en el panel de gestión (`public/panel.html`). Antes de crear o cambiar una página, léelo; si algo de aquí ya no es verdad en el código, corrige este documento en el mismo cambio.
+Cómo se ve, se siente y habla Epikaizo en la web pública (`public/*.html`) y en el panel de gestión (`panel-de-control/`, servido en `/panel/`). Antes de crear o cambiar una página, léelo; si algo de aquí ya no es verdad en el código, corrige este documento en el mismo cambio.
 
-La fuente de verdad de los valores es el código: `public/css/site.css` (web) y `public/css/panel.css` (panel). Este documento dice **cuándo** y **para qué** se usa cada cosa.
+La fuente de verdad de los valores es el código: `public/css/site.css` (web) y `panel-de-control/css/panel.css` (panel). Este documento dice **cuándo** y **para qué** se usa cada cosa.
 
 ---
 
@@ -201,7 +201,8 @@ Alto mínimo 44px (`.btn--lg` = 52px). Texto en una línea.
 
 | | Web pública | Panel |
 |---|---|---|
-| CSS | `site.css` | `panel.css` |
+| Carpeta | `public/` | `panel-de-control/` |
+| CSS | `public/css/site.css` | `panel-de-control/css/panel.css` |
 | Densidad | Aireada, secciones de 96px | Compacta, tablas y cajones |
 | Radios | `--r-lg` 22px en tarjetas | `--r-lg` 16px en tarjetas |
 | Texto | `--text: #283044` | `--text: #1E2433` |

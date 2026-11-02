@@ -17,8 +17,8 @@ router.get('/', (req, res) => {
 
 function autoReply(text, company) {
   const t = text.trim().toLowerCase();
-  if (/precio|tarifa|cotiz/.test(t)) return `Puedes calcular el precio de tu envío en ${config.publicUrl}/#envios o decirnos peso y ciudad de destino.`;
-  if (/gu[ií]a|rastre|seguim/.test(t)) return `Rastrea tu envío con tu guía EPZ-000000 en ${config.publicUrl}/#rastreo.`;
+  if (/precio|tarifa|cotiz/.test(t)) return `Puedes calcular el precio de tu envío en ${config.publicUrl}/envios#cotizador o decirnos peso y ciudad de destino.`;
+  if (/gu[ií]a|rastre|seguim/.test(t)) return `Rastrea tu envío con tu guía EPZ-000000 en ${config.publicUrl}/envios#rastreo.`;
   if (/horario|abiert|atenci/.test(t)) return `Nuestro horario: ${company.hours}. ${company.address}.`;
   return `Hola, gracias por escribir a ${company.name}. Te atendemos en horario laboral (${company.hours}). Escribe "precio" para cotizar o "guía" para rastrear.`;
 }

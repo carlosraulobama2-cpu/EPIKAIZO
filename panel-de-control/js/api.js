@@ -21,7 +21,7 @@ async function request(method, path, body) {
     throw new ApiError(0, 'Sin conexión con el servidor. Revisa tu internet e inténtalo de nuevo.');
   }
   if (res.status === 401 && !path.startsWith('/auth/')) {
-    window.location.replace(`/login.html?volver=${encodeURIComponent(location.hash || '#/resumen')}`);
+    window.location.replace(`/panel/login?volver=${encodeURIComponent(location.hash || '#/resumen')}`);
     throw new ApiError(401, 'Tu sesión ha caducado');
   }
   const data = res.status === 204 ? null : await res.json().catch(() => null);
