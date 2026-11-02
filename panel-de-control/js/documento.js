@@ -46,7 +46,7 @@ function vehicleBox(v) {
   const rows = [
     ['Vehículo', `${v.brand} ${v.model}${v.year ? ` (${v.year})` : ''}`],
     ['Nº de bastidor', v.vin], ['Matrícula', v.plate],
-    ['Kilómetros', v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES')} km` : null],
+    ['Kilómetros', v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES', { useGrouping: 'always' })} km` : null],
     ['Color', v.color], ['Combustible', FUEL[v.fuel]], ['Referencia', v.code],
   ].filter(([, val]) => val);
   return el('div', { class: 'box' }, el('h3', null, 'Datos del vehículo'), rows.map(([k, val]) => el('p', null, `${k}: `, el('strong', null, val))));
@@ -85,7 +85,7 @@ function invoicePage(d) {
       el('thead', null, el('tr', null, el('th', null, 'Descripción'), el('th', { class: 'num' }, 'Cant.'), el('th', { class: 'num' }, 'Precio'), el('th', { class: 'num' }, d.billing.tax_name || 'IVA'), el('th', { class: 'num' }, 'Importe'))),
       el('tbody', null, inv.lines.map((l) => el('tr', null,
         el('td', null, l.description),
-        el('td', { class: 'num' }, Number(l.quantity).toLocaleString('es-ES')),
+        el('td', { class: 'num' }, Number(l.quantity).toLocaleString('es-ES', { useGrouping: 'always' })),
         el('td', { class: 'num' }, money(l.unit_price)),
         el('td', { class: 'num' }, `${Number(l.tax_rate)} %`),
         el('td', { class: 'num' }, `${sign}${money(l.base)}`))))),
@@ -128,7 +128,7 @@ function contractPage(d) {
       el('li', null, Number(inv.paid_amount) >= Number(inv.amount)
         ? 'El comprador ha pagado el precio total, del que el vendedor da carta de pago.'
         : `El comprador ha pagado ${money(inv.paid_amount)} y se compromete a pagar los ${money(Number(inv.amount) - Number(inv.paid_amount))} restantes antes del ${day(inv.due_date)}. Hasta el pago total, el vendedor conserva la propiedad del vehículo.`),
-      el('li', null, `El vehículo se entrega con ${v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES')} km` : 'el kilometraje que marca el cuentakilómetros'}, en el estado en que se encuentra, que el comprador declara conocer y aceptar tras haberlo examinado.`),
+      el('li', null, `El vehículo se entrega con ${v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES', { useGrouping: 'always' })} km` : 'el kilometraje que marca el cuentakilómetros'}, en el estado en que se encuentra, que el comprador declara conocer y aceptar tras haberlo examinado.`),
       el('li', null, 'El vendedor entrega la documentación del vehículo y se compromete a firmar lo necesario para el cambio de titularidad ante la autoridad de tráfico. Los gastos del cambio de titularidad corren a cargo del comprador, salvo pacto distinto.'),
       el('li', null, 'Desde la entrega, el comprador es responsable del vehículo, de su seguro obligatorio y de las sanciones e impuestos que se generen.'),
       inv.notes ? el('li', null, `Otras condiciones: ${inv.notes}`) : null,
@@ -149,8 +149,8 @@ function contractPage(d) {
     const d = await res.json();
     const currency = d.invoice.currency || 'XAF';
     const digits = currency === 'XAF' ? 0 : 2;
-    const fmt = new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits });
-    const whole = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 });
+    const fmt = new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits });
+    const whole = new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 });
     money = currency === 'XAF' ? (v) => `${whole.format(Number(v || 0))} FCFA` : (v) => fmt.format(Number(v || 0));
     document.title = `${TITLES[d.invoice.kind]} ${d.invoice.number} · ${d.company.name}`;
     const pages = [invoicePage(d)];

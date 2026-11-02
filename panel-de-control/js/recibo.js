@@ -26,10 +26,10 @@ const when = (v) => new Date(v).toLocaleString('es-ES', { day: '2-digit', month:
 
 function moneyFormatter(currency) {
   if (currency === 'XAF') {
-    const whole = new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 });
+    const whole = new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 });
     return (v) => `${whole.format(Number(v || 0))} FCFA`;
   }
-  const fmt = new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol' });
+  const fmt = new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol' });
   return (v) => fmt.format(Number(v || 0));
 }
 
@@ -64,7 +64,7 @@ function receiptPage({ shipment: s, invoice }, settings) {
         isMoney
           ? [el('tr', null, el('td', null, 'Importe que recibe el destinatario'), el('td', { class: 'num' }, money(s.amount))),
             el('tr', null, el('td', null, 'Comisión de envío'), el('td', { class: 'num' }, money(s.fee)))]
-          : el('tr', null, el('td', null, `Envío de paquete · ${Number(s.weight_kg).toLocaleString('es-ES')} kg${s.description ? ` · ${s.description}` : ''}`), el('td', { class: 'num' }, money(s.fee))))),
+          : el('tr', null, el('td', null, `Envío de paquete · ${Number(s.weight_kg).toLocaleString('es-ES', { useGrouping: 'always' })} kg${s.description ? ` · ${s.description}` : ''}`), el('td', { class: 'num' }, money(s.fee))))),
     el('div', { class: 'totals' },
       el('div', { class: 'grand' }, el('span', null, 'TOTAL'), el('span', null, money(s.total))),
       el('div', { class: s.paid ? 'paid' : 'due' }, el('span', null, s.paid ? 'Pagado' : 'Pendiente de pago'), el('span', null, s.payment_method ? PAYMENT[s.payment_method] : ''))),

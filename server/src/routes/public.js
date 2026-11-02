@@ -7,6 +7,7 @@ const { route, validate, text, phone, email, oneOf, bool, date, HttpError } = re
 const { rateLimit } = require('../lib/security');
 const { getSettings, quote } = require('../services/settings');
 const { qrPng } = require('../services/invoices');
+const { today } = require('../lib/dates');
 
 const router = express.Router();
 const tenantId = config.tenantId;
@@ -96,7 +97,7 @@ router.post(
     // "Pide tu cita": la fecha preferida va al principio del mensaje para que el equipo la vea en la Bandeja.
     let body = input.message;
     if (input.appointment) {
-      if (input.appointment < new Date().toISOString().slice(0, 10)) throw new HttpError(422, 'Elige una fecha de cita a partir de hoy');
+      if (input.appointment < today()) throw new HttpError(422, 'Elige una fecha de cita a partir de hoy');
       const day = new Date(`${input.appointment}T12:00:00Z`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
       body = `📅 Cita solicitada para el ${day}\n\n${input.message}`;
     }

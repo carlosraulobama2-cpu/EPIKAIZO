@@ -24,13 +24,13 @@ router.get(
       .range('issue_date', req.query.from, req.query.to)
       .search(['number', 'client_name', 'client_phone', 'concept'], req.query.q);
     if (req.query.status === 'pendientes') f.raw("kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial')");
-    if (req.query.status === 'vencidas') f.raw("kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < CURRENT_DATE");
+    if (req.query.status === 'vencidas') f.raw("kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < (now() AT TIME ZONE 'Africa/Malabo')::date");
     const all = filters(req.tenantId);
     const [items, count, totals] = await Promise.all([
       db.many(
         `SELECT id, kind, number, status, client_name, client_phone, concept, subtotal, tax_amount, amount, paid_amount, currency,
                 issue_date, due_date, valid_until, invoiced_pct, quote_id, vehicle_id, job_id, shipment_id, created_at,
-                (kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < CURRENT_DATE) AS overdue
+                (kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < (now() AT TIME ZONE 'Africa/Malabo')::date) AS overdue
            FROM invoices WHERE ${f.sql} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
         f.params
       ),
@@ -39,8 +39,8 @@ router.get(
       db.many(
         `SELECT currency,
                 COALESCE(sum(amount - paid_amount) FILTER (WHERE kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial')), 0) AS pending,
-                COALESCE(sum(amount - paid_amount) FILTER (WHERE kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < CURRENT_DATE), 0) AS overdue,
-                COALESCE(sum(paid_amount) FILTER (WHERE kind = 'factura' AND date_trunc('month', issue_date) = date_trunc('month', CURRENT_DATE)), 0) AS paid_month,
+                COALESCE(sum(amount - paid_amount) FILTER (WHERE kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < (now() AT TIME ZONE 'Africa/Malabo')::date), 0) AS overdue,
+                COALESCE(sum(paid_amount) FILTER (WHERE kind = 'factura' AND date_trunc('month', issue_date) = date_trunc('month', (now() AT TIME ZONE 'Africa/Malabo')::date)), 0) AS paid_month,
                 COALESCE(sum(amount) FILTER (WHERE kind = 'presupuesto' AND status IN ('pendiente', 'aceptado')), 0) AS quotes_open
            FROM invoices WHERE ${all.sql} GROUP BY currency ORDER BY currency`,
         all.params

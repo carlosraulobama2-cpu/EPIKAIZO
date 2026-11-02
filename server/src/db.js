@@ -9,6 +9,10 @@ const types = require('pg').types;
 types.setTypeParser(20, (v) => Number(v));
 types.setTypeParser(1700, (v) => Number(v));
 
+// Las columnas DATE (fecha de emisión, vencimiento, cobro…) llegan como 'AAAA-MM-DD', tal cual:
+// convertirlas a Date las movía un día según la zona horaria del servidor.
+types.setTypeParser(1082, (v) => v);
+
 const pool = new Pool({
   connectionString: config.databaseUrl,
   ssl: config.databaseSsl ? { rejectUnauthorized: false } : false,

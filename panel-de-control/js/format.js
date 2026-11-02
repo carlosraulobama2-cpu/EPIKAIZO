@@ -9,22 +9,23 @@ export function moneyMix(rows, key, fallback = 'XAF') {
 export function money(value, currency = 'XAF') {
   const n = Number(value || 0);
   // En Guinea Ecuatorial se escribe «FCFA», no «XAF».
-  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(n)} FCFA`;
+  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(n)} FCFA`;
   const digits = 2;
   try {
-    return new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
+    return new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
   } catch {
     return `${n.toFixed(digits)} ${currency}`;
   }
 }
 
 export function number(value) {
-  return new Intl.NumberFormat('es-ES').format(Number(value || 0));
+  return new Intl.NumberFormat('es-ES', { useGrouping: 'always' }).format(Number(value || 0));
 }
 
 export function date(value, withTime = false) {
   if (!value) return '—';
-  const d = new Date(value);
+  // Una fecha sin hora ('2026-11-03') se lee a mediodía: así ninguna zona horaria la mueve de día.
+  const d = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T12:00:00` : value);
   if (Number.isNaN(d.getTime())) return '—';
   return d.toLocaleString('es-ES', withTime ? { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' } : { day: '2-digit', month: 'short', year: 'numeric' });
 }
@@ -45,7 +46,8 @@ export function ago(value) {
 /** plural(3, 'envío', 'envíos') -> '3 envíos' */
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
-export const today = () => new Date().toISOString().slice(0, 10);
+// Hoy en la hora del equipo de quien usa el panel (en-CA da el formato AAAA-MM-DD), no en UTC.
+export const today = () => new Date().toLocaleDateString('en-CA');
 
 export function monthLabel(ym) {
   const [y, m] = ym.split('-').map(Number);

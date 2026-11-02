@@ -456,3 +456,13 @@ select.input { appearance: none; padding-right: 36px; background: var(--white) u
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ---------- Política de privacidad: índice ---------- */
+.toc { margin: 28px 0 8px; padding: 20px 24px; border-radius: var(--r-lg); background: var(--tint); }
+.toc__title { font: 600 13px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--brand); margin-bottom: 10px; }
+.toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; }
+.page .toc li { margin: 0 0 8px; break-inside: avoid; }
+.page h2[id] { scroll-margin-top: 90px; }
+.page ul { padding-left: 20px; }
+.page li + li { margin-top: 6px; }
+@media (max-width: 640px) { .toc ol { columns: 1; } }

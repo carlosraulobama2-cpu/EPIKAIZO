@@ -7,6 +7,7 @@ const { route, validate, text, phone, email, number, oneOf } = require('../lib/h
 const { requireRole } = require('../middleware/auth');
 const { audit } = require('../services/audit');
 const { getSettings, saveSetting } = require('../services/settings');
+const { today } = require('../lib/dates');
 
 const router = express.Router();
 
@@ -80,7 +81,7 @@ router.get(
       else data[table] = await db.many(`SELECT * FROM ${table} WHERE tenant_id = $1`, [req.tenantId]);
     }
     await audit(req, 'copia.exportar', { entity: 'settings' });
-    const day = new Date().toISOString().slice(0, 10);
+    const day = today();
     res.setHeader('Content-Disposition', `attachment; filename="epikaizo-copia-${day}.json"`);
     res.json({ exported_at: new Date().toISOString(), version: 2, data });
   })

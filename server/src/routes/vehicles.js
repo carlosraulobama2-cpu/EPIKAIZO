@@ -113,7 +113,7 @@ router.post(
       // Opcional: apuntar la compra del vehículo como gasto en Caja.
       if (input.register_purchase && input.purchase_price > 0) {
         await db.query(
-          "INSERT INTO cash_movements (id, tenant_id, type, category, concept, amount, currency, date, reference, created_by) VALUES ($1,$2,'gasto','Compra de vehículos',$3,$4,$5,CURRENT_DATE,$6,$7)",
+          "INSERT INTO cash_movements (id, tenant_id, type, category, concept, amount, currency, date, reference, created_by) VALUES ($1,$2,'gasto','Compra de vehículos',$3,$4,$5,(now() AT TIME ZONE 'Africa/Malabo')::date,$6,$7)",
           [crypto.randomUUID(), req.tenantId, `Compra ${row.brand} ${row.model}`, input.purchase_price, row.currency, row.code, req.user.id],
           client
         );

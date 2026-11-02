@@ -13,9 +13,9 @@ async function getJSON(url, options) {
 }
 
 function money(value, currency) {
-  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { maximumFractionDigits: 0 }).format(value)} FCFA`;
+  if (currency === 'XAF') return `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(value)} FCFA`;
   const digits = 2;
-  return new Intl.NumberFormat('es-ES', { style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
+  return new Intl.NumberFormat('es-ES', { useGrouping: 'always', style: 'currency', currency, currencyDisplay: 'narrowSymbol', minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value);
 }
 
 function track(event, data) {
@@ -335,7 +335,7 @@ function carCard(v, whatsapp) {
   top.append(el('span', `car__badge${v.status === 'reservado' ? ' car__badge--res' : ''}`, v.status === 'reservado' ? 'Reservado' : v.condition === 'nuevo' ? 'Nuevo' : 'De ocasión'));
   const body = el('div', 'car__body');
   const specs = el('div', 'car__specs');
-  [v.year, v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES')} km` : null, FUEL[v.fuel], GEARS[v.transmission], v.color]
+  [v.year, v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES', { useGrouping: 'always' })} km` : null, FUEL[v.fuel], GEARS[v.transmission], v.color]
     .filter(Boolean).forEach((x) => specs.append(el('span', null, String(x))));
   const price = el('p', 'car__price', money(v.sale_price, v.currency));
   const actions = el('div', 'car__actions');

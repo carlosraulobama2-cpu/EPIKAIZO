@@ -10,12 +10,13 @@
 const crypto = require('crypto');
 const db = require('../db');
 const { HttpError } = require('../lib/http');
+const { today } = require('../lib/dates');
 
 const SERIES = { factura: 'FAC', presupuesto: 'PRE', rectificativa: 'REC' };
 const round = (n) => Math.round(Number(n) * 100) / 100;
 
 async function nextNumber(tenantId, kind, client) {
-  const year = new Date().getFullYear();
+  const year = today().slice(0, 4);
   // La serie de facturas conserva el contador que ya existía ("factura-AAAA").
   const counter = kind === 'factura' ? `factura-${year}` : `${kind}-${year}`;
   const row = await db.one(
@@ -49,10 +50,10 @@ function computeLines(lines) {
   return { lines: out, subtotal, tax, total: round(subtotal + tax) };
 }
 
+// Hoy (en Malabo) más N días, como 'AAAA-MM-DD'.
 const addDays = (days) => {
-  const d = new Date();
-  d.setDate(d.getDate() + Number(days || 0));
-  return d.toISOString().slice(0, 10);
+  const [y, m, d] = today().split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d + Number(days || 0))).toISOString().slice(0, 10);
 };
 
 /**
@@ -69,7 +70,7 @@ async function createDocument(tenantId, data, { userId = null, client, billing, 
     `INSERT INTO invoices (id, tenant_id, kind, number, status, client_id, client_name, client_phone, client_email, client_document, client_address,
                            concept, lines, subtotal, tax_amount, amount, currency, issue_date, due_date, valid_until, notes,
                            shipment_id, job_id, vehicle_id, quote_id, rectifies_id, invoiced_pct, reason, created_by)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,CURRENT_DATE,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,(now() AT TIME ZONE 'Africa/Malabo')::date,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28)
      RETURNING *`,
     [
       crypto.randomUUID(), tenantId, kind, number, status, data.client_id || null, data.client_name, data.client_phone,
@@ -93,7 +94,7 @@ async function registerPayment(invoice, { amount, method, paid_on, reference }, 
   if (round(amount) > pending) throw new HttpError(422, `El cobro supera lo pendiente (${pending})`);
   await db.query(
     'INSERT INTO invoice_payments (id, invoice_id, amount, method, paid_on, reference, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-    [crypto.randomUUID(), invoice.id, round(amount), method, paid_on || new Date().toISOString().slice(0, 10), reference || null, userId],
+    [crypto.randomUUID(), invoice.id, round(amount), method, paid_on || today(), reference || null, userId],
     client
   );
   const updated = await db.one(

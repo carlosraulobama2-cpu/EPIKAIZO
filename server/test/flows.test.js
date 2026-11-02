@@ -256,3 +256,13 @@ test('equipo: cambiar el correo de un acceso; no se puede repetir', async () => 
   const dup = await admin.patch(`/api/users/${id}`, { email: users.admin.email });
   assert.equal(dup.status, 409);
 });
+
+test('fechas: la factura sale con el día de Malabo y las fechas llegan como AAAA-MM-DD', async () => {
+  const { today } = require('../src/lib/dates');
+  const res = await admin.post('/api/invoices', { client_name: 'Fecha Correcta', client_phone: '+240 555 000 333', concept: 'Revisión', amount: 100 });
+  assert.equal(res.status, 201);
+  assert.equal(res.data.invoice.issue_date, today());
+  assert.match(res.data.invoice.due_date, /^\d{4}-\d{2}-\d{2}$/);
+  // A las 23:30 UTC del 31 de diciembre en Malabo ya es 1 de enero.
+  assert.equal(today(new Date('2026-12-31T23:30:00Z')), '2027-01-01');
+});
