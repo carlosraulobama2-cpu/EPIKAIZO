@@ -244,3 +244,15 @@ test('borrar cliente: no si tiene envíos, trabajos o facturas', async () => {
   const empty = await admin.post('/api/clients', { name: 'Cliente Sin Nada', phone: '+240 555 000 222' });
   assert.equal((await admin.del(`/api/clients/${empty.data.item.id}`)).status, 200);
 });
+
+test('equipo: cambiar el correo de un acceso; no se puede repetir', async () => {
+  const created = await admin.post('/api/users', { name: 'Correo Viejo', email: 'viejo@prueba.com', role: 'operador' });
+  const id = created.data.item.id;
+  const changed = await admin.patch(`/api/users/${id}`, { email: 'Nuevo@Prueba.com' });
+  assert.equal(changed.status, 200);
+  assert.equal(changed.data.item.email, 'nuevo@prueba.com', 'se guarda en minúsculas');
+  assert.equal((await agent(server.base).login('nuevo@prueba.com', created.data.temporary_password)).status, 200);
+  assert.equal((await agent(server.base).login('viejo@prueba.com', created.data.temporary_password)).status, 401);
+  const dup = await admin.patch(`/api/users/${id}`, { email: users.admin.email });
+  assert.equal(dup.status, 409);
+});

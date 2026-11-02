@@ -48,9 +48,15 @@ async function guardLastAdmin(req, target, change) {
 router.patch(
   '/:id',
   route(async (req, res) => {
-    const input = validate(req.body, { name: text({ min: 2, max: 120 }), role: oneOf(ROLES), status: oneOf(['activo', 'bloqueado']) }, { partial: true });
+    const input = validate(req.body, { name: text({ min: 2, max: 120 }), email: email(), role: oneOf(ROLES), status: oneOf(['activo', 'bloqueado']) }, { partial: true });
     const target = await db.one('SELECT * FROM users WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
     if (!target) throw new HttpError(404, 'Usuario no encontrado');
+    // El correo es el usuario para entrar: se guarda en minúsculas y no se puede repetir.
+    if (input.email) {
+      input.email = input.email.toLowerCase();
+      const taken = await db.one('SELECT id FROM users WHERE lower(email) = $1 AND id <> $2', [input.email, target.id]);
+      if (taken) throw new HttpError(409, 'Ese correo ya tiene acceso al panel');
+    }
     if (target.id === req.user.id && (input.role || input.status)) throw new HttpError(409, 'No puedes cambiar tu propio rol ni bloquearte');
     await guardLastAdmin(req, target, input);
     const keys = Object.keys(input);

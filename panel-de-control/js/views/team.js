@@ -1,6 +1,6 @@
 // Equipo: el personal de la empresa y, para administradores, quién puede entrar al panel y con qué rol.
 import { api } from '../api.js';
-import { h, clear, pageHead, badge, button, primary, empty, formDrawer, field, toast, confirmDialog, secretDialog, card, table, skeleton, errorBox, attempt } from '../ui.js';
+import { h, clear, pageHead, badge, button, primary, empty, formDrawer, field, toast, confirmDialog, secretDialog, card, table, skeleton, errorBox, attempt, formDialog } from '../ui.js';
 import { date, ago, ROLES, ROLE_HELP } from '../format.js';
 import { listCard, searchInput, tabs } from './_list.js';
 
@@ -58,7 +58,7 @@ export default async function team(root, ctx) {
             { label: 'Rol', render: (u) => h('span', { class: 'tag' }, ROLES[u.role]) },
             { label: 'Estado', render: (u) => (u.must_change_password && u.status === 'activo' ? h('span', { class: 'badge badge--warn' }, 'Pendiente de primer acceso') : badge('user', u.status)) },
             { label: 'Último acceso', hideSm: true, render: (u) => h('span', { class: 'muted' }, u.last_login_at ? ago(u.last_login_at) : 'Nunca') },
-            { label: '', render: (u) => (u.id === ctx.user.id ? h('span', { class: 'muted small' }, 'Tú') : userActions(u, loadAccess)) },
+            { label: '', render: (u) => (u.id === ctx.user.id ? h('div', { class: 'row-actions' }, h('span', { class: 'muted small' }, 'Tú'), editUserButton(u, loadAccess)) : userActions(u, loadAccess)) },
           ],
         }));
       } catch (err) {
@@ -69,11 +69,37 @@ export default async function team(root, ctx) {
   }
 }
 
+// Nombre y correo de un acceso. El correo es con lo que la persona entra al panel.
+function editUserButton(u, reload) {
+  return button('Editar', {
+    size: 'sm',
+    iconName: 'edit',
+    onClick: async () => {
+      const values = await formDialog({
+        title: `Editar acceso de ${u.name}`,
+        text: 'Si cambias el correo, a partir de ahora tendrá que entrar con el nuevo.',
+        confirm: 'Guardar',
+        fields: [
+          field({ name: 'name', label: 'Nombre', value: u.name, required: true }),
+          field({ name: 'email', label: 'Correo para entrar', type: 'email', value: u.email, required: true }),
+        ],
+      });
+      if (!values) return;
+      await attempt(async () => {
+        await api.patch(`/users/${u.id}`, values);
+        toast(values.email !== u.email ? `Acceso actualizado. Ahora entra con ${values.email}` : 'Acceso actualizado');
+        reload();
+      });
+    },
+  });
+}
+
 function userActions(u, reload) {
   const change = (body, done) => api.patch(`/users/${u.id}`, body).then(() => { toast(done); reload(); }, (err) => toast(err.message, 'bad'));
   const roleSelect = h('select', { class: 'select select--auto', 'aria-label': `Rol de ${u.name}`, onChange: (e) => change({ role: e.target.value }, 'Rol actualizado') },
     Object.entries(ROLES).map(([v, l]) => h('option', { value: v, selected: v === u.role }, l)));
   return h('div', { class: 'row-actions' },
+    editUserButton(u, reload),
     roleSelect,
     button('Nueva contraseña', {
       size: 'sm',
