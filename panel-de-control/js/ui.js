@@ -403,3 +403,19 @@ export function formDrawer({ title, subtitle, fields, submitLabel = 'Guardar', o
   if (extra) extra(form, d);
   return d;
 }
+
+/** Reduce una foto en el navegador (máx. 1600 px, WebP o JPEG < 1,4 MB) antes de subirla. */
+export async function shrinkImage(file) {
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error(`${file.name}: usa fotos JPEG, PNG o WebP`);
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  for (const quality of [0.82, 0.7, 0.55]) {
+    const data = canvas.toDataURL('image/webp', quality);
+    if (data.length < 1.9e6) return data.startsWith('data:image/webp') ? data : canvas.toDataURL('image/jpeg', quality);
+  }
+  throw new Error(`${file.name}: la foto es demasiado grande`);
+}

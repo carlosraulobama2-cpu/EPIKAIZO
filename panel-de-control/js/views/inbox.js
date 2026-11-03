@@ -106,6 +106,8 @@ function open(ctx, m, list, whatsappEnabled) {
         m.topic ? [h('dt', null, 'Motivo'), h('dd', null, TOPIC[m.topic] || m.topic)] : null,
         [h('dt', null, 'Estado'), h('dd', null, badge('message', m.status))]),
       h('div', { class: 'card card__body pre-wrap' }, m.body),
+      m.photos && m.photos.length ? h('div', { class: 'photos' }, m.photos.map((pid, i) => h('a', { class: 'photos__item', href: `/api/inbox/${m.id}/photos/${pid}`, target: '_blank', rel: 'noopener' },
+        h('img', { src: `/api/inbox/${m.id}/photos/${pid}`, alt: `Foto ${i + 1} del cliente`, loading: 'lazy' })))) : null,
       m.job_id ? h('a', { class: 'alert alert--info', href: `#/servicios/${m.job_id}` }, icon('tool'), 'Este mensaje ya tiene un trabajo creado. Ver trabajo') : null,
       m.direction === 'entrante' && m.phone
         ? whatsappEnabled

@@ -34,6 +34,7 @@
   --surface-soft: #FAFBFD;
   --skeleton: #EEF0F5;
   --skeleton-hi: #F6F7FA;
+  --star: #E8A317;
   --brand-dark: #070594;
   --toast-ok: #4ADE80;
   --toast-bad: #7F1D1D;
@@ -477,3 +478,12 @@ table.table { width: 100%; border-collapse: collapse; }
 
 /* ---------- Sin conexión ---------- */
 .offline-bar { position: sticky; top: 0; z-index: 70; padding: 8px 16px; background: var(--warn-50); color: var(--warn-700); border-bottom: 1px solid var(--warn-200); font-size: 13.5px; font-weight: 500; text-align: center; }
+
+/* ---------- Portafolio y opiniones ---------- */
+.portfolio { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.portfolio__item { display: flex; flex-direction: column; padding: 0; border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; background: var(--surface); text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.portfolio__item:hover { border-color: var(--brand); }
+.portfolio__item img, .portfolio__nophoto { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.portfolio__nophoto { display: grid; place-items: center; background: var(--bg); color: var(--muted); }
+.portfolio__body { padding: 12px 14px 14px; display: grid; gap: 6px; justify-items: start; }
+.stars-inline { color: var(--star); letter-spacing: 2px; }

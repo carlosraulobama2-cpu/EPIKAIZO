@@ -141,7 +141,7 @@ router.get(
   })
 );
 
-const EVENTS = ['quote_package', 'quote_money', 'track', 'contact', 'whatsapp_click', 'cta_click'];
+const EVENTS = ['quote_package', 'quote_money', 'track', 'contact', 'whatsapp_click', 'cta_click', 'quote_online_click', 'quote_online_sent', 'client_login', 'review_sent'];
 
 router.post(
   '/analytics',

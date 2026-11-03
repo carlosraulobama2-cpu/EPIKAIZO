@@ -2,7 +2,7 @@
 // Todo lo que viene del servidor se pinta con textContent (nunca innerHTML).
 'use strict';
 
-const $ = (sel) => document.querySelector(sel);
+const $ = (sel, root = document) => root.querySelector(sel);
 let config = null;
 
 async function getJSON(url, options) {
@@ -424,6 +424,95 @@ async function initCars() {
   render();
 }
 
+// ---------- Obras terminadas: comparador antes / después ----------
+function compare(beforeId, afterId, title) {
+  const box = el('div', 'compare');
+  const after = el('img');
+  after.src = `/api/public/project-photos/${afterId}`;
+  after.alt = `${title}: después`;
+  // Sin carga diferida: las dos fotos están superpuestas y el navegador no detecta que la de
+  // debajo se ve, así que nunca la cargaría.
+  const beforeWrap = el('div', 'compare__before');
+  const before = el('img');
+  before.src = `/api/public/project-photos/${beforeId}`;
+  before.alt = `${title}: antes`;
+  beforeWrap.append(before);
+  const range = el('input', 'compare__range');
+  range.type = 'range';
+  range.min = '0';
+  range.max = '100';
+  range.value = '50';
+  range.setAttribute('aria-label', 'Deslizar para comparar antes y después');
+  const set = () => box.style.setProperty('--pos', `${range.value}%`);
+  range.addEventListener('input', set);
+  set();
+  box.append(after, beforeWrap, el('span', 'compare__tag compare__tag--before', 'Antes'), el('span', 'compare__tag compare__tag--after', 'Después'), range);
+  return box;
+}
+
+async function initProjects() {
+  const section = $('[data-projects]');
+  if (!section) return;
+  let data;
+  try {
+    data = await getJSON('/api/public/projects');
+  } catch {
+    return;
+  }
+  if (!data.items.length) return;
+  const list = $('[data-projects-list]', section);
+  for (const p of data.items) {
+    const card = el('article', 'project');
+    const before = p.photos.find((f) => f.kind === 'antes');
+    const after = p.photos.find((f) => f.kind === 'despues') || p.photos.find((f) => f.kind === 'otra');
+    if (before && after) card.append(compare(before.id, after.id, p.title));
+    else {
+      const img = el('img', 'project__img');
+      img.src = `/api/public/project-photos/${(after || before).id}`;
+      img.alt = p.title;
+      img.loading = 'lazy';
+      card.append(img);
+    }
+    const body = el('div', 'project__body');
+    body.append(el('h3', null, p.title));
+    const meta = [p.category, p.city, p.completed_on ? new Date(`${p.completed_on}T12:00:00`).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : null].filter(Boolean).join(' · ');
+    if (meta) body.append(el('p', 'project__meta', meta));
+    if (p.description) body.append(el('p', null, p.description));
+    card.append(body);
+    list.append(card);
+  }
+  section.hidden = false;
+}
+
+// ---------- Opiniones de clientes ----------
+async function initReviews() {
+  const section = $('[data-reviews]');
+  if (!section) return;
+  let data;
+  try {
+    data = await getJSON('/api/public/reviews');
+  } catch {
+    return;
+  }
+  // En Construcción y Envíos, primero las de su servicio.
+  const source = section.dataset.reviewsSource;
+  const items = source ? [...data.items].sort((a, b) => (b.source === source) - (a.source === source)) : data.items;
+  if (!items.length) return;
+  $('[data-reviews-summary]', section).textContent = `${String(data.average).replace('.', ',')} de 5 · ${data.total} ${data.total === 1 ? 'opinión' : 'opiniones'} de clientes reales.`;
+  const list = $('[data-reviews-list]', section);
+  for (const r of items.slice(0, 6)) {
+    const fig = el('figure', 'review');
+    const stars = el('div', 'review__stars', '★★★★★'.slice(0, r.rating) + '☆☆☆☆☆'.slice(0, 5 - r.rating));
+    stars.setAttribute('aria-label', `${r.rating} de 5 estrellas`);
+    fig.append(stars);
+    if (r.comment) fig.append(el('blockquote', null, r.comment));
+    const cap = el('figcaption', null, `${r.client_name} · ${r.source === 'envio' ? 'Envío' : r.source === 'trabajo' ? 'Obra o servicio' : 'Cliente'}`);
+    fig.append(cap);
+    list.append(fig);
+  }
+  section.hidden = false;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initHeader();
   initQuote();
@@ -431,5 +520,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initContact();
   initChat();
   initCars();
+  initProjects();
+  initReviews();
   getJSON('/api/public/config').then((c) => { config = c; }).catch(() => {});
 });

@@ -50,6 +50,7 @@
       <a href="/envios">Envíos</a>
       <a href="/vehiculos">Vehículos</a>
       <a href="#contacto">Contacto</a>
+      <a href="/mi-cuenta">Mi cuenta</a>
       <a class="btn btn--primary nav__cta" href="#contacto" data-topic="construccion">Pide tu cita</a>
     </nav>
     <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
@@ -64,7 +65,7 @@
         <p class="eyebrow">Construcción y mantenimiento</p>
         <h1>Construimos espacios que inspiran. Mantenemos el <span class="hl">valor</span> de cada inversión.</h1>
         <p class="lead">Diseñamos y ejecutamos proyectos de construcción adaptados a cada cliente, y garantizamos el correcto funcionamiento, la conservación y la mejora de sus edificaciones con mantenimiento preventivo y correctivo.</p>
-        <div class="hero__cta"><a class="btn btn--primary btn--lg" href="#contacto" data-topic="construccion">Pide presupuesto</a><a class="btn btn--ghost btn--lg" href="#metodologia">Cómo trabajamos</a></div>
+        <div class="hero__cta"><a class="btn btn--primary btn--lg" href="/presupuesto" data-track="quote_online_click">Presupuesto en línea</a><a class="btn btn--ghost btn--lg" href="#proyectos">Obras terminadas</a></div>
         <p class="sectors">Sectores: <strong>residencial · comercial · industrial · institucional</strong></p>
       </div>
       <div class="hero__media">
@@ -114,6 +115,23 @@
     <div class="container commit">
       <article><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 3h18v18H3zM3 9h18M9 21V9"/></svg></span><h3>Presupuesto claro antes de empezar</h3><p>Te entregamos un presupuesto detallado por partidas. Cuando lo aceptas, la obra se factura por fases: anticipo, certificaciones según avanza y liquidación final. Cada factura lleva un código QR para comprobar que es auténtica.</p></article>
       <article><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-4"/></svg></span><h3>Seguridad y responsabilidad</h3><p>Promovemos buenas prácticas de seguridad laboral y protección del medio ambiente durante la ejecución de nuestros trabajos, procurando minimizar riesgos y garantizar un entorno seguro para nuestros colaboradores y clientes.</p></article>
+    </div>
+  </section>
+
+  <!-- Portafolio: se rellena desde el panel (Portafolio). Oculto si aún no hay obras publicadas. -->
+  <section class="section" id="proyectos" data-projects hidden>
+    <div class="container">
+      <header class="section__head"><p class="eyebrow">Obras terminadas</p><h2>Así quedan nuestros trabajos.</h2><p class="section__sub">Fotos reales de antes y después. Desliza para comparar.</p></header>
+      <div class="projects" data-projects-list></div>
+      <p class="projects__cta"><a class="btn btn--primary btn--lg" href="/presupuesto">Pide tu presupuesto en línea</a></p>
+    </div>
+  </section>
+
+  <!-- Opiniones de clientes reales (publicadas desde el panel). Oculto si aún no hay. -->
+  <section class="section section--tint" id="opiniones" data-reviews data-reviews-source="trabajo" hidden>
+    <div class="container">
+      <header class="section__head"><p class="eyebrow">Opiniones</p><h2>Lo que dicen nuestros clientes.</h2><p class="section__sub" data-reviews-summary></p></header>
+      <div class="reviews" data-reviews-list></div>
     </div>
   </section>
 
@@ -199,6 +217,8 @@
       <a href="/envios">Envíos de paquetes</a>
       <a href="/envios#rastreo">Rastrear un envío</a>
       <a href="/vehiculos">Vehículos en venta</a>
+      <a href="/presupuesto">Presupuesto en línea</a>
+      <a href="/mi-cuenta">Área de cliente</a>
       <a href="#contacto">Pide tu cita</a>
     </nav>
     <div class="footer__legal">

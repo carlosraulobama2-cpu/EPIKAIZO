@@ -121,6 +121,7 @@ export const PAYMENT = { efectivo: 'Efectivo', transferencia: 'Transferencia', m
 export const SCOPE = { local: 'Local', nacional: 'Nacional', internacional: 'Internacional' };
 export const TRIP_MODE = { barco: 'Barco', avion: 'Avión', camion: 'Camión' };
 export const TOPIC = {
+  presupuesto: 'Presupuesto en línea',
   paquete: 'Envío de paquete',
   dinero: 'Envío de dinero',
   construccion: 'Construcción',

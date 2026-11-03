@@ -25,8 +25,16 @@ function createApp() {
     },
   });
   // Las fotos de vehículos llegan reducidas por el panel (base64): necesitan algo más de margen.
+  // Fotos (ya reducidas en el navegador, en base64): una por petición en el panel; hasta 6 en el
+  // presupuesto en línea de la web.
   const jsonPhotos = express.json({ limit: '3mb' });
-  app.use((req, res, next) => (req.method === 'POST' && /^\/api\/vehicles\/[^/]+\/photos$/.test(req.path) ? jsonPhotos : jsonSmall)(req, res, next));
+  const jsonQuote = express.json({ limit: '10mb' });
+  app.use((req, res, next) => {
+    if (req.method !== 'POST') return jsonSmall(req, res, next);
+    if (req.path === '/api/public/quote-request') return jsonQuote(req, res, next);
+    if (/^\/api\/(vehicles|web\/projects)\/[^/]+\/photos$/.test(req.path)) return jsonPhotos(req, res, next);
+    return jsonSmall(req, res, next);
+  });
 
   // ---- API -----------------------------------------------------------------------------------
   const api = express.Router();

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Presupuesto en línea para tu obra · Epikaizo Services S.L.</title>
+  <meta name="description" content="Pide presupuesto para tu obra, reforma o mantenimiento en 4 pasos: tipo de trabajo, lugar, fotos y tus datos. Te respondemos con un presupuesto por partidas sin compromiso.">
+  <meta name="theme-color" content="#070594">
+  <link rel="canonical" href="https://epikaizo.com/presupuesto">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/site.css">
+  <script src="/js/site.js" defer></script>
+  <script src="/js/presupuesto.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+
+<header class="header" id="header">
+  <div class="container header__row">
+    <a class="brand" href="/" aria-label="Epikaizo Services, inicio"><img src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36"></a>
+    <nav class="nav" id="nav" aria-label="Principal">
+      <a href="/">Inicio</a>
+      <a href="/construccion" aria-current="page">Construcción</a>
+      <a href="/envios">Envíos</a>
+      <a href="/vehiculos">Vehículos</a>
+      <a href="/#contacto">Contacto</a>
+      <a href="/mi-cuenta">Mi cuenta</a>
+      <a class="btn btn--primary nav__cta" href="/#contacto" data-topic="construccion">Pide tu cita</a>
+    </nav>
+    <button class="nav-toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page page--wide">
+    <div class="container">
+      <p class="eyebrow">Presupuesto en línea</p>
+      <h1>Cuéntanos tu obra en 4 pasos.</h1>
+      <p class="lead">Sin compromiso. Con las fotos y los metros podemos darte una primera estimación y concertar la visita técnica.</p>
+
+      <ol class="stepper" aria-label="Pasos">
+        <li class="is-current" data-step-dot="1"><span>1</span> La obra</li>
+        <li data-step-dot="2"><span>2</span> Lugar y plazo</li>
+        <li data-step-dot="3"><span>3</span> Detalles y fotos</li>
+        <li data-step-dot="4"><span>4</span> Tus datos</li>
+      </ol>
+
+      <form class="panel wizard" id="workQuoteForm" novalidate>
+        <fieldset data-step="1">
+          <legend>¿Qué trabajo necesitas?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="work_type" value="construccion" checked required><span><strong>Construcción nueva</strong><small>Vivienda, local, nave…</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="reforma" required><span><strong>Reforma o rehabilitación</strong><small>Cocina, baños, reforma integral</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="pintura" required><span><strong>Pintura</strong><small>Interior o fachada</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="electricidad" required><span><strong>Electricidad</strong><small>Instalación o reparación</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="fontaneria" required><span><strong>Fontanería</strong><small>Agua, desagües, sanitarios</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="cubierta" required><span><strong>Cubierta o tejado</strong><small>Goteras, impermeabilización</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="mantenimiento" required><span><strong>Mantenimiento</strong><small>Preventivo o correctivo</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="otro" required><span><strong>Otro trabajo</strong></span></label>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="qProperty">Tipo de inmueble</label>
+              <select class="input" id="qProperty" name="property" required>
+                <option value="vivienda">Vivienda</option><option value="local">Local comercial</option><option value="oficina">Oficina</option>
+                <option value="nave">Nave o almacén</option><option value="edificio">Edificio</option><option value="otro">Otro</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="qArea">Superficie aproximada (m²) <span class="opt">(opcional)</span></label>
+              <input class="input" id="qArea" name="area_m2" type="number" min="1" step="1" inputmode="numeric" placeholder="Ej. 80">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset data-step="2" hidden>
+          <legend>¿Dónde y para cuándo?</legend>
+          <div class="field-row">
+            <div class="field">
+              <label for="qCity">Ciudad</label>
+              <select class="input" id="qCity" name="city" required><option value="Malabo">Malabo</option><option value="Bata">Bata</option></select>
+            </div>
+            <div class="field">
+              <label for="qAddress">Barrio o dirección <span class="opt">(opcional)</span></label>
+              <input class="input" id="qAddress" name="address" maxlength="200" placeholder="Ej. Barrio Los Ángeles">
+            </div>
+          </div>
+          <p class="field-label">¿Cuándo te gustaría empezar?</p>
+          <div class="choices choices--4">
+            <label class="choice"><input type="radio" name="timeframe" value="urgente" required><span><strong>Urgente</strong><small>Esta semana</small></span></label>
+            <label class="choice"><input type="radio" name="timeframe" value="mes" checked required><span><strong>Este mes</strong></span></label>
+            <label class="choice"><input type="radio" name="timeframe" value="trimestre" required><span><strong>En 3 meses</strong></span></label>
+            <label class="choice"><input type="radio" name="timeframe" value="sin_prisa" required><span><strong>Sin prisa</strong></span></label>
+          </div>
+          <div class="field">
+            <label for="qBudget">¿Tienes un presupuesto en mente? (FCFA) <span class="opt">(opcional)</span></label>
+            <input class="input" id="qBudget" name="budget" type="number" min="0" step="1000" inputmode="numeric" placeholder="Ej. 2500000">
+          </div>
+        </fieldset>
+
+        <fieldset data-step="3" hidden>
+          <legend>Cuéntanos qué hay que hacer</legend>
+          <div class="field">
+            <label for="qDescription">Descripción</label>
+            <textarea class="input" id="qDescription" name="description" rows="5" required minlength="10" maxlength="3000" placeholder="Qué quieres hacer, materiales que te gustan, problemas que ves (humedad, grietas…)"></textarea>
+          </div>
+          <div class="field">
+            <p class="field-label">Fotos <span class="opt">(opcional, hasta 6)</span></p>
+            <label class="upload" for="qPhotos">
+              <input id="qPhotos" type="file" accept="image/*" multiple>
+              <strong>Añadir fotos</strong><span>Desde la cámara o la galería. Se reducen solas para enviarlas rápido.</span>
+            </label>
+            <div class="thumbs" id="qThumbs"></div>
+          </div>
+        </fieldset>
+
+        <fieldset data-step="4" hidden>
+          <legend>¿Cómo te contactamos?</legend>
+          <div class="field">
+            <label for="qName">Nombre o empresa</label>
+            <input class="input" id="qName" name="name" autocomplete="name" required maxlength="120">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="qPhone">Teléfono (WhatsApp)</label>
+              <input class="input" id="qPhone" name="phone" type="tel" autocomplete="tel" placeholder="+240 222 000 000" required>
+            </div>
+            <div class="field">
+              <label for="qEmail">Correo <span class="opt">(opcional)</span></label>
+              <input class="input" id="qEmail" name="email" type="email" autocomplete="email">
+            </div>
+          </div>
+          <div class="hp" aria-hidden="true"><label for="qWebsite">No rellenar</label><input id="qWebsite" name="website" tabindex="-1" autocomplete="off"></div>
+          <label class="check"><input type="checkbox" name="privacy" required> <span>He leído la <a href="/privacidad.html" target="_blank">política de privacidad</a> y acepto que me contactéis.</span></label>
+        </fieldset>
+
+        <p class="form-error" id="workQuoteError" role="alert" hidden></p>
+        <div class="wizard__nav">
+          <button class="btn btn--ghost" type="button" id="workQuoteBack" hidden>← Atrás</button>
+          <button class="btn btn--primary btn--lg" type="submit" id="workQuoteNext">Siguiente</button>
+        </div>
+      </form>
+
+      <div class="panel wizard-done" id="workQuoteDone" hidden>
+        <h2>¡Recibido! Gracias.</h2>
+        <p class="lead">Te escribiremos por WhatsApp o te llamaremos en horario laboral, normalmente el mismo día, para darte una primera estimación y concertar la visita.</p>
+        <p><a class="btn btn--primary" href="/construccion#proyectos">Ver obras terminadas</a> <a class="btn btn--ghost" href="/">Volver al inicio</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div>
+      <img class="footer__logo" src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36" loading="lazy">
+      <p>Construcción en general y mantenimiento integral de inmuebles, envíos de paquetes y venta de vehículos. Sede en el Barrio Ngolo-Puente Sialo.</p>
+    </div>
+    <nav aria-label="Pie de página">
+      <a href="/">Inicio</a>
+      <a href="/construccion">Construcción y mantenimiento</a>
+      <a href="/envios">Envíos de paquetes</a>
+      <a href="/envios#rastreo">Rastrear un envío</a>
+      <a href="/vehiculos">Vehículos en venta</a>
+      <a href="/presupuesto">Presupuesto en línea</a>
+      <a href="/mi-cuenta">Área de cliente</a>
+      <a href="/#contacto">Pide tu cita</a>
+    </nav>
+    <div class="footer__legal">
+      <a href="/privacidad.html">Privacidad</a>
+      <a href="/panel/login">Acceso equipo</a>
+      <p>© <span id="year">2026</span> Epikaizo Services S.L.</p>
+    </div>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/240222580828" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp" data-track="whatsapp_click">
+  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+</a>
+</body>
+</html>

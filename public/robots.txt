@@ -4,5 +4,7 @@ Disallow: /panel
 Disallow: /login
 Disallow: /verificar.html
 Disallow: /api/
+Disallow: /mi-cuenta
+Disallow: /opinion
 
 Sitemap: https://epikaizo.com/sitemap.xml

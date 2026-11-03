@@ -36,11 +36,16 @@ export default async function settings(root, ctx) {
       field({ name: 'payment_days', label: 'Días para pagar una factura', type: 'number', min: '0', max: '365', value: s.billing.payment_days, required: true }),
       field({ name: 'quote_valid_days', label: 'Días de validez de un presupuesto', type: 'number', min: '1', max: '365', value: s.billing.quote_valid_days, required: true }),
       field({ name: 'footer', label: 'Texto al pie de los documentos', value: s.billing.footer, full: true })) }),
+    card({ title: 'Pago móvil y transferencia', subtitle: 'Lo ven los clientes en su área de la web para pagar sus facturas. Los avisos de pago llegan a «Pagos de clientes».', body: h('div', { class: 'form' },
+      field({ name: 'pay_mobile', label: 'Número de pago móvil', value: s.payments.mobile_number, placeholder: '+240 222 000 000' }),
+      field({ name: 'pay_mobile_name', label: 'Servicio y titular', value: s.payments.mobile_name, placeholder: 'Ej. Muni Dinero · Epikaizo Services' }),
+      field({ name: 'pay_instructions', label: 'Indicaciones para el cliente', value: s.payments.instructions, full: true })) }),
     card({ title: 'Seguridad del panel', subtitle: 'Protección de las cuentas del equipo.', body: h('div', { class: 'form' },
       field({ name: 'require_admin_2fa', label: 'Exigir doble verificación (2FA) a los administradores', type: 'checkbox', value: s.security.require_admin_2fa, full: true, hint: 'Activa antes la tuya en Mi cuenta. Los administradores sin 2FA tendrán que activarla al entrar.' }),
       field({ name: 'idle_minutes', label: 'Cerrar la sesión tras estos minutos sin usar el panel', type: 'number', min: '5', max: '480', step: '1', value: s.security.idle_minutes, required: true })) }),
     card({ title: 'Avisos automáticos por WhatsApp', subtitle: 'Mensajes que reciben los clientes sin que nadie tenga que escribirlos.', body: h('div', { class: 'form' },
       field({ name: 'notify_created', label: 'Al registrar un envío: la guía y el enlace de rastreo al remitente', type: 'checkbox', value: s.notifications.shipment_created !== false, full: true }),
+      field({ name: 'notify_review', label: 'Al terminar un trabajo o entregar un envío: pedir la opinión del cliente', type: 'checkbox', value: s.notifications.review_request !== false, full: true }),
       field({ name: 'notify_status', label: 'En cada cambio de estado (en camino, listo para entregar, entregado): a remitente y destinatario', type: 'checkbox', value: s.notifications.shipment_status !== false, full: true, hint: 'Meta solo entrega mensajes libres a quien te escribió en las últimas 24 horas. Para avisar a todos, crea en Meta una plantilla y pon su nombre en WHATSAPP_TEMPLATE_STATUS (Render).' })) }),
     card({ title: 'Ciudades', subtitle: 'Una por línea. Salen en los formularios y en la web.', body: h('div', { class: 'form' },
       field({ name: 'cities', label: 'Ciudades con servicio', type: 'textarea', value: s.cities.join('\n'), full: true, required: true })) }));
@@ -60,7 +65,8 @@ export default async function settings(root, ctx) {
       },
       billing: { tax_name: v.tax_name, tax_rate: v.tax_rate, tax_id: v.tax_id, bank_account: v.bank_account, payment_days: v.payment_days, quote_valid_days: v.quote_valid_days, footer: v.footer },
       cities: String(v.cities || '').split('\n').map((x) => x.trim()).filter(Boolean),
-      notifications: { shipment_created: v.notify_created, shipment_status: v.notify_status },
+      notifications: { shipment_created: v.notify_created, shipment_status: v.notify_status, review_request: v.notify_review },
+      payments: { mobile_number: v.pay_mobile, mobile_name: v.pay_mobile_name, instructions: v.pay_instructions },
       security: { require_admin_2fa: v.require_admin_2fa, idle_minutes: v.idle_minutes },
     };
     try {
