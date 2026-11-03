@@ -42,15 +42,16 @@ router.patch(
   })
 );
 
-/** Responder por WhatsApp a quien escribió. */
+/** Responder por WhatsApp a quien escribió. Con via «enlace» el mensaje se envió desde el teléfono
+ * (wa.me, sin la API de Meta) y aquí solo se registra. */
 router.post(
   '/:id/reply',
   route(async (req, res) => {
-    const input = validate(req.body, { body: text({ min: 1, max: 1000 }) });
+    const input = validate(req.body, { body: text({ min: 1, max: 1000 }), via: oneOf(['api', 'enlace'], { optional: true }) });
     const message = await db.one('SELECT * FROM messages WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
     if (!message) throw new HttpError(404, 'Mensaje no encontrado');
     if (!message.phone) throw new HttpError(422, 'Este mensaje no tiene teléfono al que responder');
-    const externalId = await whatsapp.sendText(message.phone, input.body);
+    const externalId = input.via === 'enlace' ? null : await whatsapp.sendText(message.phone, input.body);
     const reply = await db.one(
       `INSERT INTO messages (id, tenant_id, channel, direction, name, phone, body, status, external_id, handled_by)
        VALUES ($1, $2, 'whatsapp', 'saliente', $3, $4, $5, 'atendido', $6, $7) RETURNING *`,

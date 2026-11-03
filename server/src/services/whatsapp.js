@@ -1,14 +1,13 @@
 // Cliente mínimo de la API de WhatsApp Cloud (Meta).
 const crypto = require('crypto');
 const config = require('../config');
+const { HttpError } = require('../lib/http');
 
 const enabled = () => Boolean(config.whatsapp.token && config.whatsapp.phoneNumberId);
 
 async function send(payload) {
   if (!enabled()) {
-    const err = new Error('WhatsApp no está configurado en el servidor');
-    err.status = 503;
-    throw err;
+    throw new HttpError(503, 'WhatsApp no está configurado en el servidor');
   }
   const url = `https://graph.facebook.com/${config.whatsapp.apiVersion}/${config.whatsapp.phoneNumberId}/messages`;
   const response = await fetch(url, {
@@ -19,9 +18,8 @@ async function send(payload) {
   });
   const result = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const err = new Error((result.error && result.error.message) || 'WhatsApp rechazó el mensaje');
-    err.status = 502;
-    throw err;
+    // Mensaje visible en el panel (p. ej. «token caducado» o «fuera de la ventana de 24 horas»).
+    throw new HttpError(502, `WhatsApp rechazó el mensaje: ${(result.error && result.error.message) || 'sin detalle'}`);
   }
   return result.messages && result.messages[0] && result.messages[0].id;
 }

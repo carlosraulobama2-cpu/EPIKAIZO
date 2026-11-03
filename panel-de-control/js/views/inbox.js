@@ -51,11 +51,18 @@ function open(ctx, m, list, whatsappEnabled) {
   };
   const reply = h('form', { class: 'stack' },
     field({ name: 'body', label: 'Responder por WhatsApp', type: 'textarea', required: true, value: `Hola ${m.name ? m.name.split(' ')[0] : ''}, gracias por escribir a Epikaizo. ` }));
-  const sendBtn = button('Enviar por WhatsApp', { variant: 'primary', iconName: 'send' });
+  // Sin la API de Meta configurada, se abre WhatsApp con el texto escrito y el envío se registra aquí.
+  const sendBtn = button(whatsappEnabled ? 'Enviar por WhatsApp' : 'Abrir WhatsApp y enviar', { variant: 'primary', iconName: 'send' });
   sendBtn.addEventListener('click', async () => {
+    const values = readForm(reply);
+    if (!String(values.body || '').trim()) {
+      toast('Escribe el mensaje', 'bad');
+      return;
+    }
+    if (!whatsappEnabled) window.open(`https://wa.me/${waNumber(m.phone)}?text=${encodeURIComponent(values.body)}`, '_blank', 'noopener');
     try {
-      await busy(sendBtn, api.post(`/inbox/${m.id}/reply`, readForm(reply)));
-      toast('Respuesta enviada');
+      await busy(sendBtn, api.post(`/inbox/${m.id}/reply`, { ...values, via: whatsappEnabled ? 'api' : 'enlace' }));
+      toast(whatsappEnabled ? 'Respuesta enviada' : 'Pulsa «Enviar» en WhatsApp. La respuesta queda registrada aquí.');
       d.close();
       list.reload();
       ctx.refreshCounts();
@@ -110,9 +117,7 @@ function open(ctx, m, list, whatsappEnabled) {
         h('img', { src: `/api/inbox/${m.id}/photos/${pid}`, alt: `Foto ${i + 1} del cliente`, loading: 'lazy' })))) : null,
       m.job_id ? h('a', { class: 'alert alert--info', href: `#/servicios/${m.job_id}` }, icon('tool'), 'Este mensaje ya tiene un trabajo creado. Ver trabajo') : null,
       m.direction === 'entrante' && m.phone
-        ? whatsappEnabled
-          ? h('div', { class: 'stack' }, reply, h('div', null, sendBtn))
-          : h('div', { class: 'alert' }, icon('info'), h('span', null, 'WhatsApp no está configurado en el servidor. Responde llamando o desde ', h('a', { href: `https://wa.me/${waNumber(m.phone)}`, target: '_blank', rel: 'noopener' }, 'WhatsApp Web'), '.'))
+        ? h('div', { class: 'stack' }, reply, h('div', null, sendBtn))
         : null),
     actions: m.direction === 'entrante' ? [
       m.job_id ? null : toJob,
