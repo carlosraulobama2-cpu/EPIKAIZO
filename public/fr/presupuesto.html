@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Devis en ligne pour vos travaux · Epikaizo Services S.L.</title>
+  <meta name="description" content="Demandez un devis pour vos travaux, rénovation ou maintenance en 4 étapes : type de travaux, lieu, photos et coordonnées. Nous répondons avec un devis détaillé sans engagement.">
+  <meta name="theme-color" content="#070594">
+  <link rel="canonical" href="https://epikaizo.com/fr/presupuesto">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/img/icons/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="stylesheet" href="/css/fonts.css">
+  <link rel="stylesheet" href="/css/site.css">
+  <script src="/js/site.js" defer></script>
+  <script src="/js/presupuesto.js" defer></script>
+  <!--i18n--><link rel="alternate" hreflang="es" href="https://epikaizo.com/presupuesto">
+  <link rel="alternate" hreflang="fr" href="https://epikaizo.com/fr/presupuesto">
+  <link rel="alternate" hreflang="en" href="https://epikaizo.com/en/presupuesto">
+  <link rel="alternate" hreflang="x-default" href="https://epikaizo.com/presupuesto"><!--/i18n-->
+</head>
+<body>
+<a class="skip" href="#main">Aller au contenu</a>
+
+<header class="header" id="header">
+  <div class="container header__row">
+    <a class="brand" href="/fr/" aria-label="Epikaizo Services, accueil"><img src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36"></a>
+    <nav class="nav" id="nav" aria-label="Menu principal">
+      <a href="/fr/">Accueil</a>
+      <a href="/fr/construccion" aria-current="page">Construction</a>
+      <a href="/fr/envios">Envois</a>
+      <a href="/fr/vehiculos">Véhicules</a>
+      <a href="/fr/#contacto">Contact</a>
+      <a href="/mi-cuenta">Mon compte</a>
+      <a class="btn btn--primary nav__cta" href="/fr/#contacto" data-topic="construccion">Prendre rendez-vous</a>
+    </nav>
+    <!--lang--><div class="lang-switch" aria-label="Idioma / Language"><a href="/presupuesto" hreflang="es" lang="es">ES</a><span aria-current="true">FR</span><a href="/en/presupuesto" hreflang="en" lang="en">EN</a></div><!--/lang-->
+    <button class="nav-toggle" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="nav"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<main id="main">
+
+  <section class="page page--wide">
+    <div class="container">
+      <p class="eyebrow">Devis en ligne</p>
+      <h1>Décrivez vos travaux en 4 étapes.</h1>
+      <p class="lead">Sans engagement. Avec les photos et la surface, nous pouvons vous donner une première estimation et organiser la visite technique.</p>
+
+      <ol class="stepper" aria-label="Étapes">
+        <li class="is-current" data-step-dot="1"><span>1</span> Les travaux</li>
+        <li data-step-dot="2"><span>2</span> Lieu et délai</li>
+        <li data-step-dot="3"><span>3</span> Détails et photos</li>
+        <li data-step-dot="4"><span>4</span> Vos coordonnées</li>
+      </ol>
+
+      <form class="panel wizard" id="workQuoteForm" novalidate>
+        <fieldset data-step="1">
+          <legend>Quels travaux vous faut-il ?</legend>
+          <div class="choices">
+            <label class="choice"><input type="radio" name="work_type" value="construccion" checked required><span><strong>Construction neuve</strong><small>Logement, local, hangar…</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="reforma" required><span><strong>Rénovation ou réhabilitation</strong><small>Cuisine, salles de bain, rénovation complète</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="pintura" required><span><strong>Peinture</strong><small>Intérieur ou façade</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="electricidad" required><span><strong>Électricité</strong><small>Installation ou réparation</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="fontaneria" required><span><strong>Plomberie</strong><small>Eau, évacuations, sanitaires</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="cubierta" required><span><strong>Toiture</strong><small>Fuites, étanchéité</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="mantenimiento" required><span><strong>Maintenance</strong><small>Préventive ou corrective</small></span></label>
+            <label class="choice"><input type="radio" name="work_type" value="otro" required><span><strong>Autres travaux</strong></span></label>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="qProperty">Type de bien</label>
+              <select class="input" id="qProperty" name="property" required>
+                <option value="vivienda">Logement</option><option value="local">Local commercial</option><option value="oficina">Bureau</option>
+                <option value="nave">Hangar ou entrepôt</option><option value="edificio">Immeuble</option><option value="otro">Autre</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="qArea">Surface approximative (m²) <span class="opt">(facultatif)</span></label>
+              <input class="input" id="qArea" name="area_m2" type="number" min="1" step="1" inputmode="numeric" placeholder="Ex. 80">
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset data-step="2" hidden>
+          <legend>Où et pour quand ?</legend>
+          <div class="field-row">
+            <div class="field">
+              <label for="qCity">Ville</label>
+              <select class="input" id="qCity" name="city" required><option value="Malabo">Malabo</option><option value="Bata">Bata</option></select>
+            </div>
+            <div class="field">
+              <label for="qAddress">Quartier ou adresse <span class="opt">(facultatif)</span></label>
+              <input class="input" id="qAddress" name="address" maxlength="200" placeholder="Ex. Barrio Los Ángeles">
+            </div>
+          </div>
+          <p class="field-label">Quand souhaitez-vous commencer ?</p>
+          <div class="choices choices--4">
+            <label class="choice"><input type="radio" name="timeframe" value="urgente" required><span><strong>Urgent</strong><small>Cette semaine</small></span></label>
+            <label class="choice"><input type="radio" name="timeframe" value="mes" checked required><span><strong>Ce mois-ci</strong></span></label>
+            <label class="choice"><input type="radio" name="timeframe" value="trimestre" required><span><strong>Dans 3 mois</strong></span></label>
+            <label class="choice"><input type="radio" name="timeframe" value="sin_prisa" required><span><strong>Pas pressé</strong></span></label>
+          </div>
+          <div class="field">
+            <label for="qBudget">Avez-vous un budget en tête ? (FCFA) <span class="opt">(facultatif)</span></label>
+            <input class="input" id="qBudget" name="budget" type="number" min="0" step="1000" inputmode="numeric" placeholder="Ex. 2500000">
+          </div>
+        </fieldset>
+
+        <fieldset data-step="3" hidden>
+          <legend>Décrivez ce qu'il faut faire</legend>
+          <div class="field">
+            <label for="qDescription">Description</label>
+            <textarea class="input" id="qDescription" name="description" rows="5" required minlength="10" maxlength="3000" placeholder="Ce que vous voulez faire, les matériaux que vous aimez, les problèmes constatés (humidité, fissures…)"></textarea>
+          </div>
+          <div class="field">
+            <p class="field-label">Photos <span class="opt">(facultatif, jusqu'à 6)</span></p>
+            <label class="upload" for="qPhotos">
+              <input id="qPhotos" type="file" accept="image/*" multiple>
+              <strong>Ajouter des photos</strong><span>Depuis l'appareil photo ou la galerie. Elles sont réduites automatiquement pour un envoi rapide.</span>
+            </label>
+            <div class="thumbs" id="qThumbs"></div>
+          </div>
+        </fieldset>
+
+        <fieldset data-step="4" hidden>
+          <legend>Comment vous contacter ?</legend>
+          <div class="field">
+            <label for="qName">Nom ou entreprise</label>
+            <input class="input" id="qName" name="name" autocomplete="name" required maxlength="120">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="qPhone">Téléphone (WhatsApp)</label>
+              <input class="input" id="qPhone" name="phone" type="tel" autocomplete="tel" placeholder="+240 222 000 000" required>
+            </div>
+            <div class="field">
+              <label for="qEmail">E-mail <span class="opt">(facultatif)</span></label>
+              <input class="input" id="qEmail" name="email" type="email" autocomplete="email">
+            </div>
+          </div>
+          <div class="hp" aria-hidden="true"><label for="qWebsite">Ne pas remplir</label><input id="qWebsite" name="website" tabindex="-1" autocomplete="off"></div>
+          <label class="check"><input type="checkbox" name="privacy" required> <span>J'ai lu la <a href="/privacidad.html" target="_blank">politique de confidentialité (en espagnol)</a> et j'accepte d'être contacté.</span></label>
+        </fieldset>
+
+        <p class="form-error" id="workQuoteError" role="alert" hidden></p>
+        <div class="wizard__nav">
+          <button class="btn btn--ghost" type="button" id="workQuoteBack" hidden>← Retour</button>
+          <button class="btn btn--primary btn--lg" type="submit" id="workQuoteNext">Suivant</button>
+        </div>
+      </form>
+
+      <div class="panel wizard-done" id="workQuoteDone" hidden>
+        <h2>Bien reçu ! Merci.</h2>
+        <p class="lead">Nous vous écrirons sur WhatsApp ou vous appellerons aux heures de bureau, généralement le jour même, pour une première estimation et pour organiser la visite.</p>
+        <p><a class="btn btn--primary" href="/fr/construccion#proyectos">Voir nos réalisations</a> <a class="btn btn--ghost" href="/fr/">Retour à l'accueil</a></p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div>
+      <img class="footer__logo" src="/img/logo.png" alt="Epikaizo Services S.L." width="130" height="36" loading="lazy">
+      <p>Construction générale et maintenance complète de bâtiments, envoi de colis et vente de véhicules. Siège à Barrio Ngolo-Puente Sialo.</p>
+    </div>
+    <nav aria-label="Pied de page">
+      <a href="/fr/">Accueil</a>
+      <a href="/fr/construccion">Construction et maintenance</a>
+      <a href="/fr/envios">Envoi de colis</a>
+      <a href="/fr/envios#rastreo">Suivre un envoi</a>
+      <a href="/fr/vehiculos">Véhicules à vendre</a>
+      <a href="/fr/presupuesto">Devis en ligne</a>
+      <a href="/mi-cuenta">Espace client (en espagnol)</a>
+      <a href="/fr/#contacto">Prendre rendez-vous</a>
+    </nav>
+    <div class="footer__legal">
+      <a href="/privacidad.html">Confidentialité (en espagnol)</a>
+      <a href="/panel/login">Accès équipe</a>
+      <p>© <span id="year">2026</span> Epikaizo Services S.L.</p>
+    </div>
+  </div>
+</footer>
+
+<a class="wa-float" href="https://wa.me/240222580828" target="_blank" rel="noopener" aria-label="Écrivez-nous sur WhatsApp" data-track="whatsapp_click">
+  <svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.3-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+</a>
+</body>
+</html>

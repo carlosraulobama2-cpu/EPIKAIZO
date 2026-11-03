@@ -169,6 +169,8 @@ function createApp() {
   app.get('/panel', (req, res, next) => (req.path === '/panel' ? moved('/panel/')(req, res) : next()));
   app.get(['/login', '/login.html'], moved('/panel/login'));
   app.get('/documento.html', moved('/panel/documento'));
+  // Versiones en francés e inglés: /fr y /en llevan a su portada.
+  app.get(['/fr', '/en'], (req, res, next) => (req.path.endsWith('/') ? next() : moved(`${req.path}/`)(req, res)));
   // Panel de control: carpeta panel-de-control/, servida en /panel/.
   app.use('/panel', express.static(PANEL_DIR, staticOptions));
   app.use(express.static(PUBLIC_DIR, staticOptions));

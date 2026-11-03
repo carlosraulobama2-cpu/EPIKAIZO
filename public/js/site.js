@@ -5,17 +5,95 @@
 const $ = (sel, root = document) => root.querySelector(sel);
 let config = null;
 
+// Idioma de la página: /fr/ y /en/ son traducciones de la web. Aquí, los textos que pinta este archivo.
+const LANG = ['fr', 'en'].includes(document.documentElement.lang) ? document.documentElement.lang : 'es';
+const LOCALE = { es: 'es-ES', fr: 'fr-FR', en: 'en-GB' }[LANG];
+const TX = {
+  'No hemos podido conectar. Inténtalo de nuevo.': ['Connexion impossible. Réessayez.', 'We could not connect. Please try again.'],
+  'Peso del paquete (kg)': ['Poids du colis (kg)', 'Parcel weight (kg)'],
+  'Importe que quieres enviar': ['Montant à envoyer', 'Amount to send'],
+  'Ej.': ['Ex.', 'e.g.'],
+  'Precio del envío': ["Prix de l'envoi", 'Shipping price'],
+  'Comisión': ['Commission', 'Fee'],
+  'Escribe el peso en kilos (por ejemplo 2,5).': ['Indiquez le poids en kilos (par exemple 2,5).', 'Enter the weight in kilos (for example 2.5).'],
+  'Escribe cuánto quieres enviar.': ['Indiquez le montant à envoyer.', 'Enter how much you want to send.'],
+  'La guía tiene este formato: EPZ- y seis números (por ejemplo EPZ-123456).': ['Le numéro a ce format : EPZ- et six chiffres (par exemple EPZ-123456).', 'The number looks like this: EPZ- and six digits (for example EPZ-123456).'],
+  'No encontramos esa guía. Revisa el número o escríbenos por WhatsApp.': ['Numéro introuvable. Vérifiez-le ou écrivez-nous sur WhatsApp.', 'We could not find that number. Check it or message us on WhatsApp.'],
+  'Envío de dinero': ["Transfert d'argent", 'Money transfer'],
+  'Paquete': ['Colis', 'Parcel'],
+  'para {x}': ['pour {x}', 'to {x}'],
+  'Recibido en oficina': ['Reçu en agence', 'Received at office'],
+  'En tránsito': ['En transit', 'In transit'],
+  'En reparto': ['En cours de livraison', 'Out for delivery'],
+  'Entregado': ['Livré', 'Delivered'],
+  'Cancelado': ['Annulé', 'Cancelled'],
+  'Envío registrado': ['Envoi enregistré', 'Transfer registered'],
+  'En proceso': ['En cours', 'Processing'],
+  'Listo para cobrar': ['Prêt à retirer', 'Ready to collect'],
+  'Cobrado': ['Retiré', 'Collected'],
+  'Escribe tu nombre.': ['Indiquez votre nom.', 'Enter your name.'],
+  'Escribe un teléfono para poder llamarte.': ['Indiquez un téléphone pour que nous puissions vous appeler.', 'Enter a phone number so we can call you.'],
+  'Cuéntanos qué necesitas.': ['Dites-nous ce dont vous avez besoin.', 'Tell us what you need.'],
+  'Marca la casilla de privacidad para poder contactarte.': ['Cochez la case de confidentialité pour que nous puissions vous contacter.', 'Tick the privacy box so we can contact you.'],
+  'Enviando…': ['Envoi…', 'Sending…'],
+  'Pedir cita': ['Demander un rendez-vous', 'Request an appointment'],
+  'Gasolina': ['Essence', 'Petrol'],
+  'Diésel': ['Diesel', 'Diesel'],
+  'Híbrido': ['Hybride', 'Hybrid'],
+  'Eléctrico': ['Électrique', 'Electric'],
+  'Manual': ['Manuelle', 'Manual'],
+  'Automático': ['Automatique', 'Automatic'],
+  'Cerrar': ['Fermer', 'Close'],
+  'Foto anterior': ['Photo précédente', 'Previous photo'],
+  'Foto siguiente': ['Photo suivante', 'Next photo'],
+  '{x}, foto {n}': ['{x}, photo {n}', '{x}, photo {n}'],
+  'Ver fotos del {x}': ['Voir les photos du {x}', 'See photos of the {x}'],
+  '{n} fotos': ['{n} photos', '{n} photos'],
+  'Reservado': ['Réservé', 'Reserved'],
+  'Nuevo': ['Neuf', 'New'],
+  'De ocasión': ["D'occasion", 'Used'],
+  'Avisadme si queda libre': ["Prévenez-moi s'il se libère", 'Let me know if it becomes available'],
+  'Me interesa': ["Ça m'intéresse", "I'm interested"],
+  'Me interesa el {x}{y} (ref. {r}). ¿Cuándo puedo ir a verlo?': ["Le {x}{y} (réf. {r}) m'intéresse. Quand puis-je venir le voir ?", "I'm interested in the {x}{y} (ref. {r}). When can I come and see it?"],
+  ' de {y}': [' de {y}', ' from {y}'],
+  'Hola, me interesa el {x}{y} (ref. {r}) de {p}.': ["Bonjour, le {x}{y} (réf. {r}) à {p} m'intéresse.", "Hello, I'm interested in the {x}{y} (ref. {r}) for {p}."],
+  'No hemos podido cargar los vehículos. Llámanos al +240 222 580 828.': ['Impossible de charger les véhicules. Appelez-nous au +240 222 580 828.', 'We could not load the vehicles. Call us on +240 222 580 828.'],
+  'Ahora mismo no tenemos vehículos publicados': ['Aucun véhicule publié pour le moment', 'No vehicles listed right now'],
+  'Dinos qué buscas (marca, presupuesto, uso) y te avisamos en cuanto llegue uno.': ["Dites-nous ce que vous cherchez (marque, budget, usage) et nous vous prévenons dès qu'un véhicule arrive.", 'Tell us what you are looking for (make, budget, use) and we will let you know as soon as one arrives.'],
+  '{n} vehículos en el catálogo': ['{n} véhicules au catalogue', '{n} vehicles in the catalogue'],
+  '{a} de {n} vehículos': ['{a} véhicules sur {n}', '{a} of {n} vehicles'],
+  'Ningún vehículo coincide': ['Aucun véhicule ne correspond', 'No vehicles match'],
+  'Prueba con otra marca o quita algún filtro.': ['Essayez une autre marque ou retirez un filtre.', 'Try another make or remove a filter.'],
+  '{x}: después': ['{x} : après', '{x}: after'],
+  '{x}: antes': ['{x} : avant', '{x}: before'],
+  'Deslizar para comparar antes y después': ['Faire glisser pour comparer avant et après', 'Slide to compare before and after'],
+  'Antes': ['Avant', 'Before'],
+  'Después': ['Après', 'After'],
+  '{a} de 5 · {n} opiniones de clientes reales.': ['{a} sur 5 · {n} avis de vrais clients.', '{a} out of 5 · {n} reviews from real clients.'],
+  '{a} de 5 · 1 opinión de un cliente real.': ["{a} sur 5 · 1 avis d'un vrai client.", '{a} out of 5 · 1 review from a real client.'],
+  '{n} de 5 estrellas': ['{n} étoiles sur 5', '{n} out of 5 stars'],
+  'Envío': ['Envoi', 'Shipping'],
+  'Obra o servicio': ['Travaux ou service', 'Building work or service'],
+  'Cliente': ['Client', 'Client'],
+};
+/** Traduce un texto de este archivo; {x} se sustituye por vars.x. */
+function t(s, vars = {}) {
+  if (typeof s !== 'string') return s;
+  const hit = LANG !== 'es' && TX[s];
+  return (hit ? hit[LANG === 'fr' ? 0 : 1] : s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] ?? ''));
+}
+
 async function getJSON(url, options) {
   const res = await fetch(url, options);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'No hemos podido conectar. Inténtalo de nuevo.');
+  if (!res.ok) throw new Error(data.error || t('No hemos podido conectar. Inténtalo de nuevo.'));
   return data;
 }
 
 // Todos los precios en francos CFA, sin decimales y con punto de miles ("12.500 FCFA").
 // eslint-disable-next-line no-unused-vars
 function money(value, _currency) {
-  return `${new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 }).format(Number(value || 0))} FCFA`;
+  return `${new Intl.NumberFormat(LOCALE, { useGrouping: 'always', maximumFractionDigits: 0 }).format(Number(value || 0))} FCFA`;
 }
 
 function track(event, data) {
@@ -79,10 +157,10 @@ function initQuote() {
       b.setAttribute('aria-selected', String(b === btn));
     });
     const currency = 'FCFA';
-    label.textContent = kind === 'paquete' ? 'Peso del paquete (kg)' : `Importe que quieres enviar${currency ? ` (${currency})` : ''}`;
-    value.placeholder = kind === 'paquete' ? 'Ej. 3' : 'Ej. 200';
+    label.textContent = kind === 'paquete' ? t('Peso del paquete (kg)') : `${t('Importe que quieres enviar')}${currency ? ` (${currency})` : ''}`;
+    value.placeholder = `${t('Ej.')} ${kind === 'paquete' ? 3 : 200}`;
     value.step = kind === 'paquete' ? '0.1' : '1';
-    $('#quoteFeeLabel').textContent = kind === 'paquete' ? 'Precio del envío' : 'Comisión';
+    $('#quoteFeeLabel').textContent = t(kind === 'paquete' ? 'Precio del envío' : 'Comisión');
     result.hidden = true;
     value.focus();
   }));
@@ -92,7 +170,7 @@ function initQuote() {
     const n = Number(String(value.value).replace(',', '.'));
     if (!(n > 0)) {
       value.classList.add('has-error');
-      error.textContent = kind === 'paquete' ? 'Escribe el peso en kilos (por ejemplo 2,5).' : 'Escribe cuánto quieres enviar.';
+      error.textContent = t(kind === 'paquete' ? 'Escribe el peso en kilos (por ejemplo 2,5).' : 'Escribe cuánto quieres enviar.');
       error.hidden = false;
       return;
     }
@@ -119,7 +197,7 @@ async function runTrack(raw) {
   result.hidden = true;
   const normalized = /^EPZ-?\d{6}$/.test(code) ? code.replace(/^EPZ-?/, 'EPZ-') : code;
   if (!/^EPZ-\d{6}$/.test(normalized)) {
-    error.textContent = 'La guía tiene este formato: EPZ- y seis números (por ejemplo EPZ-123456).';
+    error.textContent = t('La guía tiene este formato: EPZ- y seis números (por ejemplo EPZ-123456).');
     error.hidden = false;
     return;
   }
@@ -128,28 +206,28 @@ async function runTrack(raw) {
     const data = await getJSON(`/api/public/track/${encodeURIComponent(normalized)}`);
     track('track', { found: data.found });
     if (!data.found) {
-      error.textContent = 'No encontramos esa guía. Revisa el número o escríbenos por WhatsApp.';
+      error.textContent = t('No encontramos esa guía. Revisa el número o escríbenos por WhatsApp.');
       error.hidden = false;
       return;
     }
     $('#trackCode').textContent = data.code;
-    $('#trackStatus').textContent = data.status_label;
-    $('#trackRoute').textContent = `${data.kind === 'dinero' ? 'Envío de dinero' : 'Paquete'} · ${data.origin} → ${data.destination}${data.receiver ? ` · para ${data.receiver}` : ''}`;
+    $('#trackStatus').textContent = t(data.status_label);
+    $('#trackRoute').textContent = `${t(data.kind === 'dinero' ? 'Envío de dinero' : 'Paquete')} · ${data.origin} → ${data.destination}${data.receiver ? ` · ${t('para {x}', { x: data.receiver })}` : ''}`;
     const steps = $('#trackSteps');
     steps.replaceChildren();
     const order = data.steps.map((s) => s.status);
     const current = order.indexOf(data.status);
     steps.classList.toggle('is-cancelled', data.status === 'cancelado');
     data.steps.forEach((s, i) => {
-      const li = el('li', [i <= current ? 'is-done' : '', i === current ? 'is-current' : ''].join(' ').trim() || null, s.label);
+      const li = el('li', [i <= current ? 'is-done' : '', i === current ? 'is-current' : ''].join(' ').trim() || null, t(s.label));
       steps.append(li);
     });
     const events = $('#trackEvents');
     events.replaceChildren();
     [...data.events].reverse().forEach((ev) => {
       const li = el('li');
-      li.append(el('span', null, [ev.label, ev.location].filter(Boolean).join(' · ')));
-      const time = el('time', null, new Date(ev.at).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }));
+      li.append(el('span', null, [t(ev.label), ev.location].filter(Boolean).join(' · ')));
+      const time = el('time', null, new Date(ev.at).toLocaleString(LOCALE, { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }));
       time.dateTime = ev.at;
       li.append(time);
       events.append(li);
@@ -193,7 +271,7 @@ function initContact() {
     const data = Object.fromEntries(new FormData(form));
     data.privacy = form.privacy.checked;
     if (!data.appointment) delete data.appointment;
-    const missing = !data.name ? 'Escribe tu nombre.' : !data.phone ? 'Escribe un teléfono para poder llamarte.' : !data.message ? 'Cuéntanos qué necesitas.' : !data.privacy ? 'Marca la casilla de privacidad para poder contactarte.' : '';
+    const missing = t(!data.name ? 'Escribe tu nombre.' : !data.phone ? 'Escribe un teléfono para poder llamarte.' : !data.message ? 'Cuéntanos qué necesitas.' : !data.privacy ? 'Marca la casilla de privacidad para poder contactarte.' : '');
     if (missing) {
       error.textContent = missing;
       error.hidden = false;
@@ -201,7 +279,7 @@ function initContact() {
     }
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true;
-    btn.textContent = 'Enviando…';
+    btn.textContent = t('Enviando…');
     try {
       await getJSON('/api/public/contact', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
       form.reset();
@@ -212,7 +290,7 @@ function initContact() {
       error.hidden = false;
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Pedir cita';
+      btn.textContent = t('Pedir cita');
     }
   });
 }
@@ -281,15 +359,15 @@ function lightbox(v) {
   const caption = el('p', 'lightbox__caption');
   const close = el('button', 'lightbox__close', '×');
   close.type = 'button';
-  close.setAttribute('aria-label', 'Cerrar');
+  close.setAttribute('aria-label', t('Cerrar'));
   const prev = el('button', 'lightbox__nav lightbox__nav--prev', '‹');
   const next = el('button', 'lightbox__nav lightbox__nav--next', '›');
-  prev.setAttribute('aria-label', 'Foto anterior');
-  next.setAttribute('aria-label', 'Foto siguiente');
+  prev.setAttribute('aria-label', t('Foto anterior'));
+  next.setAttribute('aria-label', t('Foto siguiente'));
   const show = (n) => {
     i = (n + v.photos.length) % v.photos.length;
     img.src = `/api/public/vehicle-photos/${v.photos[i]}`;
-    img.alt = `${v.brand} ${v.model}, foto ${i + 1}`;
+    img.alt = t('{x}, foto {n}', { x: `${v.brand} ${v.model}`, n: i + 1 });
     caption.textContent = `${v.brand} ${v.model} · ${i + 1} / ${v.photos.length}`;
   };
   const onKey = (e) => {
@@ -324,34 +402,34 @@ function carCard(v, whatsapp) {
     img.loading = 'lazy';
     const open = el('button', 'car__open');
     open.type = 'button';
-    open.setAttribute('aria-label', `Ver fotos del ${name}`);
+    open.setAttribute('aria-label', t('Ver fotos del {x}', { x: name }));
     open.append(img);
-    if (v.photos.length > 1) open.append(el('span', 'car__count', `${v.photos.length} fotos`));
+    if (v.photos.length > 1) open.append(el('span', 'car__count', t('{n} fotos', { n: v.photos.length })));
     open.addEventListener('click', () => lightbox(v));
     top.append(open);
   } else {
     top.append(carIcon());
   }
-  top.append(el('span', `car__badge${v.status === 'reservado' ? ' car__badge--res' : ''}`, v.status === 'reservado' ? 'Reservado' : v.condition === 'nuevo' ? 'Nuevo' : 'De ocasión'));
+  top.append(el('span', `car__badge${v.status === 'reservado' ? ' car__badge--res' : ''}`, t(v.status === 'reservado' ? 'Reservado' : v.condition === 'nuevo' ? 'Nuevo' : 'De ocasión')));
   const body = el('div', 'car__body');
   const specs = el('div', 'car__specs');
-  [v.year, v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString('es-ES', { useGrouping: 'always' })} km` : null, FUEL[v.fuel], GEARS[v.transmission], v.color]
+  [v.year, v.mileage_km != null ? `${Number(v.mileage_km).toLocaleString(LOCALE, { useGrouping: 'always' })} km` : null, t(FUEL[v.fuel]), t(GEARS[v.transmission]), v.color]
     .filter(Boolean).forEach((x) => specs.append(el('span', null, String(x))));
   const price = el('p', 'car__price', money(v.sale_price, v.currency));
   const actions = el('div', 'car__actions');
-  const btn = el('a', 'btn btn--primary', v.status === 'reservado' ? 'Avisadme si queda libre' : 'Me interesa');
+  const btn = el('a', 'btn btn--primary', t(v.status === 'reservado' ? 'Avisadme si queda libre' : 'Me interesa'));
   btn.href = '#contacto';
   btn.addEventListener('click', () => {
     const topic = $('#cTopic');
     const msg = $('#cMessage');
     if (topic) topic.value = 'vehiculos';
-    if (msg && !msg.value) msg.value = `Me interesa el ${name}${v.year ? ` de ${v.year}` : ''} (ref. ${v.code}). ¿Cuándo puedo ir a verlo?`;
+    if (msg && !msg.value) msg.value = t('Me interesa el {x}{y} (ref. {r}). ¿Cuándo puedo ir a verlo?', { x: name, y: v.year ? t(' de {y}', { y: v.year }) : '', r: v.code });
     track('cta_click', { vehicle: v.code });
   });
   actions.append(btn);
   if (whatsapp) {
     const wa = el('a', 'btn btn--wa', 'WhatsApp');
-    wa.href = `https://wa.me/${whatsapp}?text=${encodeURIComponent(`Hola, me interesa el ${name}${v.year ? ` de ${v.year}` : ''} (ref. ${v.code}) de ${money(v.sale_price, v.currency)}.`)}`;
+    wa.href = `https://wa.me/${whatsapp}?text=${encodeURIComponent(t('Hola, me interesa el {x}{y} (ref. {r}) de {p}.', { x: name, y: v.year ? t(' de {y}', { y: v.year }) : '', r: v.code, p: money(v.sale_price, v.currency) }))}`;
     wa.target = '_blank';
     wa.rel = 'noopener';
     wa.addEventListener('click', () => track('whatsapp_click', { vehicle: v.code }));
@@ -372,12 +450,12 @@ async function initCars() {
   try {
     ({ items } = await getJSON('/api/public/vehicles'));
   } catch {
-    box.replaceChildren(el('p', 'form-error', 'No hemos podido cargar los vehículos. Llámanos al +240 222 580 828.'));
+    box.replaceChildren(el('p', 'form-error', t('No hemos podido cargar los vehículos. Llámanos al +240 222 580 828.')));
     return;
   }
   if (!items.length) {
     const empty = el('div', 'cars__empty');
-    empty.append(el('h3', null, 'Ahora mismo no tenemos vehículos publicados'), el('p', 'muted', 'Dinos qué buscas (marca, presupuesto, uso) y te avisamos en cuanto llegue uno.'));
+    empty.append(el('h3', null, t('Ahora mismo no tenemos vehículos publicados')), el('p', 'muted', t('Dinos qué buscas (marca, presupuesto, uso) y te avisamos en cuanto llegue uno.')));
     box.replaceChildren(empty);
     return;
   }
@@ -401,10 +479,10 @@ async function initCars() {
     if (by === 'price-asc') list = [...list].sort((a, b) => a.sale_price - b.sale_price);
     if (by === 'price-desc') list = [...list].sort((a, b) => b.sale_price - a.sale_price);
     if (by === 'year-desc') list = [...list].sort((a, b) => (b.year || 0) - (a.year || 0));
-    if (count) count.textContent = list.length === items.length ? `${items.length} vehículos en el catálogo` : `${list.length} de ${items.length} vehículos`;
+    if (count) count.textContent = list.length === items.length ? t('{n} vehículos en el catálogo', { n: items.length }) : t('{a} de {n} vehículos', { a: list.length, n: items.length });
     if (!list.length) {
       const empty = el('div', 'cars__empty');
-      empty.append(el('h3', null, 'Ningún vehículo coincide'), el('p', 'muted', 'Prueba con otra marca o quita algún filtro.'));
+      empty.append(el('h3', null, t('Ningún vehículo coincide')), el('p', 'muted', t('Prueba con otra marca o quita algún filtro.')));
       box.replaceChildren(empty);
       return;
     }
@@ -429,24 +507,24 @@ function compare(beforeId, afterId, title) {
   const box = el('div', 'compare');
   const after = el('img');
   after.src = `/api/public/project-photos/${afterId}`;
-  after.alt = `${title}: después`;
+  after.alt = t('{x}: después', { x: title });
   // Sin carga diferida: las dos fotos están superpuestas y el navegador no detecta que la de
   // debajo se ve, así que nunca la cargaría.
   const beforeWrap = el('div', 'compare__before');
   const before = el('img');
   before.src = `/api/public/project-photos/${beforeId}`;
-  before.alt = `${title}: antes`;
+  before.alt = t('{x}: antes', { x: title });
   beforeWrap.append(before);
   const range = el('input', 'compare__range');
   range.type = 'range';
   range.min = '0';
   range.max = '100';
   range.value = '50';
-  range.setAttribute('aria-label', 'Deslizar para comparar antes y después');
+  range.setAttribute('aria-label', t('Deslizar para comparar antes y después'));
   const set = () => box.style.setProperty('--pos', `${range.value}%`);
   range.addEventListener('input', set);
   set();
-  box.append(after, beforeWrap, el('span', 'compare__tag compare__tag--before', 'Antes'), el('span', 'compare__tag compare__tag--after', 'Después'), range);
+  box.append(after, beforeWrap, el('span', 'compare__tag compare__tag--before', t('Antes')), el('span', 'compare__tag compare__tag--after', t('Después')), range);
   return box;
 }
 
@@ -475,7 +553,7 @@ async function initProjects() {
     }
     const body = el('div', 'project__body');
     body.append(el('h3', null, p.title));
-    const meta = [p.category, p.city, p.completed_on ? new Date(`${p.completed_on}T12:00:00`).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }) : null].filter(Boolean).join(' · ');
+    const meta = [p.category, p.city, p.completed_on ? new Date(`${p.completed_on}T12:00:00`).toLocaleDateString(LOCALE, { month: 'long', year: 'numeric' }) : null].filter(Boolean).join(' · ');
     if (meta) body.append(el('p', 'project__meta', meta));
     if (p.description) body.append(el('p', null, p.description));
     card.append(body);
@@ -498,15 +576,15 @@ async function initReviews() {
   const source = section.dataset.reviewsSource;
   const items = source ? [...data.items].sort((a, b) => (b.source === source) - (a.source === source)) : data.items;
   if (!items.length) return;
-  $('[data-reviews-summary]', section).textContent = `${String(data.average).replace('.', ',')} de 5 · ${data.total} ${data.total === 1 ? 'opinión' : 'opiniones'} de clientes reales.`;
+  $('[data-reviews-summary]', section).textContent = t(data.total === 1 ? '{a} de 5 · 1 opinión de un cliente real.' : '{a} de 5 · {n} opiniones de clientes reales.', { a: LANG === 'en' ? String(data.average) : String(data.average).replace('.', ','), n: data.total });
   const list = $('[data-reviews-list]', section);
   for (const r of items.slice(0, 6)) {
     const fig = el('figure', 'review');
     const stars = el('div', 'review__stars', '★★★★★'.slice(0, r.rating) + '☆☆☆☆☆'.slice(0, 5 - r.rating));
-    stars.setAttribute('aria-label', `${r.rating} de 5 estrellas`);
+    stars.setAttribute('aria-label', t('{n} de 5 estrellas', { n: r.rating }));
     fig.append(stars);
     if (r.comment) fig.append(el('blockquote', null, r.comment));
-    const cap = el('figcaption', null, `${r.client_name} · ${r.source === 'envio' ? 'Envío' : r.source === 'trabajo' ? 'Obra o servicio' : 'Cliente'}`);
+    const cap = el('figcaption', null, `${r.client_name} · ${t(r.source === 'envio' ? 'Envío' : r.source === 'trabajo' ? 'Obra o servicio' : 'Cliente')}`);
     fig.append(cap);
     list.append(fig);
   }

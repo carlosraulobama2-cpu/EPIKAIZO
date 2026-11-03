@@ -3,6 +3,25 @@
 (function () {
   const form = document.getElementById('workQuoteForm');
   if (!form) return;
+  // Textos en francés e inglés para /fr/presupuesto y /en/presupuesto.
+  const lang = document.documentElement.lang;
+  const TX = {
+    'Enviar solicitud': ['Envoyer la demande', 'Send request'],
+    'Siguiente': ['Suivant', 'Next'],
+    'Acepta la política de privacidad para enviar la solicitud.': ['Acceptez la politique de confidentialité pour envoyer la demande.', 'Accept the privacy policy to send the request.'],
+    'Rellena «{x}».': ['Remplissez « {x} ».', 'Please fill in “{x}”.'],
+    'Foto {n}': ['Photo {n}', 'Photo {n}'],
+    'Quitar la foto {n}': ['Retirer la photo {n}', 'Remove photo {n}'],
+    'No se pudo leer la foto «{x}». Prueba con otra.': ['Impossible de lire la photo « {x} ». Essayez-en une autre.', 'Could not read the photo “{x}”. Try another one.'],
+    'Enviando fotos…': ['Envoi des photos…', 'Sending photos…'],
+    'Enviando…': ['Envoi…', 'Sending…'],
+    'No se pudo enviar. Inténtalo de nuevo o escríbenos por WhatsApp.': ["Échec de l'envoi. Réessayez ou écrivez-nous sur WhatsApp.", 'Could not send. Try again or message us on WhatsApp.'],
+    'Sin conexión. Revisa tu internet e inténtalo de nuevo.': ['Pas de connexion. Vérifiez votre internet et réessayez.', 'No connection. Check your internet and try again.'],
+  };
+  const t = (s, vars = {}) => {
+    const hit = (lang === 'fr' || lang === 'en') && TX[s];
+    return (hit ? hit[lang === 'fr' ? 0 : 1] : s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] == null ? '' : vars[k]));
+  };
   const steps = [...form.querySelectorAll('[data-step]')];
   const dots = [...document.querySelectorAll('[data-step-dot]')];
   const back = document.getElementById('workQuoteBack');
@@ -29,7 +48,7 @@
       d.classList.toggle('is-done', i < n);
     });
     back.hidden = n === 1;
-    next.textContent = n === steps.length ? 'Enviar solicitud' : 'Siguiente';
+    next.textContent = t(n === steps.length ? 'Enviar solicitud' : 'Siguiente');
     error.hidden = true;
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
@@ -38,7 +57,7 @@
     const fields = [...steps[n - 1].querySelectorAll('input, select, textarea')].filter((f) => f.name && f.required && f.type !== 'radio');
     for (const f of fields) {
       if (f.type === 'checkbox' ? !f.checked : !f.value.trim() || (f.minLength > 0 && f.value.trim().length < f.minLength)) {
-        error.textContent = f.type === 'checkbox' ? 'Acepta la política de privacidad para enviar la solicitud.' : `Rellena «${(f.labels[0] || {}).textContent || f.name}».`;
+        error.textContent = f.type === 'checkbox' ? t('Acepta la política de privacidad para enviar la solicitud.') : t('Rellena «{x}».', { x: ((f.labels[0] || {}).textContent || f.name).trim() });
         error.hidden = false;
         f.focus();
         return false;
@@ -64,11 +83,11 @@
       const fig = document.createElement('figure');
       const img = document.createElement('img');
       img.src = src;
-      img.alt = `Foto ${i + 1}`;
+      img.alt = t('Foto {n}', { n: i + 1 });
       const del = document.createElement('button');
       del.type = 'button';
       del.textContent = '×';
-      del.setAttribute('aria-label', `Quitar la foto ${i + 1}`);
+      del.setAttribute('aria-label', t('Quitar la foto {n}', { n: i + 1 }));
       del.addEventListener('click', () => { photos.splice(i, 1); paintThumbs(); });
       fig.append(img, del);
       return fig;
@@ -81,7 +100,7 @@
       try {
         photos.push(await shrink(file));
       } catch {
-        error.textContent = `No se pudo leer la foto «${file.name}». Prueba con otra.`;
+        error.textContent = t('No se pudo leer la foto «{x}». Prueba con otra.', { x: file.name });
         error.hidden = false;
       }
     }
@@ -102,21 +121,21 @@
       photos,
     };
     next.disabled = true;
-    next.textContent = photos.length ? 'Enviando fotos…' : 'Enviando…';
+    next.textContent = t(photos.length ? 'Enviando fotos…' : 'Enviando…');
     try {
       const res = await fetch('/api/public/quote-request', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const out = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(out.error || 'No se pudo enviar. Inténtalo de nuevo o escríbenos por WhatsApp.');
+      if (!res.ok) throw new Error(out.error || t('No se pudo enviar. Inténtalo de nuevo o escríbenos por WhatsApp.'));
       form.hidden = true;
       document.querySelector('.stepper').hidden = true;
       document.getElementById('workQuoteDone').hidden = false;
       try { navigator.sendBeacon && navigator.sendBeacon('/api/public/analytics', new Blob([JSON.stringify({ event: 'quote_online_sent', data: { fotos: photos.length }, path: location.pathname })], { type: 'application/json' })); } catch { /* sin analítica */ }
     } catch (err) {
-      error.textContent = err.message === 'Failed to fetch' ? 'Sin conexión. Revisa tu internet e inténtalo de nuevo.' : err.message;
+      error.textContent = err.message === 'Failed to fetch' ? t('Sin conexión. Revisa tu internet e inténtalo de nuevo.') : err.message;
       error.hidden = false;
     } finally {
       next.disabled = false;
-      next.textContent = 'Enviar solicitud';
+      next.textContent = t('Enviar solicitud');
     }
   });
 })();
