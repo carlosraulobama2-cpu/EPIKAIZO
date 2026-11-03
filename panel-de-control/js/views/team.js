@@ -57,7 +57,7 @@ export default async function team(root, ctx) {
             { label: 'Persona', render: (u) => primary(u.name, u.email) },
             { label: 'Rol', render: (u) => h('span', { class: 'tag' }, ROLES[u.role]) },
             { label: 'Oficina', hideSm: true, render: (u) => officeSelect(ctx, u, loadAccess) },
-            { label: 'Estado', render: (u) => (u.must_change_password && u.status === 'activo' ? h('span', { class: 'badge badge--warn' }, 'Pendiente de primer acceso') : badge('user', u.status)) },
+            { label: 'Estado', render: (u) => [u.must_change_password && u.status === 'activo' ? h('span', { class: 'badge badge--warn' }, 'Pendiente de primer acceso') : badge('user', u.status), u.totp_enabled ? h('span', { class: 'badge badge--ok ml-6', title: 'Doble verificación activada' }, '2FA') : null] },
             { label: 'Último acceso', hideSm: true, render: (u) => h('span', { class: 'muted' }, u.last_login_at ? ago(u.last_login_at) : 'Nunca') },
             { label: '', render: (u) => (u.id === ctx.user.id ? h('div', { class: 'row-actions' }, h('span', { class: 'muted small' }, 'Tú'), editUserButton(u, loadAccess)) : userActions(u, loadAccess)) },
           ],
@@ -118,6 +118,13 @@ function userActions(u, reload) {
   return h('div', { class: 'row-actions' },
     editUserButton(u, reload),
     roleSelect,
+    u.totp_enabled ? button('Quitar 2FA', {
+      size: 'sm',
+      onClick: async () => {
+        if (!(await confirmDialog({ title: `Quitar la doble verificación a ${u.name}`, text: 'Hazlo solo si ha perdido el móvil y sus códigos de recuperación. Podrá entrar con su contraseña y volver a activarla.', confirm: 'Quitar 2FA', danger: true }))) return;
+        await attempt(async () => { await api.post(`/users/${u.id}/reset-2fa`); toast('Doble verificación quitada'); reload(); });
+      },
+    }) : null,
     button('Nueva contraseña', {
       size: 'sm',
       onClick: async () => {

@@ -49,6 +49,20 @@
         <p class="auth__foot">¿Olvidaste la contraseña? Pide a un administrador que te dé una nueva desde <strong>Equipo</strong>.</p>
         <p class="auth__foot"><a href="/">← Volver a la web</a></p>
       </form>
+      <form class="auth__form" id="codeForm" novalidate hidden>
+        <div>
+          <h2>Doble verificación</h2>
+          <p class="muted">Escribe el código de 6 cifras que muestra ahora tu app de autenticación (Google Authenticator, Microsoft Authenticator…).</p>
+        </div>
+        <div class="auth__error" id="codeError" role="alert" hidden></div>
+        <div class="field">
+          <label for="code">Código</label>
+          <input class="input input--code" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="11" placeholder="123 456" required>
+        </div>
+        <button class="btn btn--primary" type="submit" id="codeBtn">Verificar</button>
+        <p class="auth__foot">¿Sin el móvil? Escribe uno de tus <strong>códigos de recuperación</strong> (por ejemplo ABCD-EFGH). Cada uno sirve una vez.</p>
+        <p class="auth__foot"><a href="/panel/login">← Empezar de nuevo</a></p>
+      </form>
     </main>
   </div>
 </body>

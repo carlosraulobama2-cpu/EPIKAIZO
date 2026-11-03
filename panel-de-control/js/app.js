@@ -13,6 +13,7 @@ const ROUTES = [
   { path: 'caja-diaria', label: 'Caja del día', icon: 'cash', group: 'Operación', role: 'operador', load: () => import('./views/cashday.js') },
   { path: 'servicios', label: 'Servicios y obras', icon: 'tool', group: 'Operación', role: 'operador', load: () => import('./views/jobs.js') },
   { path: 'clientes', label: 'Clientes', icon: 'users', group: 'Operación', role: 'operador', load: () => import('./views/clients.js') },
+  { path: 'inventario', label: 'Inventario', icon: 'briefcase', group: 'Operación', role: 'operador', load: () => import('./views/inventory.js') },
   { path: 'vehiculos', label: 'Vehículos', icon: 'truck', group: 'Operación', role: 'operador', load: () => import('./views/vehicles.js') },
   { path: 'bandeja', label: 'Bandeja', icon: 'inbox', group: 'Operación', role: 'operador', count: 'messages', load: () => import('./views/inbox.js') },
   { path: 'facturas', label: 'Facturación', icon: 'invoice', group: 'Finanzas', role: 'gestor', load: () => import('./views/invoices.js') },
@@ -279,6 +280,22 @@ function forcePasswordChange() {
   });
 }
 
+// ---------- Cierre de sesión por inactividad (Ajustes → Seguridad) ----------
+function watchIdle() {
+  const minutes = Number((state.settings.security || {}).idle_minutes) || 30;
+  let last = Date.now();
+  const touch = () => { last = Date.now(); };
+  ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach((ev) => window.addEventListener(ev, touch, { passive: true }));
+  // Varias pestañas del panel abiertas: la actividad en una cuenta para todas.
+  window.addEventListener('storage', (e) => { if (e.key === 'epk-activity') touch(); });
+  setInterval(() => {
+    try { localStorage.setItem('epk-activity', String(last)); } catch { /* sin almacenamiento */ }
+    if (Date.now() - last > minutes * 60_000) {
+      api.post('/auth/logout').catch(() => {}).finally(() => location.replace(`/panel/login?motivo=inactividad&volver=${encodeURIComponent(location.hash || '#/resumen')}`));
+    }
+  }, 30_000);
+}
+
 // ---------- Arranque ----------
 // La versión anterior del panel guardaba datos simulados en el navegador (epk_packages, epk_cars…).
 // El panel actual lo lee todo del servidor: se borran para que no quede ningún dato falso.
@@ -312,8 +329,15 @@ async function start() {
   try {
     state.settings = await api.get('/settings');
   } catch (err) {
+    // La empresa exige doble verificación a los administradores: primero se activa.
+    if (err.code === 'two_factor_setup_required') {
+      const { setupTwoFactor } = await import('./views/account.js');
+      await new Promise((resolve) => setupTwoFactor(ctx, resolve, { forced: true }));
+      return location.reload();
+    }
     return startError(err);
   }
+  watchIdle();
   buildNav();
   window.addEventListener('hashchange', render);
   await render();

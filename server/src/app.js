@@ -65,6 +65,8 @@ function createApp() {
   api.use('/offices', operador, require('./routes/offices'));
   api.use('/cash-sessions', operador, require('./routes/cashSessions').router);
   api.use('/trips', operador, require('./routes/trips'));
+  api.use('/backups', admin, require('./routes/backups'));
+  api.use('/materials', operador, require('./routes/materials'));
 
   api.use(
     '/employees',

@@ -83,6 +83,34 @@ router.get(
   })
 );
 
+// Rentabilidad de las obras del periodo: ingresos (facturado sin impuestos, o precio/presupuesto)
+// frente a costes reales apuntados (materiales, mano de obra, proveedores…).
+router.get(
+  '/jobs',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const { from, to } = period(req.query);
+    const items = await db.many(
+      `SELECT j.id, j.code, j.title, j.category, j.status, j.client_name, j.budget, j.price,
+              COALESCE(i.invoiced, 0) AS invoiced, COALESCE(c.costs, 0) AS costs,
+              COALESCE(NULLIF(i.invoiced, 0), j.price, j.budget, 0) AS revenue
+         FROM jobs j
+         LEFT JOIN (SELECT job_id, sum(subtotal) AS invoiced FROM invoices WHERE kind = 'factura' AND status <> 'anulada' GROUP BY job_id) i ON i.job_id = j.id
+         LEFT JOIN (SELECT job_id, sum(amount) AS costs FROM job_costs GROUP BY job_id) c ON c.job_id = j.id
+        WHERE j.tenant_id = $1 AND j.status <> 'cancelado' AND (j.created_at AT TIME ZONE 'Africa/Malabo')::date BETWEEN $2 AND $3
+        ORDER BY j.created_at DESC LIMIT 200`,
+      [req.tenantId, from, to]
+    );
+    for (const j of items) {
+      j.margin = Number(j.revenue) - Number(j.costs);
+      j.margin_pct = Number(j.revenue) ? Math.round((j.margin / Number(j.revenue)) * 1000) / 10 : null;
+    }
+    const totals = items.reduce((t, j) => ({ revenue: t.revenue + Number(j.revenue), costs: t.costs + Number(j.costs) }), { revenue: 0, costs: 0 });
+    totals.margin = totals.revenue - totals.costs;
+    res.json({ from, to, items, totals });
+  })
+);
+
 // Por oficina: envíos y sus comisiones, cobros recibidos (y cuánto en efectivo), caja y descuadres.
 router.get(
   '/offices',

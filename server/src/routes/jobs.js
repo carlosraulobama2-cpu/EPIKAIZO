@@ -178,5 +178,100 @@ router.delete(
   })
 );
 
+// ---------- Costes reales y rentabilidad de la obra (gestores) ----------
+const COST_KINDS = ['materiales', 'mano_obra', 'proveedor', 'transporte', 'otros'];
+
+/** Ingresos de la obra: lo facturado (sin impuestos, sin anuladas) o, si aún no hay factura, su precio o presupuesto. */
+async function profitability(job) {
+  const [costs, invoiced] = await Promise.all([
+    db.many(
+      `SELECT c.*, p.name AS provider_name, u.name AS user_name FROM job_costs c
+         LEFT JOIN providers p ON p.id = c.provider_id LEFT JOIN users u ON u.id = c.created_by
+        WHERE c.job_id = $1 ORDER BY c.cost_date, c.created_at`,
+      [job.id]
+    ),
+    db.one("SELECT COALESCE(sum(subtotal), 0) AS total FROM invoices WHERE job_id = $1 AND kind = 'factura' AND status <> 'anulada'", [job.id]),
+  ]);
+  const byKind = Object.fromEntries(COST_KINDS.map((k) => [k, 0]));
+  for (const c of costs) byKind[c.kind] += Number(c.amount);
+  const totalCosts = Object.values(byKind).reduce((a, b) => a + b, 0);
+  const revenue = Number(invoiced.total) || Number(job.price) || Number(job.budget) || 0;
+  const margin = revenue - totalCosts;
+  return {
+    costs,
+    summary: {
+      budget: Number(job.budget) || 0,
+      price: Number(job.price) || 0,
+      invoiced: Number(invoiced.total),
+      revenue,
+      revenue_source: Number(invoiced.total) ? 'facturado' : Number(job.price) ? 'precio' : Number(job.budget) ? 'presupuesto' : null,
+      costs: totalCosts,
+      by_kind: byKind,
+      margin,
+      margin_pct: revenue ? Math.round((margin / revenue) * 1000) / 10 : null,
+      budget_used_pct: Number(job.budget) ? Math.round((totalCosts / Number(job.budget)) * 1000) / 10 : null,
+    },
+  };
+}
+
+async function loadJob(req) {
+  const job = await db.one('SELECT * FROM jobs WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
+  if (!job) throw new HttpError(404, 'Trabajo no encontrado');
+  return job;
+}
+
+router.get(
+  '/:id/costs',
+  requireRole('gestor'),
+  route(async (req, res) => res.json(await profitability(await loadJob(req))))
+);
+
+router.post(
+  '/:id/costs',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const job = await loadJob(req);
+    const input = validate(req.body, {
+      kind: oneOf(COST_KINDS),
+      concept: text({ min: 2, max: 200 }),
+      quantity: number({ min: 0.001, max: 1e9, optional: true }),
+      unit_cost: number({ min: 0, max: 1e10 }),
+      provider_id: uuid({ optional: true }),
+      cost_date: date({ optional: true }),
+    });
+    if (input.provider_id && !(await db.one('SELECT 1 FROM providers WHERE id = $1 AND tenant_id = $2', [input.provider_id, req.tenantId]))) {
+      throw new HttpError(422, 'Ese proveedor no existe');
+    }
+    const quantity = input.quantity || 1;
+    const cost = await db.one(
+      `INSERT INTO job_costs (id, tenant_id, job_id, kind, concept, quantity, unit_cost, amount, provider_id, cost_date, created_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,COALESCE($10::date, (now() AT TIME ZONE 'Africa/Malabo')::date),$11) RETURNING *`,
+      [crypto.randomUUID(), req.tenantId, job.id, input.kind, input.concept, quantity, input.unit_cost, Math.round(quantity * input.unit_cost), input.provider_id, input.cost_date, req.user.id]
+    );
+    await audit(req, 'obra.coste', { entity: 'job', entityId: job.id, details: { concepto: cost.concept, importe: cost.amount } });
+    res.status(201).json({ cost, ...(await profitability(job)) });
+  })
+);
+
+// Borrar un coste. Si salió del almacén, el material vuelve al inventario.
+router.delete(
+  '/:id/costs/:costId',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const job = await loadJob(req);
+    await db.tx(async (client) => {
+      const cost = await db.one('DELETE FROM job_costs WHERE id = $1 AND job_id = $2 RETURNING *', [req.params.costId, job.id], client);
+      if (!cost) throw new HttpError(404, 'Coste no encontrado');
+      if (cost.movement_id) {
+        const mov = await db.one('DELETE FROM stock_movements WHERE id = $1 RETURNING *', [cost.movement_id], client);
+        if (mov) await db.query('UPDATE materials SET stock = stock - $2, updated_at = now() WHERE id = $1', [mov.material_id, mov.delta], client);
+      }
+      await audit(req, 'obra.coste_borrar', { entity: 'job', entityId: job.id, details: { concepto: cost.concept, importe: cost.amount } }, client);
+    });
+    res.json(await profitability(job));
+  })
+);
+
 module.exports = router;
 module.exports.CATEGORIES = CATEGORIES;
+module.exports.COST_KINDS = COST_KINDS;

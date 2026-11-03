@@ -30,6 +30,11 @@ const DEFAULTS = {
     footer: 'Gracias por confiar en Epikaizo Services.',
   },
   // Avisos automáticos por WhatsApp a los clientes (Ajustes → Avisos).
+  // Seguridad del panel (Ajustes → Seguridad).
+  security: {
+    require_admin_2fa: false, // exigir doble verificación a los administradores
+    idle_minutes: 30, // cerrar la sesión tras este tiempo sin usar el panel
+  },
   notifications: {
     shipment_status: true, // cada cambio de estado del envío, con el enlace de rastreo
     shipment_created: true, // al registrar el envío, al remitente
@@ -50,6 +55,7 @@ async function getSettings(tenantId) {
     },
     billing: { ...DEFAULTS.billing, ...(stored.billing || {}) },
     notifications: { ...DEFAULTS.notifications, ...(stored.notifications || {}) },
+    security: { ...DEFAULTS.security, ...(stored.security || {}) },
     cities: stored.cities || DEFAULTS.cities,
   };
 }

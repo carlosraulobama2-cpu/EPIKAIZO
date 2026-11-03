@@ -6,6 +6,7 @@ const db = require('./db');
 const { createApp } = require('./app');
 const { bootstrap } = require('./bootstrap');
 const { importCatalogs } = require('./services/catalog');
+const { maybeDailyBackup } = require('./services/backup');
 
 async function start() {
   await db.migrate();
@@ -13,6 +14,13 @@ async function start() {
   const server = createApp().listen(config.port, () => {
     console.log(`[epikaizo] Servidor en http://localhost:${config.port}`);
   });
+  // Copia de seguridad diaria: se comprueba al arrancar y cada hora (solo copia si la última buena
+  // tiene más de 24 h). Render apaga el servidor sin visitas: por eso no basta con una hora fija.
+  const dailyBackup = () => maybeDailyBackup(config.tenantId)
+    .then((b) => b && console.log(`[epikaizo] Copia de seguridad ${b.status === 'ok' ? 'hecha' : `fallida: ${b.error}`}`))
+    .catch((err) => console.error('[epikaizo] Copia de seguridad:', err.message));
+  setTimeout(dailyBackup, 60_000);
+  setInterval(dailyBackup, 3600_000).unref();
   // Vehículos de server/catalog/: se cargan una sola vez. CATALOG_IMPORT=off lo desactiva.
   // Se cargan después de abrir el puerto: una carga lenta o con errores no impide que la web
   // arranque (Render da el despliegue por fallido si el puerto no se abre a tiempo).

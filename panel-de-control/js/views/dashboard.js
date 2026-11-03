@@ -5,10 +5,12 @@ import { ago, date, monthLabel, number, plural } from '../format.js';
 import { remindInvoice, openDocDetail } from './_billing.js';
 
 export default async function dashboard(root, ctx) {
-  const [d, overdue, cashState] = await Promise.all([
+  const [d, overdue, cashState, stock, backups] = await Promise.all([
     api.get('/reports/dashboard'),
     ctx.can('gestor') ? api.get('/invoices', { status: 'vencidas', limit: 6 }).catch(() => null) : null,
     ctx.user.office_id ? api.get('/cash-sessions').catch(() => null) : null,
+    api.get('/materials', { low: '1', limit: 1 }).catch(() => null),
+    ctx.can('admin') ? api.get('/backups').catch(() => null) : null,
   ]);
   const m = d.month;
   const change = m && m.prev_income > 0 ? Math.round(((m.income - m.prev_income) / m.prev_income) * 100) : null;
@@ -21,6 +23,14 @@ export default async function dashboard(root, ctx) {
   if (d.counts.shipments_stale) {
     alerts.push(h('a', { class: 'alert', href: '#/envios?estado=registrado' }, icon('alert'),
       h('span', null, h('strong', null, `${plural(d.counts.shipments_stale, 'envío lleva', 'envíos llevan')} más de 48 h sin moverse. `), 'Revisa si ya salieron y actualiza su estado.')));
+  }
+  if (backups && backups.warning) {
+    alerts.push(h('a', { class: 'alert', href: '#/ajustes' }, icon('alert'),
+      h('span', null, h('strong', null, 'Copias de seguridad: '), backups.last && backups.last.status === 'error' ? `la última falló (${backups.last.error}).` : 'hace más de 48 horas que no hay una copia correcta.', ' Revísalo en Ajustes.')));
+  }
+  if (stock && stock.low_count) {
+    alerts.push(h('a', { class: 'alert', href: '#/inventario?bajo=1' }, icon('box'),
+      h('span', null, h('strong', null, `${plural(stock.low_count, 'material está', 'materiales están')} bajo mínimo. `), 'Hay que reponerlos.')));
   }
   if (cashState && !cashState.current) {
     alerts.push(h('a', { class: 'alert', href: '#/caja-diaria' }, icon('cash'),

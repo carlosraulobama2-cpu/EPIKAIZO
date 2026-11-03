@@ -1,6 +1,7 @@
 // Ajustes: datos de la empresa y tarifas. La web pública (cotizador, asistente, contacto) usa estos mismos valores.
 import { api } from '../api.js';
-import { h, clear, pageHead, button, card, field, section, readForm, showErrors, toast, busy, icon, table, formDrawer } from '../ui.js';
+import { h, clear, pageHead, button, card, field, section, readForm, showErrors, toast, busy, icon, table, formDrawer, attempt } from '../ui.js';
+import { date } from '../format.js';
 
 export default async function settings(root, ctx) {
   const s = await api.get('/settings');
@@ -35,6 +36,9 @@ export default async function settings(root, ctx) {
       field({ name: 'payment_days', label: 'Días para pagar una factura', type: 'number', min: '0', max: '365', value: s.billing.payment_days, required: true }),
       field({ name: 'quote_valid_days', label: 'Días de validez de un presupuesto', type: 'number', min: '1', max: '365', value: s.billing.quote_valid_days, required: true }),
       field({ name: 'footer', label: 'Texto al pie de los documentos', value: s.billing.footer, full: true })) }),
+    card({ title: 'Seguridad del panel', subtitle: 'Protección de las cuentas del equipo.', body: h('div', { class: 'form' },
+      field({ name: 'require_admin_2fa', label: 'Exigir doble verificación (2FA) a los administradores', type: 'checkbox', value: s.security.require_admin_2fa, full: true, hint: 'Activa antes la tuya en Mi cuenta. Los administradores sin 2FA tendrán que activarla al entrar.' }),
+      field({ name: 'idle_minutes', label: 'Cerrar la sesión tras estos minutos sin usar el panel', type: 'number', min: '5', max: '480', step: '1', value: s.security.idle_minutes, required: true })) }),
     card({ title: 'Avisos automáticos por WhatsApp', subtitle: 'Mensajes que reciben los clientes sin que nadie tenga que escribirlos.', body: h('div', { class: 'form' },
       field({ name: 'notify_created', label: 'Al registrar un envío: la guía y el enlace de rastreo al remitente', type: 'checkbox', value: s.notifications.shipment_created !== false, full: true }),
       field({ name: 'notify_status', label: 'En cada cambio de estado (en camino, listo para entregar, entregado): a remitente y destinatario', type: 'checkbox', value: s.notifications.shipment_status !== false, full: true, hint: 'Meta solo entrega mensajes libres a quien te escribió en las últimas 24 horas. Para avisar a todos, crea en Meta una plantilla y pon su nombre en WHATSAPP_TEMPLATE_STATUS (Render).' })) }),
@@ -57,6 +61,7 @@ export default async function settings(root, ctx) {
       billing: { tax_name: v.tax_name, tax_rate: v.tax_rate, tax_id: v.tax_id, bank_account: v.bank_account, payment_days: v.payment_days, quote_valid_days: v.quote_valid_days, footer: v.footer },
       cities: String(v.cities || '').split('\n').map((x) => x.trim()).filter(Boolean),
       notifications: { shipment_created: v.notify_created, shipment_status: v.notify_status },
+      security: { require_admin_2fa: v.require_admin_2fa, idle_minutes: v.idle_minutes },
     };
     try {
       await busy(save, api.put('/settings', body));
@@ -67,15 +72,14 @@ export default async function settings(root, ctx) {
     }
   });
 
-  const backup = card({ title: 'Copia de seguridad', subtitle: 'Descarga todos los datos en un archivo. Guárdalo en un lugar seguro: contiene datos personales.', body: h('div', { class: 'page-head__actions' },
-    button('Descargar copia', { iconName: 'download', onClick: () => { window.location.href = '/api/settings/export'; } }),
-    h('span', { class: 'small muted self-center' }, 'La base de datos de producción debe tener además copias automáticas (Neon/Render).')) });
+  const backup = backupsCard(ctx);
 
   // Qué servicios externos están conectados. Las claves se ponen en Render (Environment), nunca aquí.
   const it = s.integrations || {};
   const INTEGRATIONS = [
     ['whatsapp', 'WhatsApp', 'Responder desde la Bandeja y enviar facturas al entregar.', 'WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID, WHATSAPP_VERIFY_TOKEN y WHATSAPP_APP_SECRET'],
     ['gmail', 'Correo (Gmail)', 'Leer el correo de la empresa en la sección Correo.', 'GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET y GMAIL_REFRESH_TOKEN'],
+    ['drive', 'Copias en Google Drive', 'Una copia de seguridad cada día, automáticamente.', 'GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET y GDRIVE_REFRESH_TOKEN'],
     ['ai', 'Asistente con IA', 'Respuestas del asistente de la web. Sin IA responde con textos fijos.', 'GOOGLE_AI_API_KEY'],
   ];
   const connections = card({ title: 'Conexiones', subtitle: 'Servicios externos. Se configuran en las variables de entorno del servidor (Render), no en esta pantalla.', flush: true,
@@ -86,6 +90,49 @@ export default async function settings(root, ctx) {
   root.append(pageHead('Ajustes', 'Solo los administradores pueden cambiarlos.', [save]),
     h('div', { class: 'alert alert--info mb-16' }, icon('info'), h('span', null, 'Los cambios de tarifas se aplican a los envíos nuevos. Los ya registrados conservan su precio.')),
     form, h('div', { class: 'mt-16' }, officesCard(ctx)), h('div', { class: 'mt-16' }, connections), h('div', { class: 'mt-16' }, backup));
+}
+
+// Copias de seguridad: automáticas cada día a Google Drive (si está configurado), manuales y descarga.
+function backupsCard(ctx) {
+  const body = h('div', { class: 'card__body' }, h('div', { class: 'skeleton' }));
+  const load = async () => {
+    let data;
+    try {
+      data = await api.get('/backups');
+    } catch (err) {
+      clear(body, h('p', { class: 'error-box' }, err.message));
+      return;
+    }
+    const runBtn = button('Hacer copia ahora', { iconName: 'check', onClick: (e) => attempt(async () => {
+      try {
+        await busy(e.currentTarget, api.post('/backups/run'));
+        toast('Copia de seguridad guardada en Google Drive');
+      } finally {
+        load();
+      }
+    }) });
+    const last = data.last_ok;
+    clear(body, h('div', { class: 'stack' },
+      data.configured
+        ? h('div', { class: `alert ${data.warning ? '' : 'alert--info'}` }, h('span', null, data.warning
+          ? [h('strong', null, 'Atención: '), data.last && data.last.status === 'error' ? `la última copia falló (${data.last.error}).` : 'hace más de 48 horas que no hay una copia correcta.']
+          : [h('strong', null, 'Copias automáticas activadas. '), last ? `La última, ${date(last.started_at, true)} (${Math.round(last.size_bytes / 1024)} KB).` : 'Todavía no hay ninguna.']))
+        : h('div', { class: 'alert' }, h('span', null, h('strong', null, 'Copias automáticas sin configurar. '), 'Para guardar cada día una copia en Google Drive hay que poner GDRIVE_CLIENT_ID, GDRIVE_CLIENT_SECRET y GDRIVE_REFRESH_TOKEN en Render. Mientras tanto, descarga la copia a mano a menudo.')),
+      h('div', { class: 'page-head__actions' },
+        data.configured ? runBtn : null,
+        button('Descargar copia', { iconName: 'download', onClick: () => { window.location.href = '/api/settings/export'; } })),
+      data.items.length ? table({
+        rows: data.items.slice(0, 8),
+        columns: [
+          { label: 'Fecha', render: (b) => date(b.started_at, true) },
+          { label: 'Tipo', hideSm: true, render: (b) => (b.trigger === 'auto' ? 'Automática' : `Manual${b.created_by_name ? ` · ${b.created_by_name}` : ''}`) },
+          { label: 'Estado', render: (b) => (b.status === 'ok' ? h('span', { class: 'badge badge--ok' }, 'Correcta') : b.status === 'error' ? h('span', { class: 'badge badge--bad', title: b.error }, 'Falló') : h('span', { class: 'badge' }, 'En curso')) },
+          { label: 'Tamaño', num: true, hideSm: true, render: (b) => (b.size_bytes ? `${Math.round(b.size_bytes / 1024)} KB` : '—') },
+        ],
+      }) : null));
+  };
+  load();
+  return card({ title: 'Copias de seguridad', subtitle: 'Todos los datos en un archivo comprimido. Contiene datos personales: guárdalo en un lugar seguro.', flush: true, body });
 }
 
 // Oficinas o sucursales: no se borran, se desactivan (conservan su historial).

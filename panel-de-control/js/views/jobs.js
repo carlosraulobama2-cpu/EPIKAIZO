@@ -1,7 +1,56 @@
 // Servicios y obras: construcción, mantenimiento, oficios y gestión administrativa.
 import { api } from '../api.js';
-import { h, pageHead, badge, button, primary, empty, formDrawer, field, section, toast, confirmDialog, attempt, busy } from '../ui.js';
-import { date, STATUS } from '../format.js';
+import { h, clear, pageHead, badge, button, primary, empty, formDrawer, formDialog, field, section, toast, confirmDialog, attempt, busy, table } from '../ui.js';
+import { date, STATUS, number } from '../format.js';
+
+const COST_KIND = { materiales: 'Materiales', mano_obra: 'Mano de obra', proveedor: 'Proveedor o subcontrata', transporte: 'Transporte', otros: 'Otros' };
+
+// Costes reales de la obra frente a lo que se cobra: margen en FCFA y en %.
+function costsSection(ctx, job) {
+  const box = h('div', { class: 'costs' }, h('div', { class: 'skeleton' }));
+  const paint = (data) => {
+    const s = data.summary;
+    const source = { facturado: 'lo facturado', precio: 'el precio final', presupuesto: 'el presupuesto' }[s.revenue_source] || 'sin precio todavía';
+    clear(box,
+      h('h3', { class: 'subhead' }, 'Costes y rentabilidad'),
+      h('div', { class: 'grid grid--kpi grid--kpi-3' },
+        h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, 'Ingresos'), h('div', { class: 'kpi__value' }, ctx.money(s.revenue)), h('div', { class: 'kpi__foot' }, `Según ${source}`)),
+        h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, 'Costes'), h('div', { class: 'kpi__value' }, ctx.money(s.costs)), h('div', { class: 'kpi__foot' }, s.budget_used_pct !== null ? `${number(s.budget_used_pct)} % del presupuesto` : 'Sin presupuesto')),
+        h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, 'Margen'), h('div', { class: `kpi__value ${s.margin >= 0 ? 'text-ok' : 'text-bad'}` }, ctx.money(s.margin)), h('div', { class: 'kpi__foot' }, s.margin_pct !== null ? `${number(s.margin_pct)} % de los ingresos` : '—'))),
+      h('div', { class: 'card mt-12' }, table({
+        rows: data.costs,
+        emptyState: h('p', { class: 'card__body muted' }, 'Apunta aquí materiales, jornales, subcontratas y transporte para saber cuánto deja de verdad la obra. Las salidas del Inventario a esta obra se apuntan solas.'),
+        columns: [
+          { label: 'Fecha', render: (c) => h('span', { class: 'nowrap' }, date(c.cost_date)) },
+          { label: 'Concepto', render: (c) => primary(c.concept, [COST_KIND[c.kind], c.provider_name].filter(Boolean).join(' · ')) },
+          { label: 'Importe', num: true, render: (c) => ctx.money(c.amount) },
+          { label: '', render: (c) => button('', { size: 'sm', iconName: 'trash', title: 'Quitar coste', onClick: async () => {
+            if (!(await confirmDialog({ title: 'Quitar coste', text: c.movement_id ? 'El material vuelve al inventario.' : `Se quitará «${c.concept}».`, confirm: 'Quitar', danger: true }))) return;
+            await attempt(async () => paint(await api.del(`/jobs/${job.id}/costs/${c.id}`)));
+          } }) },
+        ],
+      })),
+      h('div', { class: 'mt-12' }, button('Apuntar coste', { size: 'sm', iconName: 'plus', onClick: async () => {
+        const providers = await api.get('/providers', { limit: 100 }).then((r) => r.items).catch(() => []);
+        const values = await formDialog({
+          title: `Coste de ${job.code}`,
+          confirm: 'Apuntar',
+          fields: [
+            field({ name: 'kind', label: 'Tipo', type: 'select', options: Object.entries(COST_KIND), value: 'mano_obra', required: true }),
+            field({ name: 'concept', label: 'Concepto', required: true, placeholder: 'Ej. Albañil, 5 jornadas' }),
+            field({ name: 'quantity', label: 'Cantidad', type: 'number', step: '0.001', min: '0.001', value: 1, required: true }),
+            field({ name: 'unit_cost', label: 'Precio por unidad (FCFA)', type: 'number', step: '1', min: '0', required: true }),
+            providers.length ? field({ name: 'provider_id', label: 'Proveedor', type: 'select', options: providers.map((p) => [p.id, p.name]) }) : null,
+            field({ name: 'cost_date', label: 'Fecha', type: 'date', value: new Date().toLocaleDateString('en-CA') }),
+          ],
+        });
+        if (!values) return;
+        await attempt(async () => { const res = await api.post(`/jobs/${job.id}/costs`, values); toast('Coste apuntado'); paint(res); });
+      } })));
+  };
+  api.get(`/jobs/${job.id}/costs`).then(paint, (err) => clear(box, h('p', { class: 'error-box' }, err.message)));
+  return box;
+}
 import { listCard, searchInput, selectFilter, tabs } from './_list.js';
 import { openDocEditor, openDocDetail } from './_billing.js';
 
@@ -52,6 +101,9 @@ function openForm(ctx, list, categories, employees, job) {
     if (!editing) return;
     const foot = d.panel.querySelector('.drawer__foot');
     if (ctx.can('gestor')) {
+      // Costes reales y rentabilidad, debajo del formulario.
+      d.panel.classList.add('drawer--wide');
+      d.panel.querySelector('.drawer__body').append(costsSection(ctx, job));
       // Presupuesto y factura salen con los datos del trabajo ya rellenos; se pueden añadir líneas
       // (materiales, mano de obra, desplazamiento...) antes de emitir.
       const prefill = {

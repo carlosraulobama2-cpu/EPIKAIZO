@@ -31,8 +31,10 @@ async function authenticate(req, res, next) {
     } catch {
       return res.status(401).json({ error: 'Tu sesión ha caducado. Vuelve a iniciar sesión' });
     }
+    // Un permiso provisional de doble verificación (purpose) nunca vale como sesión.
+    if (payload.purpose) return res.status(401).json({ error: 'Inicia sesión para continuar' });
     const user = await db.one(
-      'SELECT id, tenant_id, name, email, role, status, token_version, must_change_password, office_id FROM users WHERE id = $1',
+      'SELECT id, tenant_id, name, email, role, status, token_version, must_change_password, office_id, totp_enabled FROM users WHERE id = $1',
       [payload.sub]
     );
     // token_version permite cerrar todas las sesiones de un usuario (cambio de contraseña, bloqueo).
@@ -51,12 +53,32 @@ async function authenticate(req, res, next) {
  * Con una contraseña temporal (acceso nuevo o restablecido) solo se puede usar /api/auth/*:
  * el resto de la API exige cambiarla antes. Va después de authenticate.
  */
-function requirePasswordChanged(req, res, next) {
+async function requirePasswordChanged(req, res, next) {
   if (req.user && req.user.must_change_password) {
     return res.status(403).json({ error: 'Cambia tu contraseña temporal para continuar', code: 'must_change_password' });
   }
+  // Si la empresa exige doble verificación a los administradores, un admin sin ella solo puede activarla.
+  try {
+    if (req.user && req.user.role === 'admin' && !req.user.totp_enabled && (await adminTwoFactorRequired(req.tenantId))) {
+      return res.status(403).json({ error: 'Activa la doble verificación para continuar', code: 'two_factor_setup_required' });
+    }
+  } catch (err) {
+    return next(err);
+  }
   next();
 }
+
+// Ajustes → Seguridad. Se guarda en memoria un minuto para no consultarlo en cada petición.
+const twoFactorCache = new Map();
+async function adminTwoFactorRequired(tenantId) {
+  const hit = twoFactorCache.get(tenantId);
+  if (hit && Date.now() - hit.at < 60_000) return hit.value;
+  const row = await db.one("SELECT value FROM settings WHERE tenant_id = $1 AND key = 'security'", [tenantId]);
+  const value = Boolean(row && row.value && row.value.require_admin_2fa);
+  twoFactorCache.set(tenantId, { value, at: Date.now() });
+  return value;
+}
+const forgetTwoFactorSetting = (tenantId) => twoFactorCache.delete(tenantId);
 
 /** requireRole('gestor') deja pasar a gestor y admin. */
 function requireRole(minimum) {
@@ -69,4 +91,4 @@ function requireRole(minimum) {
   };
 }
 
-module.exports = { authenticate, requirePasswordChanged, requireRole, signSession, ROLE_RANK };
+module.exports = { authenticate, requirePasswordChanged, requireRole, signSession, forgetTwoFactorSetting, ROLE_RANK };

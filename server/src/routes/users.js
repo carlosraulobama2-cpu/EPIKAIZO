@@ -9,7 +9,7 @@ const { audit } = require('../services/audit');
 
 const router = express.Router();
 const ROLES = ['admin', 'gestor', 'operador'];
-const COLUMNS = 'id, name, email, role, status, last_login_at, must_change_password, office_id, created_at';
+const COLUMNS = 'id, name, email, role, status, last_login_at, must_change_password, office_id, totp_enabled, created_at';
 
 /** Contraseña temporal legible: el usuario la cambia en su primer acceso. */
 function temporaryPassword() {
@@ -70,6 +70,19 @@ router.patch(
     const user = await db.one(`UPDATE users SET ${sets.join(', ')}, updated_at = now() WHERE id = $1 RETURNING ${COLUMNS}`, [target.id, ...keys.map((k) => input[k])]);
     await audit(req, 'usuario.editar', { entity: 'user', entityId: user.id, details: input });
     res.json({ item: user });
+  })
+);
+
+// Quitar la doble verificación a quien perdió el móvil y sus códigos de recuperación.
+router.post(
+  '/:id/reset-2fa',
+  route(async (req, res) => {
+    const target = await db.one('SELECT id, email FROM users WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
+    if (!target) throw new HttpError(404, 'Usuario no encontrado');
+    if (target.id === req.user.id) throw new HttpError(409, 'Tu propia doble verificación se quita desde Mi cuenta');
+    await db.query("UPDATE users SET totp_enabled = false, totp_secret = NULL, totp_pending = NULL, totp_recovery = '[]'::jsonb, token_version = token_version + 1, updated_at = now() WHERE id = $1", [target.id]);
+    await audit(req, 'usuario.quitar_2fa', { entity: 'user', entityId: target.id });
+    res.json({ ok: true });
   })
 );
 

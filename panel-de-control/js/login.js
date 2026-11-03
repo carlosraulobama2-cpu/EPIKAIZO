@@ -46,9 +46,8 @@ form.addEventListener('submit', async (e) => {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || 'No se pudo iniciar sesión.');
-    const back = new URLSearchParams(location.search).get('volver');
-    // Solo rutas internas del panel (#/...): nunca redirigimos a otra web.
-    location.replace(`/panel/${back && /^#\/[\w/?=&-]*$/.test(back) ? back : ''}`);
+    if (data.two_factor) return askCode(data.challenge);
+    goToPanel();
   } catch (err) {
     showError(err.message === 'Failed to fetch' ? 'Sin conexión con el servidor.' : err.message);
     form.password.select();
@@ -57,6 +56,61 @@ form.addEventListener('submit', async (e) => {
     btn.textContent = 'Entrar';
   }
 });
+
+function goToPanel() {
+  const back = new URLSearchParams(location.search).get('volver');
+  // Solo rutas internas del panel (#/...): nunca redirigimos a otra web.
+  location.replace(`/panel/${back && /^#\/[\w/?=&-]*$/.test(back) ? back : ''}`);
+}
+
+// Segundo paso con doble verificación: código de la app o de recuperación.
+const codeForm = document.getElementById('codeForm');
+const codeError = document.getElementById('codeError');
+const codeBtn = document.getElementById('codeBtn');
+let challenge = '';
+function askCode(token) {
+  challenge = token;
+  form.hidden = true;
+  codeForm.hidden = false;
+  codeForm.code.focus();
+}
+codeForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  codeError.hidden = true;
+  const code = codeForm.code.value.trim();
+  if (code.length < 6) {
+    codeError.textContent = 'Escribe las 6 cifras del código.';
+    codeError.hidden = false;
+    return;
+  }
+  codeBtn.disabled = true;
+  codeBtn.textContent = 'Verificando…';
+  try {
+    const res = await fetch('/api/auth/2fa/verify', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challenge, code }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || 'No se pudo verificar el código.');
+    goToPanel();
+  } catch (err) {
+    codeError.textContent = err.message === 'Failed to fetch' ? 'Sin conexión con el servidor.' : err.message;
+    codeError.hidden = false;
+    codeForm.code.select();
+  } finally {
+    codeBtn.disabled = false;
+    codeBtn.textContent = 'Verificar';
+  }
+});
+
+// Aviso si se llegó aquí porque la sesión se cerró sola por inactividad.
+if (new URLSearchParams(location.search).get('motivo') === 'inactividad') {
+  error.textContent = 'Cerramos tu sesión porque llevabas un rato sin usar el panel. Vuelve a entrar.';
+  error.hidden = false;
+  error.classList.add('auth__error--info');
+}
 
 // La versión anterior del panel guardaba datos simulados en el navegador (epk_packages, epk_cars…).
 // El panel actual lo lee todo del servidor: se borran para que no quede ningún dato falso.

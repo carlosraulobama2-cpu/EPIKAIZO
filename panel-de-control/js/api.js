@@ -1,10 +1,11 @@
 // Cliente de la API. La sesión va en una cookie HttpOnly: el JavaScript nunca ve ni guarda el token.
 
 export class ApiError extends Error {
-  constructor(status, message, fields) {
+  constructor(status, message, fields, code) {
     super(message);
     this.status = status;
     this.fields = fields || null;
+    this.code = code || null;
   }
 }
 
@@ -25,7 +26,7 @@ async function request(method, path, body) {
     throw new ApiError(401, 'Tu sesión ha caducado');
   }
   const data = res.status === 204 ? null : await res.json().catch(() => null);
-  if (!res.ok) throw new ApiError(res.status, (data && data.error) || 'Algo ha fallado. Inténtalo de nuevo.', data && data.fields);
+  if (!res.ok) throw new ApiError(res.status, (data && data.error) || 'Algo ha fallado. Inténtalo de nuevo.', data && data.fields, data && data.code);
   return data;
 }
 

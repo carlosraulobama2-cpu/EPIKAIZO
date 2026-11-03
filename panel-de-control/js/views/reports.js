@@ -21,7 +21,7 @@ export default async function reports(root, ctx) {
   async function load() {
     clear(body, skeleton(8));
     try {
-      const [r, byOffice] = await Promise.all([api.get('/reports/summary', range), api.get('/reports/offices', range)]);
+      const [r, byOffice, byJob] = await Promise.all([api.get('/reports/summary', range), api.get('/reports/offices', range), api.get('/reports/jobs', range)]);
       const kpi = (label, value, cls) => h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, label), h('div', { class: `kpi__value${cls ? ` ${cls}` : ''}` }, value));
       clear(body,
         h('div', { class: 'grid grid--kpi grid--kpi-3 mb-16' },
@@ -37,6 +37,17 @@ export default async function reports(root, ctx) {
             { label: 'Cobrado', num: true, render: (x) => [h('div', null, ctx.money(x.collected)), h('div', { class: 'sub' }, `en efectivo ${ctx.money(x.collected_cash)}`)] },
             { label: 'Gastos de caja', num: true, hideSm: true, render: (x) => ctx.money(x.expenses) },
             { label: 'Descuadre', num: true, render: (x) => (x.closures ? h('strong', { class: Number(x.cash_difference) === 0 ? 'text-ok' : 'text-bad' }, Number(x.cash_difference) === 0 ? `Cuadrada (${x.closures})` : ctx.money(x.cash_difference)) : h('span', { class: 'muted' }, 'Sin cierres')) },
+          ],
+        }) })),
+        h('div', { class: 'mb-16' }, card({ title: 'Rentabilidad por obra', subtitle: `Ingresos (facturado sin impuestos, o precio) frente a costes apuntados. Total: margen de ${ctx.money(byJob.totals.margin)} sobre ${ctx.money(byJob.totals.revenue)}.`, flush: true, body: table({
+          rows: byJob.items,
+          onRowClick: (x) => ctx.go(`servicios/${x.id}`),
+          emptyState: h('p', { class: 'card__body muted' }, 'Sin obras en este periodo.'),
+          columns: [
+            { label: 'Obra', render: (x) => [h('div', { class: 'primary' }, `${x.code} · ${x.title}`), h('div', { class: 'sub' }, x.client_name || '')] },
+            { label: 'Ingresos', num: true, render: (x) => ctx.money(x.revenue) },
+            { label: 'Costes', num: true, render: (x) => (Number(x.costs) ? ctx.money(x.costs) : h('span', { class: 'muted' }, 'Sin apuntar')) },
+            { label: 'Margen', num: true, render: (x) => [h('strong', { class: tone(x.margin) }, ctx.money(x.margin)), x.margin_pct !== null ? h('div', { class: 'sub' }, `${number(x.margin_pct)} %`) : null] },
           ],
         }) })),
         h('div', { class: 'grid grid--2' },

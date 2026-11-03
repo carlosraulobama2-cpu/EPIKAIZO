@@ -3,11 +3,12 @@ const express = require('express');
 const config = require('../config');
 const db = require('../db');
 const whatsapp = require('../services/whatsapp');
-const { route, validate, text, phone, email, number, oneOf, bool } = require('../lib/http');
-const { requireRole } = require('../middleware/auth');
+const { route, validate, text, phone, email, number, oneOf, bool, HttpError } = require('../lib/http');
+const { requireRole, forgetTwoFactorSetting } = require('../middleware/auth');
 const { audit } = require('../services/audit');
 const { getSettings, saveSetting } = require('../services/settings');
 const { today } = require('../lib/dates');
+const { exportData, driveConfigured } = require('../services/backup');
 
 const router = express.Router();
 
@@ -16,6 +17,7 @@ const integrations = () => ({
   whatsapp: whatsapp.enabled(),
   gmail: Boolean(config.gmail.clientId && config.gmail.clientSecret && config.gmail.refreshToken),
   ai: Boolean(config.ai.key),
+  drive: driveConfigured(),
 });
 
 // Las oficinas van con los ajustes: el panel las necesita en casi todas las pantallas.
@@ -57,6 +59,10 @@ router.put(
       })
       : null;
     const notifications = body.notifications ? validate(body.notifications, { shipment_status: bool(), shipment_created: bool() }) : null;
+    const security = body.security ? validate(body.security, { require_admin_2fa: bool(), idle_minutes: number({ min: 5, max: 480 }) }) : null;
+    if (security && security.require_admin_2fa && !req.user.totp_enabled) {
+      throw new HttpError(409, 'Activa primero tu propia doble verificación (Mi cuenta) antes de exigírsela a los administradores');
+    }
     const cities = Array.isArray(body.cities)
       ? [...new Set(body.cities.map((c) => String(c).trim()).filter((c) => c && c.length <= 60))].slice(0, 60)
       : undefined;
@@ -66,30 +72,23 @@ router.put(
       if (cities && cities.length) await saveSetting(req.tenantId, 'cities', cities, client);
       if (billingSettings) await saveSetting(req.tenantId, 'billing', billingSettings, client);
       if (notifications) await saveSetting(req.tenantId, 'notifications', notifications, client);
+      if (security) await saveSetting(req.tenantId, 'security', security, client);
       await audit(req, 'ajustes.guardar', { entity: 'settings', details: { rates } }, client);
     });
+    if (security) forgetTwoFactorSetting(req.tenantId);
     res.json({ ...(await getSettings(req.tenantId)), offices: await officesOf(req.tenantId), integrations: integrations() });
   })
 );
 
-// Exportar todo (JSON). La importación masiva se quitó: permitía borrar datos e inyectar SQL.
-const EXPORT_TABLES = ['offices', 'clients', 'shipments', 'shipment_events', 'trips', 'jobs', 'messages', 'invoices', 'invoice_payments', 'vehicles', 'vehicle_photos', 'cash_movements', 'cash_sessions', 'employees', 'providers'];
-
+// Exportar todo (JSON) para descargarlo. La importación masiva se quitó: permitía borrar datos e inyectar SQL.
 router.get(
   '/export',
   requireRole('admin'),
   route(async (req, res) => {
-    const data = {};
-    for (const table of EXPORT_TABLES) {
-      if (table === 'shipment_events') data[table] = await db.many('SELECT e.* FROM shipment_events e JOIN shipments s ON s.id = e.shipment_id WHERE s.tenant_id = $1', [req.tenantId]);
-      else if (table === 'vehicle_photos') data[table] = await db.many('SELECT id, vehicle_id, mime, size, position, created_at FROM vehicle_photos WHERE tenant_id = $1', [req.tenantId]);
-      else if (table === 'invoice_payments') data[table] = await db.many('SELECT p.* FROM invoice_payments p JOIN invoices i ON i.id = p.invoice_id WHERE i.tenant_id = $1', [req.tenantId]);
-      else data[table] = await db.many(`SELECT * FROM ${table} WHERE tenant_id = $1`, [req.tenantId]);
-    }
+    const data = await exportData(req.tenantId);
     await audit(req, 'copia.exportar', { entity: 'settings' });
-    const day = today();
-    res.setHeader('Content-Disposition', `attachment; filename="epikaizo-copia-${day}.json"`);
-    res.json({ exported_at: new Date().toISOString(), version: 2, data });
+    res.setHeader('Content-Disposition', `attachment; filename="epikaizo-copia-${today()}.json"`);
+    res.json(data);
   })
 );
 
