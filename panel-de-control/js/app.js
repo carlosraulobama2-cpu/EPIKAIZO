@@ -1,5 +1,5 @@
 // Armazón del panel: sesión, menú según el rol, rutas (#/envios...), buscador global y avisos.
-import { api } from './api.js';
+import { api, clearOfflineData } from './api.js';
 import { h, clear, icon, button, toast, errorBox, skeleton, debounce, drawer, field, readForm, showErrors, busy, closeAllDrawers } from './ui.js';
 import { ROLES, initials, money } from './format.js';
 
@@ -100,6 +100,7 @@ function userMenu(anchor) {
 
 async function logout() {
   await api.post('/auth/logout').catch(() => {});
+  await clearOfflineData();
   location.replace('/panel/login');
 }
 
@@ -347,3 +348,8 @@ async function start() {
 
 clearLegacyStorage();
 start();
+
+// Panel instalable y utilizable sin conexión (service worker).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('/panel/sw.js', { scope: '/panel/' }).catch(() => {}));
+}

@@ -144,8 +144,10 @@ function createApp() {
     index: 'index.html',
     redirect: false,
     setHeaders: (res, file) => {
-      // HTML siempre fresco; CSS, JS e imágenes con caché corta.
-      res.setHeader('Cache-Control', file.endsWith('.html') ? 'no-cache' : 'public, max-age=3600');
+      // HTML, CSS, JS y el manifiesto se comprueban siempre (respuesta 304 ligera si no cambiaron):
+      // así, tras una actualización nadie se queda con una versión vieja del panel o de la web.
+      // Imágenes y fuentes, que casi no cambian, con caché de 1 hora.
+      res.setHeader('Cache-Control', /\.(html|css|js|webmanifest)$/.test(file) ? 'no-cache' : 'public, max-age=3600');
     },
   };
   // Direcciones antiguas del panel: se redirigen conservando la consulta (?id=, ?volver=).

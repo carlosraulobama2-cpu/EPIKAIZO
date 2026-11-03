@@ -123,3 +123,5 @@ function clearLegacyStorage() {
 }
 
 clearLegacyStorage();
+// En la pantalla de acceso no debe quedar ningún dato guardado de una sesión anterior.
+if ('caches' in window) caches.delete('epk-api').catch(() => {});
