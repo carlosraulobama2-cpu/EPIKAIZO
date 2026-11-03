@@ -8,6 +8,9 @@ const { upsertClient } = require('../services/clients');
 const billing = require('../services/billing');
 const { sendInvoiceWhatsApp, qrPng, verifyUrl } = require('../services/invoices');
 const { getSettings } = require('../services/settings');
+const config = require('../config');
+const whatsapp = require('../services/whatsapp');
+const { reminderText, fcfa } = require('../services/notify');
 
 const router = express.Router();
 const KINDS = ['factura', 'presupuesto', 'rectificativa'];
@@ -29,7 +32,7 @@ router.get(
     const [items, count, totals] = await Promise.all([
       db.many(
         `SELECT id, kind, number, status, client_name, client_phone, concept, subtotal, tax_amount, amount, paid_amount, currency,
-                issue_date, due_date, valid_until, invoiced_pct, quote_id, vehicle_id, job_id, shipment_id, created_at,
+                issue_date, due_date, valid_until, invoiced_pct, quote_id, vehicle_id, job_id, shipment_id, created_at, reminder_count, last_reminder_at,
                 (kind = 'factura' AND status IN ('emitida', 'enviada', 'parcial') AND due_date < (now() AT TIME ZONE 'Africa/Malabo')::date) AS overdue
            FROM invoices WHERE ${f.sql} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`,
         f.params
@@ -241,6 +244,37 @@ router.post(
     const updated = await sendInvoiceWhatsApp(invoice, company.name);
     await audit(req, 'factura.enviar', { entity: 'invoice', entityId: invoice.id, details: { numero: invoice.number } });
     res.json({ invoice: updated });
+  })
+);
+
+// Recordatorio de cobro de una factura con importe pendiente.
+// channel 'whatsapp': lo envía el servidor (si WhatsApp está configurado).
+// channel 'manual': devuelve el texto para enviarlo desde el WhatsApp del empleado y lo anota.
+router.post(
+  '/:id/remind',
+  route(async (req, res) => {
+    const input = validate(req.body, { channel: oneOf(['whatsapp', 'manual']) });
+    const invoice = await load(req);
+    if (invoice.kind !== 'factura' || !['emitida', 'enviada', 'parcial'].includes(invoice.status)) {
+      throw new HttpError(409, 'Solo se recuerdan facturas con importe pendiente');
+    }
+    const { company, billing: billingSettings } = await getSettings(req.tenantId);
+    const text = reminderText(invoice, { company, billing: billingSettings, verifyUrl: verifyUrl(invoice) });
+    if (input.channel === 'whatsapp') {
+      if (!whatsapp.enabled()) throw new HttpError(503, 'WhatsApp no está configurado en el servidor: usa «Abrir WhatsApp» para enviarlo desde tu teléfono');
+      const pending = Number(invoice.amount) - Number(invoice.paid_amount);
+      if (config.whatsapp.reminderTemplate) {
+        await whatsapp.sendTemplate(invoice.client_phone, config.whatsapp.reminderTemplate, [invoice.client_name.split(' ')[0], invoice.number, fcfa(pending), verifyUrl(invoice)], config.whatsapp.templateLanguage);
+      } else {
+        await whatsapp.sendText(invoice.client_phone, text);
+      }
+    }
+    const updated = await db.one(
+      'UPDATE invoices SET reminder_count = reminder_count + 1, last_reminder_at = now() WHERE id = $1 RETURNING *',
+      [invoice.id]
+    );
+    await audit(req, 'factura.recordar', { entity: 'invoice', entityId: invoice.id, details: { numero: invoice.number, canal: input.channel } });
+    res.json({ invoice: updated, text, phone: whatsapp.toNumber(invoice.client_phone) });
   })
 );
 

@@ -29,6 +29,17 @@ async function send(payload) {
 const toNumber = (phone) => String(phone).replace(/\D/g, '');
 
 const sendText = (to, body) => send({ to: toNumber(to), type: 'text', text: { body } });
+
+/**
+ * Plantilla aprobada por Meta. Hace falta para escribir a quien no nos ha escrito en las últimas
+ * 24 horas (avisos de envío, recordatorios). params: textos que sustituyen {{1}}, {{2}}…
+ */
+const sendTemplate = (to, name, params = [], language = 'es') =>
+  send({
+    to: toNumber(to),
+    type: 'template',
+    template: { name, language: { code: language }, components: params.length ? [{ type: 'body', parameters: params.map((text) => ({ type: 'text', text: String(text) })) }] : [] },
+  });
 const sendImage = (to, link, caption) => send({ to: toNumber(to), type: 'image', image: { link, caption } });
 
 /** Comprueba que el webhook viene de Meta (cabecera X-Hub-Signature-256 firmada con el App Secret). */
@@ -41,4 +52,4 @@ function validSignature(rawBody, header) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-module.exports = { enabled, sendText, sendImage, validSignature };
+module.exports = { enabled, sendText, sendTemplate, sendImage, validSignature, toNumber };

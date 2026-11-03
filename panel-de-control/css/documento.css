@@ -45,6 +45,10 @@ td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
 .stamp--void { color: var(--red); }
 .signatures { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
 .signatures div { border-top: 1px solid var(--ink); padding-top: 6px; text-align: center; font-size: 12px; color: var(--muted); min-height: 70px; }
+.signatures--3 { grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+td small { color: var(--muted); }
+.check-cell { text-align: center; font-size: 16px; }
+td.mono { font: 600 12px 'JetBrains Mono', monospace; white-space: nowrap; }
 .contract h2 { font-size: 18px; text-align: center; margin: 14px 0 4px; }
 .contract .sub { text-align: center; color: var(--muted); margin-bottom: 14px; }
 .contract ol { padding-left: 18px; }

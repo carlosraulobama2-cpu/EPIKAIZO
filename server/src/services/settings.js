@@ -29,6 +29,11 @@ const DEFAULTS = {
     quote_valid_days: 30,
     footer: 'Gracias por confiar en Epikaizo Services.',
   },
+  // Avisos automáticos por WhatsApp a los clientes (Ajustes → Avisos).
+  notifications: {
+    shipment_status: true, // cada cambio de estado del envío, con el enlace de rastreo
+    shipment_created: true, // al registrar el envío, al remitente
+  },
   cities: ['Malabo', 'Bata', 'Ebebiyín', 'Mongomo', 'Luba', 'Evinayong', 'Aconibe', 'Micomeseng', 'Añisoc', 'Rebola', 'Riaba', 'Nsork'],
 };
 
@@ -44,6 +49,7 @@ async function getSettings(tenantId) {
       money_commission_pct: { ...DEFAULTS.rates.money_commission_pct, ...((stored.rates || {}).money_commission_pct || {}) },
     },
     billing: { ...DEFAULTS.billing, ...(stored.billing || {}) },
+    notifications: { ...DEFAULTS.notifications, ...(stored.notifications || {}) },
     cities: stored.cities || DEFAULTS.cities,
   };
 }

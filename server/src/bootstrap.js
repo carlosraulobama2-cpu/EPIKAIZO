@@ -4,11 +4,14 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const config = require('./config');
 const db = require('./db');
+const { ensureOffices } = require('./services/offices');
 
 async function bootstrap() {
   await db.query('INSERT INTO tenants (id, name) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING', [config.tenantId, 'Epikaizo Services']);
+  const offices = await ensureOffices(config.tenantId);
   const users = await db.one('SELECT count(*)::int AS n FROM users WHERE tenant_id = $1', [config.tenantId]);
   if (users.n > 0) return;
+  const mainOffice = offices.find((o) => o.name === 'Malabo') || offices[0];
 
   const { email, password, name } = config.admin;
   if (!email || !password) {
@@ -17,8 +20,8 @@ async function bootstrap() {
   }
   if (password.length < 12) throw new Error('ADMIN_PASSWORD debe tener al menos 12 caracteres');
   await db.query(
-    `INSERT INTO users (id, tenant_id, name, email, password_hash, role, must_change_password) VALUES ($1, $2, $3, $4, $5, 'admin', true)`,
-    [crypto.randomUUID(), config.tenantId, name, email.toLowerCase(), await bcrypt.hash(password, 12)]
+    `INSERT INTO users (id, tenant_id, name, email, password_hash, role, must_change_password, office_id) VALUES ($1, $2, $3, $4, $5, 'admin', true, $6)`,
+    [crypto.randomUUID(), config.tenantId, name, email.toLowerCase(), await bcrypt.hash(password, 12), mainOffice ? mainOffice.id : null]
   );
   console.log(`[epikaizo] Administrador inicial creado: ${email}. Se le pedirá cambiar la contraseña al entrar.`);
 }

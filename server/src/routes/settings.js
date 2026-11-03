@@ -3,7 +3,7 @@ const express = require('express');
 const config = require('../config');
 const db = require('../db');
 const whatsapp = require('../services/whatsapp');
-const { route, validate, text, phone, email, number, oneOf } = require('../lib/http');
+const { route, validate, text, phone, email, number, oneOf, bool } = require('../lib/http');
 const { requireRole } = require('../middleware/auth');
 const { audit } = require('../services/audit');
 const { getSettings, saveSetting } = require('../services/settings');
@@ -18,7 +18,10 @@ const integrations = () => ({
   ai: Boolean(config.ai.key),
 });
 
-router.get('/', route(async (req, res) => res.json({ ...(await getSettings(req.tenantId)), integrations: integrations() })));
+// Las oficinas van con los ajustes: el panel las necesita en casi todas las pantallas.
+const officesOf = (tenantId) => db.many('SELECT id, name, city, address, phone, active FROM offices WHERE tenant_id = $1 ORDER BY active DESC, name', [tenantId]);
+
+router.get('/', route(async (req, res) => res.json({ ...(await getSettings(req.tenantId)), offices: await officesOf(req.tenantId), integrations: integrations() })));
 
 router.put(
   '/',
@@ -53,6 +56,7 @@ router.put(
         footer: text({ max: 300, optional: true }),
       })
       : null;
+    const notifications = body.notifications ? validate(body.notifications, { shipment_status: bool(), shipment_created: bool() }) : null;
     const cities = Array.isArray(body.cities)
       ? [...new Set(body.cities.map((c) => String(c).trim()).filter((c) => c && c.length <= 60))].slice(0, 60)
       : undefined;
@@ -61,14 +65,15 @@ router.put(
       await saveSetting(req.tenantId, 'rates', rates, client);
       if (cities && cities.length) await saveSetting(req.tenantId, 'cities', cities, client);
       if (billingSettings) await saveSetting(req.tenantId, 'billing', billingSettings, client);
+      if (notifications) await saveSetting(req.tenantId, 'notifications', notifications, client);
       await audit(req, 'ajustes.guardar', { entity: 'settings', details: { rates } }, client);
     });
-    res.json(await getSettings(req.tenantId));
+    res.json({ ...(await getSettings(req.tenantId)), offices: await officesOf(req.tenantId), integrations: integrations() });
   })
 );
 
 // Exportar todo (JSON). La importación masiva se quitó: permitía borrar datos e inyectar SQL.
-const EXPORT_TABLES = ['clients', 'shipments', 'shipment_events', 'jobs', 'messages', 'invoices', 'invoice_payments', 'vehicles', 'vehicle_photos', 'cash_movements', 'employees', 'providers'];
+const EXPORT_TABLES = ['offices', 'clients', 'shipments', 'shipment_events', 'trips', 'jobs', 'messages', 'invoices', 'invoice_payments', 'vehicles', 'vehicle_photos', 'cash_movements', 'cash_sessions', 'employees', 'providers'];
 
 router.get(
   '/export',

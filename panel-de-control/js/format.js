@@ -12,7 +12,9 @@ export function moneyMix(rows, key, fallback = 'XAF') {
 const FCFA = new Intl.NumberFormat('es-ES', { useGrouping: 'always', maximumFractionDigits: 0 });
 // eslint-disable-next-line no-unused-vars
 export function money(value, _currency) {
-  return `${FCFA.format(Number(value || 0))} FCFA`;
+  const n = Number(value || 0);
+  // Signo menos tipográfico (−), no guion: "−500 FCFA".
+  return `${n < 0 ? '−' : ''}${FCFA.format(Math.abs(n))} FCFA`;
 }
 
 export function number(value) {
@@ -98,6 +100,11 @@ export const STATUS = {
     atendido: ['Atendido', 'ok'],
   },
   user: { activo: ['Activo', 'ok'], bloqueado: ['Bloqueado', 'bad'] },
+  trip: {
+    preparando: ['Preparando carga', 'info'],
+    en_ruta: ['En ruta', 'brand'],
+    llegado: ['Llegado', 'ok'],
+  },
   employee: { activo: ['Activo', 'ok'], inactivo: ['Inactivo', ''] },
 };
 
@@ -112,6 +119,7 @@ export const FUEL = { gasolina: 'Gasolina', diesel: 'Diésel', hibrido: 'Híbrid
 export const TRANSMISSION = { manual: 'Manual', automatico: 'Automático' };
 export const PAYMENT = { efectivo: 'Efectivo', transferencia: 'Transferencia', movil: 'Pago móvil', tarjeta: 'Tarjeta' };
 export const SCOPE = { local: 'Local', nacional: 'Nacional', internacional: 'Internacional' };
+export const TRIP_MODE = { barco: 'Barco', avion: 'Avión', camion: 'Camión' };
 export const TOPIC = {
   paquete: 'Envío de paquete',
   dinero: 'Envío de dinero',

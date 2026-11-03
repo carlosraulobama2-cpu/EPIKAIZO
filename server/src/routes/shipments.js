@@ -4,7 +4,7 @@ const express = require('express');
 const QRCode = require('qrcode');
 const config = require('../config');
 const db = require('../db');
-const { route, validate, paging, text, phone, number, oneOf, bool, HttpError } = require('../lib/http');
+const { route, validate, paging, text, phone, number, oneOf, bool, uuid, HttpError } = require('../lib/http');
 const { filters } = require('../lib/list');
 const { requireRole } = require('../middleware/auth');
 const { audit } = require('../services/audit');
@@ -13,20 +13,17 @@ const { newTrackingCode } = require('../services/codes');
 const billing = require('../services/billing');
 const { createInvoice, sendInvoiceWhatsApp } = require('../services/invoices');
 const { getSettings, quote } = require('../services/settings');
+const { NEXT, changeStatus } = require('../services/shipments');
+const { notifyShipmentStatus } = require('../services/notify');
+const { resolveOffice } = require('../services/offices');
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const router = express.Router();
 
 const KINDS = ['paquete', 'dinero'];
 const SCOPES = ['local', 'nacional', 'internacional'];
 const STATUSES = ['registrado', 'en_transito', 'en_reparto', 'entregado', 'cancelado'];
-// Cambios de estado permitidos: un envío entregado o cancelado ya no cambia.
-const NEXT = {
-  registrado: ['en_transito', 'en_reparto', 'entregado', 'cancelado'],
-  en_transito: ['en_reparto', 'entregado', 'cancelado'],
-  en_reparto: ['en_transito', 'entregado', 'cancelado'],
-  entregado: [],
-  cancelado: [],
-};
 
 const fields = {
   kind: oneOf(KINDS),
@@ -45,6 +42,8 @@ const fields = {
   paid: bool(),
   payment_method: oneOf(['efectivo', 'transferencia', 'movil', 'tarjeta'], { optional: true }),
   notes: text({ max: 500, optional: true }),
+  office_id: uuid({ optional: true }),
+  notify: bool({ optional: true }), // null = según Ajustes → Avisos
 };
 // El cobro no se edita aquí: se registra en su factura (Facturación), que marca el envío como pagado.
 const EDITABLE = ['sender_name', 'sender_phone', 'sender_document', 'receiver_name', 'receiver_phone', 'origin', 'destination', 'description', 'notes'];
@@ -59,6 +58,9 @@ router.get(
       .range('created_at', req.query.from, req.query.to)
       .search(['tracking_code', 'sender_name', 'receiver_name', 'sender_phone', 'receiver_phone', 'destination'], req.query.q);
     if (req.query.status === 'pendientes') f.raw("status NOT IN ('entregado', 'cancelado')");
+    if (UUID.test(req.query.office_id || '')) f.eq('office_id', req.query.office_id);
+    // Para cargar un viaje: paquetes sin viaje que aún no han salido.
+    if (req.query.trip === 'none') f.raw("trip_id IS NULL AND kind = 'paquete' AND status = 'registrado'");
     const [items, count] = await Promise.all([
       db.many(`SELECT * FROM shipments WHERE ${f.sql} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
       db.one(`SELECT count(*)::int AS n FROM shipments WHERE ${f.sql}`, f.params),
@@ -119,17 +121,19 @@ router.post(
     const priced = quote(rates, { kind: input.kind, scope: input.scope, weightKg: input.weight_kg, amount: input.amount });
     const fee = input.fee ?? priced.fee;
     const total = input.kind === 'dinero' ? input.amount + fee : fee;
+    // Oficina que registra el envío: la elegida o la del empleado.
+    const officeId = await resolveOffice(req, input.office_id);
 
     const result = await db.tx(async (client) => {
       const clientId = await upsertClient(req.tenantId, { name: input.sender_name, phone: input.sender_phone, city: input.origin, document: input.sender_document }, client);
       const shipment = await db.one(
         `INSERT INTO shipments (id, tenant_id, tracking_code, kind, scope, client_id, sender_name, sender_phone, sender_document, receiver_name, receiver_phone,
-                                origin, destination, description, weight_kg, amount, fee, total, currency, paid, payment_method, notes, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23) RETURNING *`,
+                                origin, destination, description, weight_kg, amount, fee, total, currency, paid, payment_method, notes, created_by, office_id)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24) RETURNING *`,
         [crypto.randomUUID(), req.tenantId, await newTrackingCode(client), input.kind, input.scope, clientId, input.sender_name, input.sender_phone,
           input.sender_document, input.receiver_name, input.receiver_phone, input.origin, input.destination, input.description,
           input.kind === 'paquete' ? input.weight_kg : null, input.kind === 'dinero' ? input.amount : null, fee, total, rates.currency,
-          input.paid, input.payment_method, input.notes, req.user.id],
+          input.paid, input.payment_method, input.notes, req.user.id, officeId],
         client
       );
       await db.query('INSERT INTO shipment_events (shipment_id, status, location, created_by) VALUES ($1, $2, $3, $4)', [shipment.id, 'registrado', input.origin, req.user.id], client);
@@ -150,12 +154,18 @@ router.post(
         : null;
       // Cobrado en el mostrador: la factura queda pagada con su forma de pago.
       if (invoice && input.paid) {
-        invoice = await billing.registerPayment(invoice, { amount: Number(invoice.amount), method: input.payment_method || 'efectivo' }, { userId: req.user.id, client });
+        invoice = await billing.registerPayment(invoice, { amount: Number(invoice.amount), method: input.payment_method || 'efectivo' }, { userId: req.user.id, client, officeId });
       }
       await audit(req, 'envio.crear', { entity: 'shipment', entityId: shipment.id, details: { guia: shipment.tracking_code, tipo: shipment.kind, total } }, client);
       return { shipment, invoice };
     });
-    res.status(201).json({ ...result, company: company.name });
+    // Aviso al remitente con su guía (Ajustes → Avisos). Un fallo de WhatsApp no deshace el alta.
+    const { notifications } = await getSettings(req.tenantId);
+    const notice = input.notify !== false && notifications.shipment_created !== false
+      ? await notifyShipmentStatus(req.tenantId, result.shipment, 'registrado')
+      : { skipped: true };
+    if (notice.failed) await audit(req, 'whatsapp.error', { entity: 'shipment', entityId: result.shipment.id, details: { error: notice.errors[0] } });
+    res.status(201).json({ ...result, company: company.name, notified: notice.skipped ? null : notice.failed === 0 });
   })
 );
 
@@ -187,39 +197,24 @@ router.post(
       note: text({ max: 300, optional: true }),
       notify: bool(),
     });
-    if (!NEXT[shipment.status].includes(input.status)) {
-      throw new HttpError(409, `Un envío "${shipment.status.replace('_', ' ')}" no puede pasar a "${input.status.replace('_', ' ')}"`);
-    }
-    const updated = await db.tx(async (client) => {
-      const row = await db.one(
-        `UPDATE shipments SET status = $3, updated_at = now(), delivered_at = CASE WHEN $3 = 'entregado' THEN now() ELSE delivered_at END
-          WHERE id = $1 AND tenant_id = $2 RETURNING *`,
-        [shipment.id, req.tenantId, input.status],
-        client
-      );
-      await db.query('INSERT INTO shipment_events (shipment_id, status, location, note, created_by) VALUES ($1,$2,$3,$4,$5)', [shipment.id, input.status, input.location, input.note, req.user.id], client);
-      if (input.status === 'cancelado') {
-        // La factura no se borra: se anula con su rectificativa.
-        const invoice = await db.one("SELECT * FROM invoices WHERE shipment_id = $1 AND kind = 'factura' AND status <> 'anulada' ORDER BY created_at LIMIT 1", [shipment.id], client);
-        if (invoice) {
-          const { billing: billingSettings } = await getSettings(req.tenantId);
-          const reason = Number(invoice.paid_amount) > 0 ? 'Envío cancelado (importe cobrado devuelto al cliente)' : 'Envío cancelado';
-          await billing.annul({ ...invoice, paid_amount: 0 }, reason, { userId: req.user.id, client, billing: billingSettings });
-        }
-      }
-      await audit(req, 'envio.estado', { entity: 'shipment', entityId: shipment.id, details: { de: shipment.status, a: input.status } }, client);
-      return row;
-    });
+    const updated = await db.tx((client) => changeStatus(req, shipment, input.status, { location: input.location, note: input.note }, client));
 
-    // Aviso por WhatsApp al entregar: si falla, el cambio de estado ya está guardado y lo decimos.
+    // Avisos por WhatsApp a remitente y destinatario con el enlace de rastreo. Si fallan, el
+    // cambio de estado ya está guardado y se dice en la respuesta.
     let notified = null;
+    if (input.notify && input.status !== 'cancelado') {
+      const notice = await notifyShipmentStatus(req.tenantId, updated, input.status);
+      if (!notice.skipped) notified = notice.failed === 0;
+      if (notice.failed) await audit(req, 'whatsapp.error', { entity: 'shipment', entityId: shipment.id, details: { error: notice.errors[0] } });
+    }
+    // Al entregar, además, la factura con su QR.
     if (input.notify && input.status === 'entregado') {
       const invoice = await db.one("SELECT * FROM invoices WHERE shipment_id = $1 AND kind = 'factura' ORDER BY created_at LIMIT 1", [shipment.id]);
       if (invoice) {
         try {
           const { company } = await getSettings(req.tenantId);
           await sendInvoiceWhatsApp(invoice, company.name);
-          notified = true;
+          if (notified === null) notified = true;
         } catch (err) {
           notified = false;
           await audit(req, 'whatsapp.error', { entity: 'invoice', entityId: invoice.id, details: { error: err.message } });

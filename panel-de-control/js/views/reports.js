@@ -1,15 +1,17 @@
 // Informes: resultados por mes, ciudades, tipos de trabajo y mejores clientes, con exportación a Excel (CSV).
 import { api, qs } from '../api.js';
 import { h, clear, pageHead, button, card, table, skeleton, errorBox, icon } from '../ui.js';
-import { monthLabel, number } from '../format.js';
+import { monthLabel, number, today } from '../format.js';
 
+// Primer día de hace 5 meses, en la fecha local (no UTC).
 const first = () => {
   const d = new Date();
-  return new Date(d.getFullYear(), d.getMonth() - 5, 1).toISOString().slice(0, 10);
+  return new Date(d.getFullYear(), d.getMonth() - 5, 1).toLocaleDateString('en-CA');
 };
+const tone = (v) => (Number(v) >= 0 ? 'text-ok' : 'text-bad');
 
 export default async function reports(root, ctx) {
-  const range = { from: first(), to: new Date().toISOString().slice(0, 10) };
+  const range = { from: first(), to: today() };
   const body = h('div');
   const { categories } = await api.get('/jobs/categories');
 
@@ -19,13 +21,24 @@ export default async function reports(root, ctx) {
   async function load() {
     clear(body, skeleton(8));
     try {
-      const r = await api.get('/reports/summary', range);
-      const kpi = (label, value, tone) => h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, label), h('div', { class: 'kpi__value', style: tone ? `color:var(${tone})` : null }, value));
+      const [r, byOffice] = await Promise.all([api.get('/reports/summary', range), api.get('/reports/offices', range)]);
+      const kpi = (label, value, cls) => h('div', { class: 'card kpi' }, h('div', { class: 'kpi__label' }, label), h('div', { class: `kpi__value${cls ? ` ${cls}` : ''}` }, value));
       clear(body,
         h('div', { class: 'grid grid--kpi grid--kpi-3 mb-16' },
           kpi('Ingresos', ctx.money(r.totals.income)),
           kpi('Gastos', ctx.money(r.totals.expense)),
-          kpi('Beneficio', ctx.money(r.totals.profit), r.totals.profit >= 0 ? '--ok' : '--bad')),
+          kpi('Beneficio', ctx.money(r.totals.profit), tone(r.totals.profit))),
+        h('div', { class: 'mb-16' }, card({ title: 'Por oficina', subtitle: 'Envíos, cobros recibidos, gastos de caja y descuadres de las cajas cerradas en el periodo.', flush: true, body: table({
+          rows: byOffice.items,
+          columns: [
+            { label: 'Oficina', render: (x) => [h('div', { class: 'primary' }, x.name), x.active ? null : h('div', { class: 'sub' }, 'Desactivada')] },
+            { label: 'Envíos', num: true, render: (x) => number(x.shipments) },
+            { label: 'Comisiones', num: true, hideSm: true, render: (x) => ctx.money(x.shipment_income) },
+            { label: 'Cobrado', num: true, render: (x) => [h('div', null, ctx.money(x.collected)), h('div', { class: 'sub' }, `en efectivo ${ctx.money(x.collected_cash)}`)] },
+            { label: 'Gastos de caja', num: true, hideSm: true, render: (x) => ctx.money(x.expenses) },
+            { label: 'Descuadre', num: true, render: (x) => (x.closures ? h('strong', { class: Number(x.cash_difference) === 0 ? 'text-ok' : 'text-bad' }, Number(x.cash_difference) === 0 ? `Cuadrada (${x.closures})` : ctx.money(x.cash_difference)) : h('span', { class: 'muted' }, 'Sin cierres')) },
+          ],
+        }) })),
         h('div', { class: 'grid grid--2' },
           card({ title: 'Resultado por mes', flush: true, body: table({
             rows: r.monthly,
@@ -34,7 +47,7 @@ export default async function reports(root, ctx) {
               { label: 'Mes', render: (x) => `${monthLabel(x.month)} ${x.month.slice(0, 4)}` },
               { label: 'Ingresos', num: true, render: (x) => ctx.money(x.income) },
               { label: 'Gastos', num: true, render: (x) => ctx.money(x.expense) },
-              { label: 'Beneficio', num: true, render: (x) => h('strong', { style: `color:var(${x.profit >= 0 ? '--ok' : '--bad'})` }, ctx.money(x.profit)) },
+              { label: 'Beneficio', num: true, render: (x) => h('strong', { class: tone(x.profit) }, ctx.money(x.profit)) },
             ],
           }) }),
           card({ title: 'Envíos por destino', flush: true, body: table({

@@ -3,12 +3,13 @@ const crypto = require('crypto');
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../db');
-const { route, validate, text, email, oneOf, HttpError } = require('../lib/http');
+const { route, validate, text, email, oneOf, uuid, HttpError } = require('../lib/http');
+const { resolveOffice } = require('../services/offices');
 const { audit } = require('../services/audit');
 
 const router = express.Router();
 const ROLES = ['admin', 'gestor', 'operador'];
-const COLUMNS = 'id, name, email, role, status, last_login_at, must_change_password, created_at';
+const COLUMNS = 'id, name, email, role, status, last_login_at, must_change_password, office_id, created_at';
 
 /** Contraseña temporal legible: el usuario la cambia en su primer acceso. */
 function temporaryPassword() {
@@ -23,13 +24,14 @@ router.get('/', route(async (req, res) => {
 router.post(
   '/',
   route(async (req, res) => {
-    const input = validate(req.body, { name: text({ min: 2, max: 120 }), email: email(), role: oneOf(ROLES) });
+    const input = validate(req.body, { name: text({ min: 2, max: 120 }), email: email(), role: oneOf(ROLES), office_id: uuid({ optional: true }) });
+    const officeId = await resolveOffice(req, input.office_id);
     const taken = await db.one('SELECT 1 FROM users WHERE lower(email) = $1', [input.email]);
     if (taken) throw new HttpError(409, 'Ya existe una cuenta con ese correo');
     const password = temporaryPassword();
     const user = await db.one(
-      `INSERT INTO users (id, tenant_id, name, email, password_hash, role, must_change_password) VALUES ($1,$2,$3,$4,$5,$6,true) RETURNING ${COLUMNS}`,
-      [crypto.randomUUID(), req.tenantId, input.name, input.email, await bcrypt.hash(password, 12), input.role]
+      `INSERT INTO users (id, tenant_id, name, email, password_hash, role, must_change_password, office_id) VALUES ($1,$2,$3,$4,$5,$6,true,$7) RETURNING ${COLUMNS}`,
+      [crypto.randomUUID(), req.tenantId, input.name, input.email, await bcrypt.hash(password, 12), input.role, officeId]
     );
     await audit(req, 'usuario.crear', { entity: 'user', entityId: user.id, details: { email: user.email, rol: user.role } });
     // La contraseña temporal se muestra una sola vez a quien crea la cuenta; no se guarda en claro.
@@ -48,7 +50,8 @@ async function guardLastAdmin(req, target, change) {
 router.patch(
   '/:id',
   route(async (req, res) => {
-    const input = validate(req.body, { name: text({ min: 2, max: 120 }), email: email(), role: oneOf(ROLES), status: oneOf(['activo', 'bloqueado']) }, { partial: true });
+    const input = validate(req.body, { name: text({ min: 2, max: 120 }), email: email(), role: oneOf(ROLES), status: oneOf(['activo', 'bloqueado']), office_id: uuid() }, { partial: true });
+    if (input.office_id && !(await resolveOffice(req, input.office_id))) throw new HttpError(422, 'Esa oficina no existe o está desactivada');
     const target = await db.one('SELECT * FROM users WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
     if (!target) throw new HttpError(404, 'Usuario no encontrado');
     // El correo es el usuario para entrar: se guarda en minúsculas y no se puede repetir.

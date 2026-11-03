@@ -83,6 +83,33 @@ router.get(
   })
 );
 
+// Por oficina: envíos y sus comisiones, cobros recibidos (y cuánto en efectivo), caja y descuadres.
+router.get(
+  '/offices',
+  requireRole('gestor'),
+  route(async (req, res) => {
+    const { from, to } = period(req.query);
+    const items = await db.many(
+      `SELECT o.id, o.name, o.city, o.active,
+              (SELECT count(*)::int FROM shipments s WHERE s.office_id = o.id AND s.status <> 'cancelado'
+                  AND (s.created_at AT TIME ZONE 'Africa/Malabo')::date BETWEEN $2 AND $3) AS shipments,
+              (SELECT COALESCE(sum(fee), 0) FROM shipments s WHERE s.office_id = o.id AND s.status <> 'cancelado'
+                  AND (s.created_at AT TIME ZONE 'Africa/Malabo')::date BETWEEN $2 AND $3) AS shipment_income,
+              (SELECT COALESCE(sum(amount), 0) FROM invoice_payments p WHERE p.office_id = o.id AND p.paid_on BETWEEN $2 AND $3) AS collected,
+              (SELECT COALESCE(sum(amount), 0) FROM invoice_payments p WHERE p.office_id = o.id AND p.method = 'efectivo' AND p.paid_on BETWEEN $2 AND $3) AS collected_cash,
+              (SELECT COALESCE(sum(amount), 0) FROM cash_movements c WHERE c.office_id = o.id AND c.type = 'ingreso' AND c.date BETWEEN $2 AND $3) AS other_income,
+              (SELECT COALESCE(sum(amount), 0) FROM cash_movements c WHERE c.office_id = o.id AND c.type = 'gasto' AND c.date BETWEEN $2 AND $3) AS expenses,
+              (SELECT count(*)::int FROM cash_sessions c WHERE c.office_id = o.id AND c.status = 'cerrada'
+                  AND (c.closed_at AT TIME ZONE 'Africa/Malabo')::date BETWEEN $2 AND $3) AS closures,
+              (SELECT COALESCE(sum(difference), 0) FROM cash_sessions c WHERE c.office_id = o.id AND c.status = 'cerrada'
+                  AND (c.closed_at AT TIME ZONE 'Africa/Malabo')::date BETWEEN $2 AND $3) AS cash_difference
+         FROM offices o WHERE o.tenant_id = $1 ORDER BY o.active DESC, o.name`,
+      [req.tenantId, from, to]
+    );
+    res.json({ from, to, items });
+  })
+);
+
 router.get(
   '/summary',
   requireRole('gestor'),

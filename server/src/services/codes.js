@@ -33,4 +33,9 @@ async function vehicleCode(tenantId, client) {
   return `VEH-${String(n).padStart(4, '0')}`;
 }
 
-module.exports = { newTrackingCode, jobCode, vehicleCode };
+async function tripCode(tenantId, client) {
+  const n = await nextNumber(tenantId, 'viaje', client);
+  return `VIA-${String(n).padStart(4, '0')}`;
+}
+
+module.exports = { newTrackingCode, jobCode, vehicleCode, tripCode };

@@ -35,6 +35,8 @@ function crudRouter({ table, entity, fields, search = [], order = 'created_at DE
     canWrite,
     route(async (req, res) => {
       const input = validate(req.body, fields);
+      // Tablas con oficina: si no se indica, la del empleado que lo registra.
+      if (columns.includes('office_id') && !input.office_id) input.office_id = req.user.office_id || null;
       const cols = ['id', 'tenant_id', ...columns];
       const values = [crypto.randomUUID(), req.tenantId, ...columns.map((c) => input[c])];
       if (table === 'cash_movements') {

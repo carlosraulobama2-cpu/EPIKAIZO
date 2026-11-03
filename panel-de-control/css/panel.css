@@ -166,7 +166,8 @@ svg { flex: none; }
 /* ---------- Barra de filtros ---------- */
 .toolbar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-bottom: 1px solid var(--line); }
 .toolbar .grow { flex: 1; min-width: 200px; }
-.tabs { display: flex; gap: 2px; padding: 3px; background: var(--bg); border-radius: var(--r-sm); border: 1px solid var(--line); }
+.tabs { display: flex; gap: 2px; padding: 3px; background: var(--bg); border-radius: var(--r-sm); border: 1px solid var(--line);  max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.tabs button { flex: none; white-space: nowrap; }
 .tabs button { border: 0; background: transparent; padding: 5px 12px; border-radius: 6px; font-weight: 600; font-size: 13px; color: var(--muted); cursor: pointer; }
 .tabs button.is-active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow-sm); }
 .input, .select, .textarea {
@@ -181,7 +182,9 @@ svg { flex: none; }
 .input--date { width: 150px; }
 
 /* ---------- Tablas ---------- */
-.table-wrap { overflow-x: auto; }
+.table-wrap { overflow-x: auto; max-width: 100%; }
+/* Los hijos de rejillas y pilas no deben crecer con su contenido: así las tablas anchas se desplazan dentro de su tarjeta en el móvil en vez de ensanchar la página. */
+.grid > *, .stack > *, .card, .content > * { min-width: 0; }
 table.table { width: 100%; border-collapse: collapse; }
 .table th { text-align: left; font: 600 11.5px var(--font); text-transform: uppercase; letter-spacing: .05em; color: var(--muted); padding: 10px 14px; background: var(--surface-soft); border-bottom: 1px solid var(--line); white-space: nowrap; }
 .table td { padding: 11px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
@@ -287,12 +290,13 @@ table.table { width: 100%; border-collapse: collapse; }
 @keyframes slide { from { transform: translateX(30px); opacity: 0; } }
 @keyframes pop { from { transform: translate(-50%, -48%); opacity: 0; } }
 
-.toasts { position: fixed; z-index: 60; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+/* Arriba y centrados: abajo a la derecha tapaban el botón Guardar de los paneles laterales. Solo informan: no capturan clics. */
+.toasts { position: fixed; z-index: 60; top: 16px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; width: max-content; max-width: calc(100vw - 24px); pointer-events: none; }
 .toast { display: flex; align-items: center; gap: 10px; min-width: 260px; max-width: 420px; padding: 12px 14px; border-radius: var(--r-sm); background: var(--ink); color: var(--surface); box-shadow: var(--shadow-lg); animation: pop-up .18s ease; font-weight: 500; }
 .toast svg { width: 18px; height: 18px; flex: none; }
 .toast--ok svg { color: var(--toast-ok); }
 .toast--bad { background: var(--toast-bad); }
-@keyframes pop-up { from { transform: translateY(8px); opacity: 0; } }
+@keyframes pop-up { from { transform: translateY(-8px); opacity: 0; } }
 
 .menu { position: absolute; z-index: 30; right: 28px; top: 60px; min-width: 220px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); box-shadow: var(--shadow-lg); padding: 6px; }
 .menu a, .menu button { display: flex; width: 100%; align-items: center; gap: 8px; padding: 8px 10px; border: 0; background: none; border-radius: 6px; color: var(--text); cursor: pointer; text-align: left; }
@@ -440,3 +444,22 @@ table.table { width: 100%; border-collapse: collapse; }
 .password__toggle { position: absolute; top: 50%; right: 4px; transform: translateY(-50%); width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: var(--r-sm); background: transparent; color: var(--muted); cursor: pointer; }
 .password__toggle:hover { color: var(--brand); background: var(--brand-50); }
 .password__toggle svg { width: 18px; height: 18px; }
+
+/* ---------- Caja del día ---------- */
+.kpi--button { text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.kpi--button:hover { border-color: var(--brand); }
+.cashbox { display: grid; gap: 14px; }
+.cashbox__rows { display: grid; grid-template-columns: 1fr auto; gap: 8px 24px; margin: 0; }
+.cashbox__rows dt { color: var(--muted); }
+.cashbox__rows dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
+.cashbox__total, .cashbox__diff { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px; border-radius: var(--r-sm); background: var(--brand-50); }
+.cashbox__total strong { font: 700 22px var(--display); color: var(--brand); }
+.cashbox__diff { background: var(--bg); }
+.cashbox__diff strong { font: 700 18px var(--display); }
+
+/* ---------- Viajes: elegir envíos para cargar ---------- */
+.picks { display: grid; gap: 6px; }
+.pick { display: grid; grid-template-columns: auto auto 1fr auto; gap: 12px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; }
+.pick:hover { border-color: var(--brand); }
+.pick input { width: 18px; height: 18px; accent-color: var(--brand); }
+@media (max-width: 520px) { .pick { grid-template-columns: auto 1fr; } }

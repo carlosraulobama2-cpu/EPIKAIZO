@@ -32,7 +32,7 @@ async function authenticate(req, res, next) {
       return res.status(401).json({ error: 'Tu sesión ha caducado. Vuelve a iniciar sesión' });
     }
     const user = await db.one(
-      'SELECT id, tenant_id, name, email, role, status, token_version, must_change_password FROM users WHERE id = $1',
+      'SELECT id, tenant_id, name, email, role, status, token_version, must_change_password, office_id FROM users WHERE id = $1',
       [payload.sub]
     );
     // token_version permite cerrar todas las sesiones de un usuario (cambio de contraseña, bloqueo).

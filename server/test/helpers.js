@@ -11,6 +11,7 @@ const bcrypt = require('bcryptjs');
 const db = require('../src/db');
 const config = require('../src/config');
 const { createApp } = require('../src/app');
+const { ensureOffices } = require('../src/services/offices');
 
 const PASSWORD = 'Contrasena-de-prueba-1';
 
@@ -19,15 +20,19 @@ async function resetDb() {
   await db.query('CREATE SCHEMA public');
   await db.migrate();
   await db.query('INSERT INTO tenants (id, name) VALUES ($1, $2), ($3, $4)', [config.tenantId, 'Epikaizo', 'otra', 'Otra empresa']);
+  const offices = {};
+  for (const tenant of [config.tenantId, 'otra']) offices[tenant] = await ensureOffices(tenant);
+  const malabo = (tenant) => offices[tenant].find((o) => o.name === 'Malabo').id;
   const hash = await bcrypt.hash(PASSWORD, 4);
   const users = {};
   for (const [role, tenant] of [['admin', config.tenantId], ['gestor', config.tenantId], ['operador', config.tenantId], ['otra', 'otra']]) {
     const id = crypto.randomUUID();
-    await db.query('INSERT INTO users (id, tenant_id, name, email, password_hash, role) VALUES ($1,$2,$3,$4,$5,$6)', [
-      id, tenant, `Usuario ${role}`, `${role}@prueba.com`, hash, role === 'otra' ? 'admin' : role,
+    await db.query('INSERT INTO users (id, tenant_id, name, email, password_hash, role, office_id) VALUES ($1,$2,$3,$4,$5,$6,$7)', [
+      id, tenant, `Usuario ${role}`, `${role}@prueba.com`, hash, role === 'otra' ? 'admin' : role, malabo(tenant),
     ]);
     users[role] = { id, email: `${role}@prueba.com` };
   }
+  users.offices = offices[config.tenantId];
   return users;
 }
 

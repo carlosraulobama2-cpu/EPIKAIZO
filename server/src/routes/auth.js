@@ -27,6 +27,7 @@ const publicUser = (u) => ({
   email: u.email,
   role: u.role,
   must_change_password: u.must_change_password,
+  office_id: u.office_id || null,
 });
 
 router.post(

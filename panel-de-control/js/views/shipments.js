@@ -7,7 +7,8 @@ import { listCard, searchInput, selectFilter, tabs } from './_list.js';
 const statusGroup = (s) => (s.kind === 'dinero' ? 'money' : 'shipment');
 
 export default async function shipments(root, ctx) {
-  const f = { kind: '', status: ctx.query.get('estado') || '', q: '', from: '', to: '' };
+  const f = { kind: '', status: ctx.query.get('estado') || '', q: '', from: '', to: '', office_id: '' };
+  const offices = ctx.settings.offices || [];
 
   const list = listCard({
     endpoint: '/shipments',
@@ -17,6 +18,7 @@ export default async function shipments(root, ctx) {
       tabs([['', 'Todos'], ['paquete', 'Paquetes'], ['dinero', 'Dinero']], (v) => { f.kind = v; list.reload(true); }),
       searchInput('Guía, nombre, teléfono o destino', (e) => { f.q = e.target.value; list.reloadDebounced(); }),
       selectFilter('Todos los estados', [['pendientes', 'Pendientes'], ...Object.entries(STATUS.shipment).map(([k, [l]]) => [k, l])], (e) => { f.status = e.target.value; list.reload(true); }, f.status),
+      offices.length > 1 ? selectFilter('Todas las oficinas', offices.map((o) => [o.id, o.name]), (e) => { f.office_id = e.target.value; list.reload(true); }) : null,
       h('input', { class: 'input input--date', type: 'date', 'aria-label': 'Desde', onChange: (e) => { f.from = e.target.value; list.reload(true); } }),
       h('input', { class: 'input input--date', type: 'date', 'aria-label': 'Hasta', onChange: (e) => { f.to = e.target.value; list.reload(true); } }),
     ],
@@ -27,6 +29,7 @@ export default async function shipments(root, ctx) {
       { label: 'Destinatario', render: (r) => primary(r.receiver_name, `${r.origin} → ${r.destination}`) },
       { label: 'Estado', render: (r) => badge(statusGroup(r), r.status) },
       { label: 'Cobro', num: true, render: (r) => primary(ctx.money(r.kind === 'dinero' ? r.amount : r.total), r.kind === 'dinero' ? `Comisión ${ctx.money(r.fee)}` : r.paid ? 'Pagado' : 'Pendiente de pago') },
+      { label: 'Oficina', hideSm: true, render: (r) => officeName(ctx, r.office_id) },
       { label: 'Fecha', hideSm: true, render: (r) => h('span', { class: 'muted nowrap', title: date(r.created_at, true) }, ago(r.created_at)) },
     ],
   });
@@ -76,6 +79,8 @@ function openForm(ctx, list) {
       field({ name: 'paid', label: 'Cobrado en el momento', type: 'checkbox', value: true }),
       h('div', { class: 'quote-box', 'aria-live': 'polite' }, h('span', null, 'Total a cobrar'), h('strong', { 'data-quote': '' }, '—')),
       field({ name: 'notes', label: 'Notas internas', type: 'textarea', full: true }),
+      activeOffices(ctx).length > 1 ? field({ name: 'office_id', label: 'Oficina que lo registra', type: 'select', options: activeOffices(ctx).map((o) => [o.id, o.name]), value: ctx.user.office_id }) : null,
+      field({ name: 'notify', label: 'Enviar la guía al remitente por WhatsApp', type: 'checkbox', value: ctx.settings.notifications ? ctx.settings.notifications.shipment_created !== false : true, full: true, hint: whatsappHint(ctx) }),
     ],
     extra: (form) => {
       const datalist = h('datalist', { id: 'cities-list' }, ctx.settings.cities.map((c) => h('option', { value: c })));
@@ -117,7 +122,7 @@ function openForm(ctx, list) {
     },
     onSubmit: async (values) => {
       const res = await api.post('/shipments', values);
-      toast(`Envío ${res.shipment.tracking_code} registrado. Imprime el recibo desde su ficha.`);
+      toast(res.notified === false ? `Envío ${res.shipment.tracking_code} registrado, pero no se pudo avisar por WhatsApp` : `Envío ${res.shipment.tracking_code} registrado. Imprime el recibo desde su ficha.`, res.notified === false ? 'bad' : 'ok');
       await list.reload(true);
       ctx.go(`envios/${res.shipment.id}`);
     },
@@ -193,12 +198,12 @@ async function openDetail(ctx, id, list) {
       } else {
         extra = await formDialog({
           title: `Marcar como "${labels[st][0]}"`,
-          text: st === 'entregado' ? 'Si WhatsApp está configurado, el destinatario recibirá la factura con su QR.' : 'Opcional: indica dónde está ahora para el seguimiento.',
+          text: st === 'entregado' ? 'Se avisa al remitente y al destinatario; el remitente recibe además la factura con su QR.' : 'Opcional: indica dónde está ahora. Remitente y destinatario reciben el aviso con el enlace de rastreo.',
           confirm: 'Confirmar',
           fields: [
             st === 'entregado' ? null : field({ name: 'location', label: 'Ubicación', value: st === 'en_reparto' ? s.destination : '' }),
             field({ name: 'note', label: 'Nota', placeholder: st === 'entregado' ? 'Recogido por…' : '' }),
-            st === 'entregado' ? field({ name: 'notify', label: 'Avisar al cliente por WhatsApp', type: 'checkbox', value: true }) : null,
+            field({ name: 'notify', label: 'Avisar a los clientes por WhatsApp', type: 'checkbox', value: !ctx.settings.notifications || ctx.settings.notifications.shipment_status !== false, hint: whatsappHint(ctx) }),
           ],
         });
         if (!extra) return;
@@ -255,6 +260,8 @@ async function openDetail(ctx, id, list) {
       ['Total cobrado', h('strong', null, ctx.money(s.total))],
       ['Pago', `${s.paid ? 'Pagado' : 'Pendiente'}${s.payment_method ? ` · ${PAYMENT[s.payment_method]}` : ''}`],
       data.invoice && ['Factura', ctx.can('gestor') ? h('a', { href: `#/facturas?q=${data.invoice.number}` }, data.invoice.number) : data.invoice.number],
+      ['Oficina', officeName(ctx, s.office_id)],
+      s.trip_id && ['Viaje', h('a', { href: `#/viajes/${s.trip_id}` }, 'Ver el viaje y su manifiesto')],
       s.notes && ['Notas', s.notes],
       ['Registrado', date(s.created_at, true)],
     ]),
@@ -263,5 +270,32 @@ async function openDetail(ctx, id, list) {
         h('strong', null, labels[e.status][0]),
         h('span', { class: 'small muted' }, [date(e.created_at, true), e.location, e.user_name].filter(Boolean).join(' · ')),
         e.note ? h('div', { class: 'small' }, e.note) : null)))),
-    h('div', { class: 'alert alert--info' }, icon('globe'), h('span', null, 'El cliente puede seguirlo en la web con la guía ', h('strong', { class: 'mono' }, s.tracking_code), '.'))));
+    h('div', { class: 'alert alert--info' }, icon('globe'), h('span', null, 'El cliente puede seguirlo en la web con la guía ', h('strong', { class: 'mono' }, s.tracking_code), '.')),
+    manualNotice(ctx, s)));
+}
+
+// ---------- Ayudas ----------
+function officeName(ctx, id) {
+  const o = (ctx.settings.offices || []).find((x) => x.id === id);
+  return o ? o.name : '—';
+}
+const activeOffices = (ctx) => (ctx.settings.offices || []).filter((o) => o.active);
+const whatsappHint = (ctx) => (ctx.settings.integrations && ctx.settings.integrations.whatsapp ? 'Lleva el enlace para seguir el envío en la web.' : 'WhatsApp aún no está conectado en el servidor: puedes avisar desde tu teléfono con los botones de la ficha.');
+
+// Avisar desde el WhatsApp del empleado (siempre disponible, haya o no WhatsApp en el servidor).
+const waNumber = (phone) => {
+  const digits = String(phone || '').replace(/\D/g, '').replace(/^00/, '');
+  return digits.length === 9 ? `240${digits}` : digits;
+};
+function manualNotice(ctx, s) {
+  if (s.status === 'cancelado') return null;
+  const link = `${location.origin}/envios?guia=${encodeURIComponent(s.tracking_code)}#rastreo`;
+  const state = STATUS[s.kind === 'dinero' ? 'money' : 'shipment'][s.status][0].toLowerCase();
+  const text = (name) => `Hola ${String(name || '').split(' ')[0]}, tu envío ${s.tracking_code} de ${s.origin} a ${s.destination} está: ${state}. Síguelo aquí: ${link}`;
+  const open = (phone, name) => window.open(`https://wa.me/${waNumber(phone)}?text=${encodeURIComponent(text(name))}`, '_blank', 'noopener');
+  return h('div', { class: 'card card__body' },
+    h('div', { class: 'small muted card__label' }, 'Avisar desde tu WhatsApp'),
+    h('div', { class: 'page-head__actions' },
+      button('Remitente', { size: 'sm', iconName: 'whatsapp', onClick: () => open(s.sender_phone, s.sender_name) }),
+      button('Destinatario', { size: 'sm', iconName: 'whatsapp', onClick: () => open(s.receiver_phone, s.receiver_name) })));
 }

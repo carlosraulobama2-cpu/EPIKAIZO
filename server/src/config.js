@@ -41,6 +41,13 @@ const config = {
     verifyToken: env.WHATSAPP_VERIFY_TOKEN || '',
     appSecret: env.WHATSAPP_APP_SECRET || '',
     apiVersion: env.WHATSAPP_API_VERSION || 'v19.0',
+    // Plantillas aprobadas en Meta (opcionales). Sin ellas se manda texto libre, que Meta solo
+    // entrega a quien nos haya escrito en las últimas 24 horas.
+    // Estado de envío: {{1}} nombre, {{2}} guía, {{3}} estado, {{4}} enlace de rastreo.
+    statusTemplate: env.WHATSAPP_TEMPLATE_STATUS || '',
+    // Recordatorio de cobro: {{1}} nombre, {{2}} factura, {{3}} importe pendiente, {{4}} enlace.
+    reminderTemplate: env.WHATSAPP_TEMPLATE_REMINDER || '',
+    templateLanguage: env.WHATSAPP_TEMPLATE_LANGUAGE || 'es',
   },
   ai: { key: env.GOOGLE_AI_API_KEY || '', model: env.GOOGLE_AI_MODEL || 'gemini-2.0-flash-lite' },
   gmail: {

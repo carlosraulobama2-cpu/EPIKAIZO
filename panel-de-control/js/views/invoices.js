@@ -18,7 +18,7 @@ export default async function invoices(root, ctx) {
   const kpis = h('div', { class: 'grid grid--kpi mb-16' });
   const kpi = (iconName, label, value, foot, tone) => h('div', { class: 'card kpi' },
     h('div', { class: 'kpi__label' }, icon(iconName), label),
-    h('div', { class: 'kpi__value', style: tone ? `color:var(${tone})` : null }, value),
+    h('div', { class: `kpi__value${tone === '--bad' ? ' text-bad' : ''}` }, value),
     h('div', { class: 'kpi__foot' }, foot));
 
   const list = listCard({

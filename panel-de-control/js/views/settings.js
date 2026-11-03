@@ -1,6 +1,6 @@
 // Ajustes: datos de la empresa y tarifas. La web pública (cotizador, asistente, contacto) usa estos mismos valores.
 import { api } from '../api.js';
-import { h, pageHead, button, card, field, section, readForm, showErrors, toast, busy, icon } from '../ui.js';
+import { h, clear, pageHead, button, card, field, section, readForm, showErrors, toast, busy, icon, table, formDrawer } from '../ui.js';
 
 export default async function settings(root, ctx) {
   const s = await api.get('/settings');
@@ -35,6 +35,9 @@ export default async function settings(root, ctx) {
       field({ name: 'payment_days', label: 'Días para pagar una factura', type: 'number', min: '0', max: '365', value: s.billing.payment_days, required: true }),
       field({ name: 'quote_valid_days', label: 'Días de validez de un presupuesto', type: 'number', min: '1', max: '365', value: s.billing.quote_valid_days, required: true }),
       field({ name: 'footer', label: 'Texto al pie de los documentos', value: s.billing.footer, full: true })) }),
+    card({ title: 'Avisos automáticos por WhatsApp', subtitle: 'Mensajes que reciben los clientes sin que nadie tenga que escribirlos.', body: h('div', { class: 'form' },
+      field({ name: 'notify_created', label: 'Al registrar un envío: la guía y el enlace de rastreo al remitente', type: 'checkbox', value: s.notifications.shipment_created !== false, full: true }),
+      field({ name: 'notify_status', label: 'En cada cambio de estado (en camino, listo para entregar, entregado): a remitente y destinatario', type: 'checkbox', value: s.notifications.shipment_status !== false, full: true, hint: 'Meta solo entrega mensajes libres a quien te escribió en las últimas 24 horas. Para avisar a todos, crea en Meta una plantilla y pon su nombre en WHATSAPP_TEMPLATE_STATUS (Render).' })) }),
     card({ title: 'Ciudades', subtitle: 'Una por línea. Salen en los formularios y en la web.', body: h('div', { class: 'form' },
       field({ name: 'cities', label: 'Ciudades con servicio', type: 'textarea', value: s.cities.join('\n'), full: true, required: true })) }));
 
@@ -53,6 +56,7 @@ export default async function settings(root, ctx) {
       },
       billing: { tax_name: v.tax_name, tax_rate: v.tax_rate, tax_id: v.tax_id, bank_account: v.bank_account, payment_days: v.payment_days, quote_valid_days: v.quote_valid_days, footer: v.footer },
       cities: String(v.cities || '').split('\n').map((x) => x.trim()).filter(Boolean),
+      notifications: { shipment_created: v.notify_created, shipment_status: v.notify_status },
     };
     try {
       await busy(save, api.put('/settings', body));
@@ -81,5 +85,42 @@ export default async function settings(root, ctx) {
 
   root.append(pageHead('Ajustes', 'Solo los administradores pueden cambiarlos.', [save]),
     h('div', { class: 'alert alert--info mb-16' }, icon('info'), h('span', null, 'Los cambios de tarifas se aplican a los envíos nuevos. Los ya registrados conservan su precio.')),
-    form, h('div', { class: 'mt-16' }, connections), h('div', { class: 'mt-16' }, backup));
+    form, h('div', { class: 'mt-16' }, officesCard(ctx)), h('div', { class: 'mt-16' }, connections), h('div', { class: 'mt-16' }, backup));
+}
+
+// Oficinas o sucursales: no se borran, se desactivan (conservan su historial).
+function officesCard(ctx) {
+  const body = h('div');
+  const paint = () => clear(body, table({
+    rows: ctx.settings.offices || [],
+    onRowClick: (o) => edit(o),
+    columns: [
+      { label: 'Oficina', render: (o) => h('strong', null, o.name) },
+      { label: 'Ciudad', render: (o) => o.city },
+      { label: 'Contacto', hideSm: true, render: (o) => [o.address, o.phone].filter(Boolean).join(' · ') || h('span', { class: 'muted' }, '—') },
+      { label: 'Estado', render: (o) => (o.active ? h('span', { class: 'badge badge--ok' }, 'Activa') : h('span', { class: 'badge' }, 'Desactivada')) },
+    ],
+  }));
+  const refresh = async () => { await ctx.reloadSettings(); paint(); };
+  const edit = (o) => formDrawer({
+    title: o ? `Oficina de ${o.name}` : 'Nueva oficina',
+    subtitle: 'Cada empleado, envío, cobro y caja del día pertenece a una oficina.',
+    submitLabel: 'Guardar',
+    fields: [
+      field({ name: 'name', label: 'Nombre', value: o?.name, required: true }),
+      field({ name: 'city', label: 'Ciudad', type: 'select', options: ctx.settings.cities.map((c) => [c, c]), value: o?.city, required: true }),
+      field({ name: 'address', label: 'Dirección', value: o?.address, full: true }),
+      field({ name: 'phone', label: 'Teléfono', value: o?.phone }),
+      o ? field({ name: 'active', label: 'Oficina activa', type: 'checkbox', value: o.active, hint: 'Desactívala si cierra: su historial se conserva.' }) : null,
+    ],
+    onSubmit: async (values) => {
+      if (o) await api.patch(`/offices/${o.id}`, values);
+      else await api.post('/offices', values);
+      toast('Oficina guardada');
+      await refresh();
+    },
+  });
+  paint();
+
+  return card({ title: 'Oficinas', subtitle: 'Sucursales de la empresa. Los informes y la caja del día se separan por oficina.', actions: button('Nueva oficina', { size: 'sm', iconName: 'plus', onClick: () => edit() }), flush: true, body });
 }

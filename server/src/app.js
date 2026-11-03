@@ -2,7 +2,7 @@
 const path = require('path');
 const express = require('express');
 const db = require('./db');
-const { HttpError, text, phone, email, number, oneOf, date } = require('./lib/http');
+const { HttpError, text, phone, email, number, oneOf, date, uuid } = require('./lib/http');
 const { securityHeaders, csrfGuard } = require('./lib/security');
 const { crudRouter } = require('./lib/crud');
 const { authenticate, requirePasswordChanged, requireRole } = require('./middleware/auth');
@@ -62,6 +62,9 @@ function createApp() {
   api.use('/users', admin, require('./routes/users'));
   api.use('/audit', admin, require('./routes/audit'));
   api.use('/gmail', admin, require('./routes/gmail'));
+  api.use('/offices', operador, require('./routes/offices'));
+  api.use('/cash-sessions', operador, require('./routes/cashSessions').router);
+  api.use('/trips', operador, require('./routes/trips'));
 
   api.use(
     '/employees',
@@ -111,7 +114,10 @@ function createApp() {
       search: ['concept', 'category', 'reference'],
       order: 'date DESC, created_at DESC',
       hasUpdatedAt: false,
-      listFilters: (f, q) => f.eq('type', q.type, ['ingreso', 'gasto']).range('date', q.from, q.to),
+      listFilters: (f, q) => {
+        f.eq('type', q.type, ['ingreso', 'gasto']).range('date', q.from, q.to);
+        if (/^[0-9a-f-]{36}$/i.test(q.office_id || '')) f.eq('office_id', q.office_id);
+      },
       fields: {
         type: oneOf(['ingreso', 'gasto']),
         category: text({ min: 2, max: 60 }),
@@ -120,6 +126,7 @@ function createApp() {
         date: date(),
         method: oneOf(['efectivo', 'transferencia', 'movil', 'tarjeta'], { optional: true }),
         reference: text({ max: 80, optional: true }),
+        office_id: uuid({ optional: true }),
       },
     })
   );

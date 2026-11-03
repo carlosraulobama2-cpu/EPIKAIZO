@@ -86,15 +86,17 @@ async function createDocument(tenantId, data, { userId = null, client, billing, 
 }
 
 /** Registra un cobro y recalcula el estado: parcial o pagada. */
-async function registerPayment(invoice, { amount, method, paid_on, reference }, { userId, client }) {
+async function registerPayment(invoice, { amount, method, paid_on, reference }, { userId, client, officeId = null }) {
   if (invoice.kind !== 'factura') throw new HttpError(409, 'Solo se cobran facturas');
   if (invoice.status === 'anulada') throw new HttpError(409, 'La factura está anulada');
   const pending = round(Number(invoice.amount) - Number(invoice.paid_amount));
   if (pending <= 0) throw new HttpError(409, 'Esta factura ya está cobrada del todo');
   if (round(amount) > pending) throw new HttpError(422, `El cobro supera lo pendiente (${pending})`);
   await db.query(
-    'INSERT INTO invoice_payments (id, invoice_id, amount, method, paid_on, reference, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7)',
-    [crypto.randomUUID(), invoice.id, round(amount), method, paid_on || today(), reference || null, userId],
+    // La oficina del cobro (la indicada o la de quien cobra) es la que cuadra su caja con este dinero.
+    `INSERT INTO invoice_payments (id, invoice_id, amount, method, paid_on, reference, created_by, office_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7, COALESCE($8::uuid, (SELECT office_id FROM users WHERE id = $7)))`,
+    [crypto.randomUUID(), invoice.id, round(amount), method, paid_on || today(), reference || null, userId, officeId],
     client
   );
   const updated = await db.one(

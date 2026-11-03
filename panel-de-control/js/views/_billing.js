@@ -6,6 +6,25 @@ import { date, today, DOC_KIND, PAYMENT } from '../format.js';
 
 const round = (n) => Math.round(Number(n || 0) * 100) / 100;
 
+/**
+ * Recordar el cobro de una factura pendiente. Con WhatsApp en el servidor se envía directamente;
+ * si no, se abre WhatsApp en el teléfono del empleado con el mensaje ya escrito. Queda anotado.
+ */
+export async function remindInvoice(ctx, inv, btn, done) {
+  const auto = Boolean(ctx.settings.integrations && ctx.settings.integrations.whatsapp);
+  // La ventana se abre antes de la llamada: los navegadores bloquean window.open tras un await.
+  const win = auto ? null : window.open('about:blank', '_blank');
+  try {
+    const res = await busy(btn, api.post(`/invoices/${inv.id}/remind`, { channel: auto ? 'whatsapp' : 'manual' }));
+    if (auto) toast(`Recordatorio enviado a ${inv.client_name}`);
+    else if (win) win.location.href = `https://wa.me/${res.phone}?text=${encodeURIComponent(res.text)}`;
+    if (done) done();
+  } catch (err) {
+    if (win) win.close();
+    toast(err.message, 'bad');
+  }
+}
+
 export function printDocument(id) {
   window.open(`/panel/documento?id=${encodeURIComponent(id)}`, '_blank', 'noopener');
 }
@@ -187,7 +206,7 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
   const head = d.panel.querySelector('.drawer__head > div');
   clear(head,
     h('h2', null, h('span', { class: 'mono' }, inv.number), ' ', badge('invoice', inv.status), overdue ? h('span', { class: 'badge badge--bad ml-6' }, 'Vencida') : null),
-    h('p', null, `${DOC_KIND[inv.kind]} · ${date(inv.issue_date)}${inv.due_date ? ` · vence ${date(inv.due_date)}` : ''}${inv.valid_until ? ` · válido hasta ${date(inv.valid_until)}` : ''}`));
+    h('p', null, `${DOC_KIND[inv.kind]} · ${date(inv.issue_date)}${inv.due_date ? ` · vence ${date(inv.due_date)}` : ''}${inv.valid_until ? ` · válido hasta ${date(inv.valid_until)}` : ''}${inv.reminder_count ? ` · recordada ${inv.reminder_count} ${inv.reminder_count === 1 ? 'vez' : 'veces'} (la última ${date(inv.last_reminder_at, true)})` : ''}`));
 
   const lines = table({
     rows: inv.lines,
@@ -273,6 +292,10 @@ export async function openDocDetail(ctx, id, { onChange } = {}) {
       toast(err.message, 'bad');
     }
   } }));
+
+  if (isInvoice && pending > 0 && ['emitida', 'enviada', 'parcial'].includes(inv.status)) {
+    actions.push(button(overdue ? 'Recordar cobro (vencida)' : 'Recordar cobro', { iconName: 'whatsapp', onClick: (e) => remindInvoice(ctx, inv, e.currentTarget, reload) }));
+  }
 
   if (isInvoice && inv.status !== 'anulada') {
     actions.unshift(button('Anular', { variant: 'danger', onClick: async () => {

@@ -56,6 +56,7 @@ export default async function team(root, ctx) {
           columns: [
             { label: 'Persona', render: (u) => primary(u.name, u.email) },
             { label: 'Rol', render: (u) => h('span', { class: 'tag' }, ROLES[u.role]) },
+            { label: 'Oficina', hideSm: true, render: (u) => officeSelect(ctx, u, loadAccess) },
             { label: 'Estado', render: (u) => (u.must_change_password && u.status === 'activo' ? h('span', { class: 'badge badge--warn' }, 'Pendiente de primer acceso') : badge('user', u.status)) },
             { label: 'Último acceso', hideSm: true, render: (u) => h('span', { class: 'muted' }, u.last_login_at ? ago(u.last_login_at) : 'Nunca') },
             { label: '', render: (u) => (u.id === ctx.user.id ? h('div', { class: 'row-actions' }, h('span', { class: 'muted small' }, 'Tú'), editUserButton(u, loadAccess)) : userActions(u, loadAccess)) },
@@ -67,6 +68,22 @@ export default async function team(root, ctx) {
     }
     await loadAccess();
   }
+}
+
+// Oficina de un acceso: se cambia directamente desde la lista.
+function officeSelect(ctx, u, reload) {
+  const offices = ctx.settings.offices || [];
+  return h('select', {
+    class: 'select select--auto',
+    'aria-label': `Oficina de ${u.name}`,
+    onChange: (e) => attempt(async () => {
+      await api.patch(`/users/${u.id}`, { office_id: e.target.value });
+      toast(`${u.name} pasa a la oficina de ${offices.find((o) => o.id === e.target.value).name}`);
+      reload();
+    }),
+  },
+  u.office_id ? null : h('option', { value: '', selected: true }, 'Sin oficina'),
+  offices.filter((o) => o.active || o.id === u.office_id).map((o) => h('option', { value: o.id, selected: o.id === u.office_id }, o.name)));
 }
 
 // Nombre y correo de un acceso. El correo es con lo que la persona entra al panel.
@@ -125,6 +142,7 @@ function invite(ctx, reload) {
       field({ name: 'name', label: 'Nombre', required: true, full: true }),
       field({ name: 'email', label: 'Correo', type: 'email', required: true, full: true }),
       field({ name: 'role', label: 'Rol', type: 'select', options: Object.entries(ROLES), value: 'operador', required: true, full: true, hint: 'Operador: el día a día. Gestor: además dinero e informes. Administrador: todo.' }),
+      field({ name: 'office_id', label: 'Oficina', type: 'select', options: (ctx.settings.offices || []).filter((o) => o.active).map((o) => [o.id, o.name]), value: ctx.user.office_id, required: true, full: true, hint: 'Sus envíos, cobros y su caja del día son de esta oficina.' }),
     ],
     onSubmit: async (values) => {
       const res = await api.post('/users', values);

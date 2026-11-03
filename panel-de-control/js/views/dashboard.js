@@ -1,10 +1,15 @@
 // Resumen: lo que hay que mirar al abrir el panel cada mañana.
 import { api } from '../api.js';
 import { h, icon, card, pageHead, badge, table, primary, empty, button } from '../ui.js';
-import { ago, monthLabel, number, plural } from '../format.js';
+import { ago, date, monthLabel, number, plural } from '../format.js';
+import { remindInvoice, openDocDetail } from './_billing.js';
 
 export default async function dashboard(root, ctx) {
-  const d = await api.get('/reports/dashboard');
+  const [d, overdue, cashState] = await Promise.all([
+    api.get('/reports/dashboard'),
+    ctx.can('gestor') ? api.get('/invoices', { status: 'vencidas', limit: 6 }).catch(() => null) : null,
+    ctx.user.office_id ? api.get('/cash-sessions').catch(() => null) : null,
+  ]);
   const m = d.month;
   const change = m && m.prev_income > 0 ? Math.round(((m.income - m.prev_income) / m.prev_income) * 100) : null;
   const hello = new Date().getHours() < 13 ? 'Buenos días' : new Date().getHours() < 20 ? 'Buenas tardes' : 'Buenas noches';
@@ -16,6 +21,10 @@ export default async function dashboard(root, ctx) {
   if (d.counts.shipments_stale) {
     alerts.push(h('a', { class: 'alert', href: '#/envios?estado=registrado' }, icon('alert'),
       h('span', null, h('strong', null, `${plural(d.counts.shipments_stale, 'envío lleva', 'envíos llevan')} más de 48 h sin moverse. `), 'Revisa si ya salieron y actualiza su estado.')));
+  }
+  if (cashState && !cashState.current) {
+    alerts.push(h('a', { class: 'alert', href: '#/caja-diaria' }, icon('cash'),
+      h('span', null, h('strong', null, `La caja de ${cashState.office.name} está cerrada. `), 'Ábrela con el efectivo inicial para que los cobros del día queden cuadrados.')));
   }
   if (d.counts.messages_new) {
     alerts.push(h('a', { class: 'alert alert--info', href: '#/bandeja' }, icon('inbox'),
@@ -78,8 +87,30 @@ export default async function dashboard(root, ctx) {
     h('div', { class: 'grid grid--main' },
       h('div', { class: 'stack' },
         d.finance ? card({ title: 'Ingresos y gastos', subtitle: 'Últimos 6 meses', body: chart }) : null,
+        overdue && overdue.items.length ? overdueCard(ctx, overdue) : null,
         card({ title: 'Últimos envíos', actions: h('a', { href: '#/envios', class: 'small' }, 'Ver todos'), body: latest, flush: true })),
       h('div', { class: 'stack' },
         card({ title: 'Envíos en curso', subtitle: 'Pulsa para ver la lista', body: pipeline }),
         card({ title: 'Destinos más frecuentes', subtitle: 'Últimos 90 días', body: destinations }))));
+}
+
+// Facturas vencidas: la lista diaria de cobros que hay que reclamar, con su botón para recordarlo.
+function overdueCard(ctx, data) {
+  const reload = () => ctx.go('resumen');
+  return card({
+    title: `Facturas vencidas (${data.total})`,
+    subtitle: 'Cobros pendientes que ya pasaron su fecha. Recuérdaselo al cliente por WhatsApp.',
+    actions: h('a', { href: '#/facturas?ver=vencidas', class: 'small' }, 'Ver todas'),
+    flush: true,
+    body: table({
+      rows: data.items,
+      onRowClick: (r) => openDocDetail(ctx, r.id, { onChange: reload }),
+      columns: [
+        { label: 'Factura', render: (r) => primary(h('span', { class: 'mono' }, r.number), r.client_name) },
+        { label: 'Venció', hideSm: true, render: (r) => primary(date(r.due_date), r.reminder_count ? `Recordada ${r.reminder_count} ${r.reminder_count === 1 ? 'vez' : 'veces'}` : 'Sin recordar') },
+        { label: 'Pendiente', num: true, render: (r) => h('strong', { class: 'text-bad' }, ctx.money(Number(r.amount) - Number(r.paid_amount))) },
+        { label: '', render: (r) => button('Recordar', { size: 'sm', iconName: 'whatsapp', onClick: (e) => { e.stopPropagation(); remindInvoice(ctx, r, e.currentTarget, reload); } }) },
+      ],
+    }),
+  });
 }
