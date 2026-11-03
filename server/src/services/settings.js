@@ -29,6 +29,12 @@ const DEFAULTS = {
     quote_valid_days: 30,
     footer: 'Gracias por confiar en Epikaizo Services.',
   },
+  // Pago móvil para los clientes (área de cliente y facturas): número, titular e indicaciones.
+  payments: {
+    mobile_number: '',
+    mobile_name: '',
+    instructions: 'Indica el número de factura como concepto del pago.',
+  },
   // Avisos automáticos por WhatsApp a los clientes (Ajustes → Avisos).
   // Seguridad del panel (Ajustes → Seguridad).
   security: {
@@ -38,6 +44,7 @@ const DEFAULTS = {
   notifications: {
     shipment_status: true, // cada cambio de estado del envío, con el enlace de rastreo
     shipment_created: true, // al registrar el envío, al remitente
+    review_request: true, // pedir opinión al terminar un trabajo o entregar un envío
   },
   cities: ['Malabo', 'Bata', 'Ebebiyín', 'Mongomo', 'Luba', 'Evinayong', 'Aconibe', 'Micomeseng', 'Añisoc', 'Rebola', 'Riaba', 'Nsork'],
 };
@@ -55,6 +62,7 @@ async function getSettings(tenantId) {
     },
     billing: { ...DEFAULTS.billing, ...(stored.billing || {}) },
     notifications: { ...DEFAULTS.notifications, ...(stored.notifications || {}) },
+    payments: { ...DEFAULTS.payments, ...(stored.payments || {}) },
     security: { ...DEFAULTS.security, ...(stored.security || {}) },
     cities: stored.cities || DEFAULTS.cities,
   };

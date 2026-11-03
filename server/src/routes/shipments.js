@@ -16,6 +16,7 @@ const { getSettings, quote } = require('../services/settings');
 const { NEXT, changeStatus } = require('../services/shipments');
 const { notifyShipmentStatus } = require('../services/notify');
 const { resolveOffice } = require('../services/offices');
+const { requestReview } = require('../services/reviews');
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -221,7 +222,12 @@ router.post(
         }
       }
     }
-    res.json({ shipment: updated, notified });
+    // Entregado: se pide la opinión del remitente (por WhatsApp si está conectado y se pidió avisar).
+    let review = null;
+    if (input.status === 'entregado') {
+      review = await requestReview(req.tenantId, { source: 'envio', shipmentId: updated.id, name: updated.sender_name, phone: updated.sender_phone, send: input.notify }).catch(() => null);
+    }
+    res.json({ shipment: updated, notified, review: review && { link: review.link, text: review.text, sent: review.sent } });
   })
 );
 

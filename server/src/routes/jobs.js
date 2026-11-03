@@ -10,6 +10,7 @@ const { upsertClient } = require('../services/clients');
 const { jobCode } = require('../services/codes');
 const billing = require('../services/billing');
 const { getSettings } = require('../services/settings');
+const { requestReview } = require('../services/reviews');
 
 const router = express.Router();
 
@@ -130,7 +131,12 @@ router.patch(
     );
     if (!row) throw new HttpError(404, 'Trabajo no encontrado');
     await audit(req, 'trabajo.editar', { entity: 'job', entityId: row.id, details: { campos: keys } });
-    res.json({ item: row });
+    // Trabajo terminado: se pide la opinión del cliente (por WhatsApp si está conectado).
+    let review = null;
+    if (input.status === 'terminado' && row.client_phone) {
+      review = await requestReview(req.tenantId, { source: 'trabajo', jobId: row.id, name: row.client_name, phone: row.client_phone }).catch(() => null);
+    }
+    res.json({ item: row, review: review && { link: review.link, text: review.text, sent: review.sent } });
   })
 );
 

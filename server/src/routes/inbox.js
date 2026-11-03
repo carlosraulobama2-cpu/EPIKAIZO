@@ -22,7 +22,8 @@ router.get(
       .eq('channel', req.query.channel, ['web', 'whatsapp'])
       .search(['name', 'phone', 'email', 'body', 'topic'], req.query.q);
     const [items, count, unread] = await Promise.all([
-      db.many(`SELECT * FROM messages WHERE ${f.sql} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
+      db.many(`SELECT m.*, (SELECT COALESCE(json_agg(p.id ORDER BY p.position), '[]') FROM message_photos p WHERE p.message_id = m.id) AS photos
+                 FROM messages m WHERE ${f.sql} ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`, f.params),
       db.one(`SELECT count(*)::int AS n FROM messages WHERE ${f.sql}`, f.params),
       db.one("SELECT count(*)::int AS n FROM messages WHERE tenant_id = $1 AND status = 'nuevo' AND direction = 'entrante'", [req.tenantId]),
     ]);
@@ -84,6 +85,20 @@ router.post(
       return row;
     });
     res.status(201).json({ item: job });
+  })
+);
+
+// Fotos que el cliente adjuntó a su solicitud de presupuesto.
+router.get(
+  '/:id/photos/:photoId',
+  route(async (req, res) => {
+    const photo = await db.one(
+      'SELECT p.mime, p.data FROM message_photos p JOIN messages m ON m.id = p.message_id WHERE p.id = $1 AND p.message_id = $2 AND m.tenant_id = $3',
+      [req.params.photoId, req.params.id, req.tenantId]
+    );
+    if (!photo) throw new HttpError(404, 'Foto no encontrada');
+    res.setHeader('Cache-Control', 'private, max-age=3600');
+    res.type(photo.mime).send(photo.data);
   })
 );
 

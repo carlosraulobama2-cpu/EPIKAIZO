@@ -42,6 +42,7 @@ function createApp() {
   api.use('/whatsapp', require('./routes/whatsapp'));
   api.use(csrfGuard);
   api.use('/public', require('./routes/public'));
+  api.use('/public', require('./routes/publicweb'));
   api.use('/chatbot', require('./routes/chatbot'));
   api.use('/auth', require('./routes/auth'));
 
@@ -67,6 +68,7 @@ function createApp() {
   api.use('/trips', operador, require('./routes/trips'));
   api.use('/backups', admin, require('./routes/backups'));
   api.use('/materials', operador, require('./routes/materials'));
+  api.use('/web', operador, require('./routes/webcontent'));
 
   api.use(
     '/employees',

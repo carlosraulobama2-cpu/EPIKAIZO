@@ -58,7 +58,8 @@ router.put(
         footer: text({ max: 300, optional: true }),
       })
       : null;
-    const notifications = body.notifications ? validate(body.notifications, { shipment_status: bool(), shipment_created: bool() }) : null;
+    const notifications = body.notifications ? validate(body.notifications, { shipment_status: bool(), shipment_created: bool(), review_request: bool() }) : null;
+    const payments = body.payments ? validate(body.payments, { mobile_number: text({ max: 40, optional: true }), mobile_name: text({ max: 80, optional: true }), instructions: text({ max: 300, optional: true }) }) : null;
     const security = body.security ? validate(body.security, { require_admin_2fa: bool(), idle_minutes: number({ min: 5, max: 480 }) }) : null;
     if (security && security.require_admin_2fa && !req.user.totp_enabled) {
       throw new HttpError(409, 'Activa primero tu propia doble verificación (Mi cuenta) antes de exigírsela a los administradores');
@@ -72,6 +73,7 @@ router.put(
       if (cities && cities.length) await saveSetting(req.tenantId, 'cities', cities, client);
       if (billingSettings) await saveSetting(req.tenantId, 'billing', billingSettings, client);
       if (notifications) await saveSetting(req.tenantId, 'notifications', notifications, client);
+      if (payments) await saveSetting(req.tenantId, 'payments', payments, client);
       if (security) await saveSetting(req.tenantId, 'security', security, client);
       await audit(req, 'ajustes.guardar', { entity: 'settings', details: { rates } }, client);
     });
